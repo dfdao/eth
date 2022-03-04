@@ -220,7 +220,7 @@ async function createPlanets({}, hre: HardhatRuntimeEnvironment) {
         ...adminPlanetInfo,
         location,
         perlin: perlinValue,
-        isVictoryPlanet: adminPlanetInfo.isVictoryPlanet
+        isTargetPlanet: adminPlanetInfo.isTargetPlanet
       });
       await createPlanetReceipt.wait();
       if (adminPlanetInfo.revealLocation) {

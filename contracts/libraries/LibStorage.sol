@@ -36,7 +36,7 @@ struct GameStorage {
     // Game world state
     uint256[] planetIds;
     uint256[] revealedPlanetIds;
-    uint256[] victoryPlanetIds;
+    uint256[] targetPlanetIds;
     address[] playerIds;
     uint256 worldRadius;
     uint256 planetEventsCount;
