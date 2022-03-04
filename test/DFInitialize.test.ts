@@ -177,6 +177,7 @@ describe('DarkForestInit', function () {
       requireValidLocationId: false,
     });
   });
+  
   it('allows admin to create a planet whose location is revealed', async function () {
     const perlin = 20;
     const level = 5;
@@ -248,6 +249,73 @@ describe('DarkForestInit', function () {
     await expect(world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED)))
       .to.emit(world.contract, 'PlayerInitialized')
       .withArgs(world.user1.address, ADMIN_PLANET_CLOAKED.id.toString());
+  });
+
+  it('target planet`s locationId is properly added to targetPlanets array from toml', async function () {
+    let location = "0";
+    for (const adminPlanetInfo of hre.adminPlanets) {
+      console.log(adminPlanetInfo);
+      location = hre.initializers.DISABLE_ZK_CHECKS
+        ? fakeHash(hre.initializers.PLANET_RARITY)(adminPlanetInfo.x, adminPlanetInfo.y).toString()
+        : mimcHash(hre.initializers.PLANETHASH_KEY)(
+            adminPlanetInfo.x,
+            adminPlanetInfo.y
+          ).toString();
+
+      const perlinValue = perlin(
+        { x: adminPlanetInfo.x, y: adminPlanetInfo.y },
+        {
+          key: hre.initializers.SPACETYPE_KEY,
+          scale: hre.initializers.PERLIN_LENGTH_SCALE,
+          mirrorX: hre.initializers.PERLIN_MIRROR_X,
+          mirrorY: hre.initializers.PERLIN_MIRROR_Y,
+          floor: true,
+        }
+      );
+      await world.contract.createPlanet({
+        location: location,
+        perlin: perlinValue,
+        level: adminPlanetInfo.level,
+        planetType: adminPlanetInfo.planetType,
+        requireValidLocationId: adminPlanetInfo.requireValidLocationId,
+        isTargetPlanet: adminPlanetInfo.isTargetPlanet,
+        isSpawnPlanet: adminPlanetInfo.isSpawnPlanet,
+      });
+    }
+
+    const numTargetPlanets = await world.contract.getNTargetPlanets();
+    expect(numTargetPlanets).to.equal(1);
+
+    const targetPlanet = await world.contract.targetPlanetIds(0);
+
+    expect(targetPlanet).to.equal(location);
+  });
+
+  it('allows admin to create a spawn planet', async function () {
+    const perlin = 20;
+    const level = 5;
+    const planetType = 1; // asteroid field
+    const x = 10;
+    const y = 20;
+    await world.contract.createPlanet({
+      location: ADMIN_PLANET_CLOAKED.id,
+      perlin,
+      level,
+      planetType,
+      requireValidLocationId: false,
+      isTargetPlanet: false,
+      isSpawnPlanet: true
+    });
+
+    await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
+
+    
+    const numSpawnPlanets = await world.contract.getNSpawnPlanets();
+    expect(numSpawnPlanets).to.equal(1);
+
+    const spawnPlanet = await world.contract.spawnPlanetIds(0);
+
+    expect(spawnPlanet).to.equal(ADMIN_PLANET_CLOAKED.id);
   });
   
 });
