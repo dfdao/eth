@@ -133,6 +133,7 @@ describe('DarkForestInit', function () {
       level,
       planetType,
       requireValidLocationId: true,
+      isVictoryPlanet: false,
     });
 
     const adminPlanetData = await world.contract.planets(ADMIN_PLANET.id);
@@ -163,6 +164,7 @@ describe('DarkForestInit', function () {
         level,
         planetType,
         requireValidLocationId: true,
+        isVictoryPlanet: false,
       })
     ).to.be.revertedWith('Not a valid planet location');
 
@@ -173,6 +175,7 @@ describe('DarkForestInit', function () {
       level,
       planetType,
       requireValidLocationId: false,
+      isVictoryPlanet: false,
     });
   });
   it('allows admin to create a planet whose location is revealed', async function () {
@@ -187,6 +190,7 @@ describe('DarkForestInit', function () {
       level,
       planetType,
       requireValidLocationId: true,
+      isVictoryPlanet: false,
     });
 
     await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET, x, y));
@@ -210,6 +214,7 @@ describe('DarkForestInit', function () {
       level,
       planetType,
       requireValidLocationId: false,
+      isVictoryPlanet: false,
     });
 
     await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
@@ -219,5 +224,30 @@ describe('DarkForestInit', function () {
     expect(revealedCoords.y.toNumber()).to.equal(y);
     await expect((await world.contract.getNRevealedPlanets()).toNumber()).to.equal(1);
     await expect(await world.contract.revealedPlanetIds(0)).to.be.equal(ADMIN_PLANET_CLOAKED.id);
+  });
+
+  it.only('victory planet`s locationId is properly added to victoryPlanets array', async function () {
+    const perlin = 20;
+    const level = 5;
+    const planetType = 1; // asteroid field
+    const x = 10;
+    const y = 20;
+    await world.contract.createPlanet({
+      location: ADMIN_PLANET_CLOAKED.id,
+      perlin,
+      level,
+      planetType,
+      requireValidLocationId: false,
+      isVictoryPlanet: true,
+    });
+
+    await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
+
+    const numVictoryPlanets = await world.contract.getNVictoryPlanets();
+    expect(numVictoryPlanets).to.equal(1);
+
+    const victoryPlanet = await world.contract.victoryPlanetIds(0);
+
+    expect(victoryPlanet).to.equal(ADMIN_PLANET_CLOAKED.id);
   });
 });

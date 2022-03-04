@@ -137,6 +137,9 @@ contract DFAdminFacet is WithStorage {
                 false
             )
         );
+        if(args.isVictoryPlanet) {
+            gs().victoryPlanetIds.push(args.location);
+        }
         gs().planetIds.push(args.location);
         gs().initializedPlanetCountByLevel[args.level] += 1;
 

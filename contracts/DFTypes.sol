@@ -79,6 +79,7 @@ struct AdminCreatePlanetArgs {
     uint256 level;
     PlanetType planetType;
     bool requireValidLocationId;
+    bool isVictoryPlanet;
 }
 
 struct PlanetEventMetadata {

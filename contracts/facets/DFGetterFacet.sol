@@ -78,6 +78,10 @@ contract DFGetterFacet is WithStorage {
         return gs().revealedPlanetIds[idx];
     }
 
+    function victoryPlanetIds(uint256 idx) public view returns (uint256) {
+        return gs().victoryPlanetIds[idx];
+    }
+
     function playerIds(uint256 idx) public view returns (address) {
         return gs().playerIds[idx];
     }
@@ -130,6 +134,10 @@ contract DFGetterFacet is WithStorage {
 
     function getNRevealedPlanets() public view returns (uint256) {
         return gs().revealedPlanetIds.length;
+    }
+
+    function getNVictoryPlanets() public view returns (uint256) {
+        return gs().victoryPlanetIds.length;
     }
 
     function getNPlayers() public view returns (uint256) {
@@ -209,6 +217,18 @@ contract DFGetterFacet is WithStorage {
         ret = new uint256[](endIdx - startIdx);
         for (uint256 i = startIdx; i < endIdx; i++) {
             ret[i - startIdx] = gs().revealedPlanetIds[i];
+        }
+    }
+
+    function bulkGetVictoryPlanetIds(uint256 startIdx, uint256 endIdx)
+        public
+        view
+        returns (uint256[] memory ret)
+    {
+        // return slice of victoryPlanetIds array from startIdx through endIdx - 1
+        ret = new uint256[](endIdx - startIdx);
+        for (uint256 i = startIdx; i < endIdx; i++) {
+            ret[i - startIdx] = gs().victoryPlanetIds[i];
         }
     }
 

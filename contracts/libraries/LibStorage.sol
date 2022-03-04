@@ -36,6 +36,7 @@ struct GameStorage {
     // Game world state
     uint256[] planetIds;
     uint256[] revealedPlanetIds;
+    uint256[] victoryPlanetIds;
     address[] playerIds;
     uint256 worldRadius;
     uint256 planetEventsCount;
@@ -56,6 +57,9 @@ struct GameStorage {
     mapping(uint256 => Artifact) artifacts;
     // Capture Zones
     uint256 nextChangeBlock;
+    // Arena Mode
+    address[] winners;
+    bool gameover;
 }
 
 // Game config
