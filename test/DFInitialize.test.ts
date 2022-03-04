@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import hre from 'hardhat';
 import { fixtureLoader, makeInitArgs, makeRevealArgs, ZERO_ADDRESS } from './utils/TestUtils';
 import { defaultWorldFixture, World } from './utils/TestWorld';
 import {
@@ -12,6 +13,7 @@ import {
   LVL1_PLANET_NEBULA,
   SPAWN_PLANET_1,
   SPAWN_PLANET_2,
+  VALID_INIT_PERLIN,
 } from './utils/WorldConstants';
 
 describe('DarkForestInit', function () {
@@ -220,4 +222,32 @@ describe('DarkForestInit', function () {
     await expect((await world.contract.getNRevealedPlanets()).toNumber()).to.equal(1);
     await expect(await world.contract.revealedPlanetIds(0)).to.be.equal(ADMIN_PLANET_CLOAKED.id);
   });
+
+  it('allows player to spawn at admin planet that is initialized', async function () {
+    const perlin = VALID_INIT_PERLIN;
+    const level = 0;
+    const planetType = 0; // asteroid field
+    const x = 10;
+    const y = 20;
+    await world.contract.createPlanet({
+      location: ADMIN_PLANET_CLOAKED.id,
+      perlin,
+      level,
+      planetType,
+      requireValidLocationId: false,
+    });
+
+    await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
+
+    const revealedCoords = await world.contract.revealedCoords(ADMIN_PLANET_CLOAKED.id);
+    expect(revealedCoords.x.toNumber()).to.equal(x);
+    expect(revealedCoords.y.toNumber()).to.equal(y);
+    await expect((await world.contract.getNRevealedPlanets()).toNumber()).to.equal(1);
+    await expect(await world.contract.revealedPlanetIds(0)).to.be.equal(ADMIN_PLANET_CLOAKED.id);
+
+    await expect(world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED)))
+      .to.emit(world.contract, 'PlayerInitialized')
+      .withArgs(world.user1.address, ADMIN_PLANET_CLOAKED.id.toString());
+  });
+  
 });
