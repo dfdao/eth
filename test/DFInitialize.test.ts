@@ -1,6 +1,9 @@
 import { expect } from 'chai';
 import { fixtureLoader, makeInitArgs, makeRevealArgs, ZERO_ADDRESS } from './utils/TestUtils';
 import { defaultWorldFixture, World } from './utils/TestWorld';
+import { fakeHash, mimcHash, perlin } from '@darkforest_eth/hashing';
+
+import hre from 'hardhat';
 import {
   ADMIN_PLANET,
   ADMIN_PLANET_CLOAKED,
@@ -134,6 +137,7 @@ describe('DarkForestInit', function () {
       planetType,
       requireValidLocationId: true,
       isTargetPlanet: false,
+      isSpawnPlanet: false
     });
 
     const adminPlanetData = await world.contract.planets(ADMIN_PLANET.id);
@@ -165,6 +169,7 @@ describe('DarkForestInit', function () {
         planetType,
         requireValidLocationId: true,
         isTargetPlanet: false,
+        isSpawnPlanet: false
       })
     ).to.be.revertedWith('Not a valid planet location');
 
@@ -176,6 +181,7 @@ describe('DarkForestInit', function () {
       planetType,
       requireValidLocationId: false,
       isTargetPlanet: false,
+      isSpawnPlanet: false
     });
   });
   it('allows admin to create a planet whose location is revealed', async function () {
@@ -191,6 +197,7 @@ describe('DarkForestInit', function () {
       planetType,
       requireValidLocationId: true,
       isTargetPlanet: false,
+      isSpawnPlanet: false
     });
 
     await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET, x, y));
@@ -215,6 +222,7 @@ describe('DarkForestInit', function () {
       planetType,
       requireValidLocationId: false,
       isTargetPlanet: false,
+      isSpawnPlanet: false
     });
 
     await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
@@ -226,7 +234,52 @@ describe('DarkForestInit', function () {
     await expect(await world.contract.revealedPlanetIds(0)).to.be.equal(ADMIN_PLANET_CLOAKED.id);
   });
 
-  it('target planet`s locationId is properly added to targetPlanets array', async function () {
+  it('target planet`s locationId is properly added to targetPlanets array from toml', async function () {
+    // const perlin = 20;
+    // const level = 5;
+    // const planetType = 1; // asteroid field
+    // const x = 10;
+    // const y = 20;
+    let location = "0";
+    for (const adminPlanetInfo of hre.adminPlanets) {
+      console.log(adminPlanetInfo);
+      location = hre.initializers.DISABLE_ZK_CHECKS
+        ? fakeHash(hre.initializers.PLANET_RARITY)(adminPlanetInfo.x, adminPlanetInfo.y).toString()
+        : mimcHash(hre.initializers.PLANETHASH_KEY)(
+            adminPlanetInfo.x,
+            adminPlanetInfo.y
+          ).toString();
+
+      const perlinValue = perlin(
+        { x: adminPlanetInfo.x, y: adminPlanetInfo.y },
+        {
+          key: hre.initializers.SPACETYPE_KEY,
+          scale: hre.initializers.PERLIN_LENGTH_SCALE,
+          mirrorX: hre.initializers.PERLIN_MIRROR_X,
+          mirrorY: hre.initializers.PERLIN_MIRROR_Y,
+          floor: true,
+        }
+      );
+      await world.contract.createPlanet({
+        location: location,
+        perlin: perlinValue,
+        level: adminPlanetInfo.level,
+        planetType: adminPlanetInfo.planetType,
+        requireValidLocationId: adminPlanetInfo.requireValidLocationId,
+        isTargetPlanet: adminPlanetInfo.isTargetPlanet,
+        isSpawnPlanet: adminPlanetInfo.isSpawnPlanet,
+      });
+    }
+
+    const numTargetPlanets = await world.contract.getNTargetPlanets();
+    expect(numTargetPlanets).to.equal(1);
+
+    const targetPlanet = await world.contract.targetPlanetIds(0);
+
+    expect(targetPlanet).to.equal(location);
+  });
+
+  it.only('allows admin to create a spawn planet', async function () {
     const perlin = 20;
     const level = 5;
     const planetType = 1; // asteroid field
@@ -238,16 +291,18 @@ describe('DarkForestInit', function () {
       level,
       planetType,
       requireValidLocationId: false,
-      isTargetPlanet: true,
+      isTargetPlanet: false,
+      isSpawnPlanet: true
     });
 
     await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
 
-    const numTargetPlanets = await world.contract.getNTargetPlanets();
-    expect(numTargetPlanets).to.equal(1);
+    
+    const numSpawnPlanets = await world.contract.getNSpawnPlanets();
+    expect(numSpawnPlanets).to.equal(1);
 
-    const targetPlanet = await world.contract.targetPlanetIds(0);
+    const spawnPlanet = await world.contract.spawnPlanetIds(0);
 
-    expect(targetPlanet).to.equal(ADMIN_PLANET_CLOAKED.id);
+    expect(spawnPlanet).to.equal(ADMIN_PLANET_CLOAKED.id);
   });
 });
