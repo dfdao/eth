@@ -144,3 +144,12 @@ PLANET_TYPE_WEIGHTS = [
 ##########################
 # Planets to add to game #
 ##########################
+  [[planets]]
+  x = 0
+  y = 0
+  level = 9
+  planetType = 3
+  requireValidLocationId = false
+  revealLocation = true
+  isTargetPlanet = true
+  isSpawnPlanet = true

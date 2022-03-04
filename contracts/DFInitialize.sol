@@ -197,6 +197,8 @@ contract DFInitialize is WithStorage {
         gs().paused = initArgs.START_PAUSED;
         gs().TOKEN_MINT_END_TIMESTAMP = initArgs.TOKEN_MINT_END_TIMESTAMP;
 
+        gs().gameover = false;
+
         initializeDefaults();
         initializeUpgrades();
 

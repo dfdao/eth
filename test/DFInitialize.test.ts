@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import hre from 'hardhat';
 import { fixtureLoader, makeInitArgs, makeRevealArgs, ZERO_ADDRESS } from './utils/TestUtils';
 import { defaultWorldFixture, World } from './utils/TestWorld';
+import { fakeHash, mimcHash, perlin } from '@darkforest_eth/hashing';
 import {
   ADMIN_PLANET,
   ADMIN_PLANET_CLOAKED,
@@ -135,6 +136,8 @@ describe('DarkForestInit', function () {
       level,
       planetType,
       requireValidLocationId: true,
+      isTargetPlanet: false,
+      isSpawnPlanet: false
     });
 
     const adminPlanetData = await world.contract.planets(ADMIN_PLANET.id);
@@ -165,6 +168,8 @@ describe('DarkForestInit', function () {
         level,
         planetType,
         requireValidLocationId: true,
+        isTargetPlanet: false,
+        isSpawnPlanet: false
       })
     ).to.be.revertedWith('Not a valid planet location');
 
@@ -175,6 +180,8 @@ describe('DarkForestInit', function () {
       level,
       planetType,
       requireValidLocationId: false,
+      isTargetPlanet: false,
+      isSpawnPlanet: false
     });
   });
   
@@ -190,6 +197,8 @@ describe('DarkForestInit', function () {
       level,
       planetType,
       requireValidLocationId: true,
+      isTargetPlanet: false,
+      isSpawnPlanet: false
     });
 
     await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET, x, y));
@@ -213,6 +222,8 @@ describe('DarkForestInit', function () {
       level,
       planetType,
       requireValidLocationId: false,
+      isTargetPlanet: false,
+      isSpawnPlanet: false
     });
 
     await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));

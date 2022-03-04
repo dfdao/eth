@@ -78,6 +78,14 @@ contract DFGetterFacet is WithStorage {
         return gs().revealedPlanetIds[idx];
     }
 
+    function targetPlanetIds(uint256 idx) public view returns (uint256) {
+        return gs().targetPlanetIds[idx];
+    }
+
+    function spawnPlanetIds(uint256 idx) public view returns (uint256) {
+        return gs().spawnPlanetIds[idx];
+    }
+
     function playerIds(uint256 idx) public view returns (address) {
         return gs().playerIds[idx];
     }
@@ -130,6 +138,14 @@ contract DFGetterFacet is WithStorage {
 
     function getNRevealedPlanets() public view returns (uint256) {
         return gs().revealedPlanetIds.length;
+    }
+
+    function getNTargetPlanets() public view returns (uint256) {
+        return gs().targetPlanetIds.length;
+    }
+    
+    function getNSpawnPlanets() public view returns (uint256) {
+        return gs().spawnPlanetIds.length;
     }
 
     function getNPlayers() public view returns (uint256) {
@@ -209,6 +225,30 @@ contract DFGetterFacet is WithStorage {
         ret = new uint256[](endIdx - startIdx);
         for (uint256 i = startIdx; i < endIdx; i++) {
             ret[i - startIdx] = gs().revealedPlanetIds[i];
+        }
+    }
+
+    function bulkGetTargetPlanetIds(uint256 startIdx, uint256 endIdx)
+        public
+        view
+        returns (uint256[] memory ret)
+    {
+        // return slice of targetPlanetIds array from startIdx through endIdx - 1
+        ret = new uint256[](endIdx - startIdx);
+        for (uint256 i = startIdx; i < endIdx; i++) {
+            ret[i - startIdx] = gs().targetPlanetIds[i];
+        }
+    }
+
+    function bulkGetSpawnPlanetIds(uint256 startIdx, uint256 endIdx)
+        public
+        view
+        returns (uint256[] memory ret)
+    {
+        // return slice of spawnPlanetIds array from startIdx through endIdx - 1
+        ret = new uint256[](endIdx - startIdx);
+        for (uint256 i = startIdx; i < endIdx; i++) {
+            ret[i - startIdx] = gs().spawnPlanetIds[i];
         }
     }
 

@@ -2,18 +2,7 @@
 pragma solidity ^0.8.0;
 
 // Type imports
-import {
-    Planet,
-    PlanetExtendedInfo,
-    PlanetExtendedInfo2,
-    PlanetEventMetadata,
-    PlanetDefaultStats,
-    Upgrade,
-    RevealedCoords,
-    Player,
-    ArrivalData,
-    Artifact
-} from "../DFTypes.sol";
+import {Planet, PlanetExtendedInfo, PlanetExtendedInfo2, PlanetEventMetadata, PlanetDefaultStats, Upgrade, RevealedCoords, Player, ArrivalData, Artifact} from "../DFTypes.sol";
 
 struct WhitelistStorage {
     bool enabled;
@@ -36,6 +25,8 @@ struct GameStorage {
     // Game world state
     uint256[] planetIds;
     uint256[] revealedPlanetIds;
+    uint256[] targetPlanetIds;
+    uint256[] spawnPlanetIds;
     address[] playerIds;
     uint256 worldRadius;
     uint256 planetEventsCount;
@@ -56,6 +47,9 @@ struct GameStorage {
     mapping(uint256 => Artifact) artifacts;
     // Capture Zones
     uint256 nextChangeBlock;
+    // Arena Mode
+    address[] winners;
+    bool gameover;
 }
 
 // Game config

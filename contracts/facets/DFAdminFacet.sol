@@ -137,6 +137,13 @@ contract DFAdminFacet is WithStorage {
                 false
             )
         );
+        if(args.isTargetPlanet == true) {
+            gs().targetPlanetIds.push(args.location);
+        }
+
+        if(args.isSpawnPlanet == true) {
+            gs().spawnPlanetIds.push(args.location);
+        }
         gs().planetIds.push(args.location);
         gs().initializedPlanetCountByLevel[args.level] += 1;
 
