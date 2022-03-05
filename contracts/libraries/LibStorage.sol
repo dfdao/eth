@@ -54,7 +54,7 @@ struct GameStorage {
     // Capture Zones
     uint256 nextChangeBlock;
     // Arena Mode
-    address[] winners;
+    address winner;
     bool gameover;
 }
 
@@ -114,6 +114,8 @@ struct GameConstants {
     uint256[10] CAPTURE_ZONE_PLANET_LEVEL_SCORE;
     uint256 CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED;
     uint256 CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
+    // Victory Planet
+    uint256 TARGET_PLANET_HOLD_BLOCKS_REQUIRED;
 }
 
 // SNARK keys and perlin params

@@ -32,9 +32,9 @@ ABANDON_SPEED_CHANGE_PERCENT = 150
 # The range boost a movement receives when abandoning a planet.
 ABANDON_RANGE_CHANGE_PERCENT = 150
 
-##############
+#################
 # Capture zones #
-##############
+#################
 CAPTURE_ZONES_ENABLED = true
 # How often zones change location. Max 255.
 CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL = 255
@@ -140,6 +140,10 @@ PLANET_TYPE_WEIGHTS = [
   ],
 ]
 
+##############
+# Arena Mode #
+##############
+TARGET_PLANET_HOLD_BLOCKS_REQUIRED = 172
 
 ##########################
 # Planets to add to game #

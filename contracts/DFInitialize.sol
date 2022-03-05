@@ -107,6 +107,9 @@ struct InitArgs {
     uint256[10] CAPTURE_ZONE_PLANET_LEVEL_SCORE;
     uint256 CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED;
     uint256 CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
+    // Target Planet
+    uint256 TARGET_PLANET_HOLD_BLOCKS_REQUIRED;
+
 }
 
 contract DFInitialize is WithStorage {
@@ -189,6 +192,9 @@ contract DFInitialize is WithStorage {
             .CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED;
         gameConstants().CAPTURE_ZONES_PER_5000_WORLD_RADIUS = initArgs
             .CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
+            
+        gameConstants().TARGET_PLANET_HOLD_BLOCKS_REQUIRED = initArgs
+            .TARGET_PLANET_HOLD_BLOCKS_REQUIRED;
 
         gs().nextChangeBlock = block.number + initArgs.CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL;
 

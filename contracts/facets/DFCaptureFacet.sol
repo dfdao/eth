@@ -36,6 +36,7 @@ contract DFCaptureFacet is WithStorage {
 
     event PlanetInvaded(address player, uint256 loc);
     event PlanetCaptured(address player, uint256 loc);
+    event Gameover(address winner);
 
     struct Zone {
         int256 x;
@@ -123,15 +124,21 @@ contract DFCaptureFacet is WithStorage {
         PlanetExtendedInfo memory planetExtendedInfo = gs().planetsExtendedInfo[locationId];
         PlanetExtendedInfo2 storage planetExtendedInfo2 = gs().planetsExtendedInfo2[locationId];
 
-        require(planet.owner == msg.sender, "you can only capture planets you own");
+        require(gs().targetPlanets[locationId], "you can only claim victory with a target planet");
+        require(planet.owner == msg.sender, "you can only claim victory with planets you own");
         require(!planetExtendedInfo.destroyed, "planet is destroyed");
 
         require(
             planetExtendedInfo2.invadeStartBlock +
-                gameConstants().CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED <=
+                gameConstants().TARGET_PLANET_HOLD_BLOCKS_REQUIRED <=
                 block.number,
-            "you have not held the planet long enough to capture it"
+            "you have not held the planet long enough to claim victory with it"
         );
+        
+        gs().gameover = true;
+        gs().winner = msg.sender;
+        emit Gameover(msg.sender);
+
     }
 
     function planetInCaptureZone(uint256 x, uint256 y) public returns (bool) {
