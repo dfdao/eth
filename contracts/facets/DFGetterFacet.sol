@@ -94,6 +94,14 @@ contract DFGetterFacet is WithStorage {
         return gs().planets[key];
     }
 
+    function targetPlanets(uint256 location) public view returns (bool) {
+        return gs().targetPlanets[location];
+    }
+
+        function spawnPlanets(uint256 location) public view returns (bool) {
+        return gs().spawnPlanets[location];
+    }
+
     function revealedCoords(uint256 key) public view returns (RevealedCoords memory) {
         return gs().revealedCoords[key];
     }

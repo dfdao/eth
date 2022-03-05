@@ -54,9 +54,12 @@ contract DFCaptureFacet is WithStorage {
         uint256[2] memory _c,
         uint256[9] memory _input
     ) public onlyWhitelisted notPaused {
-        require(gameConstants().CAPTURE_ZONES_ENABLED, "capture zones are disabled");
-
         uint256 locationId = _input[0];
+
+        require(
+            gameConstants().CAPTURE_ZONES_ENABLED || gs().targetPlanets[locationId],
+            "capture zones are disabled and planet is not a target"
+        );
 
         DFCoreFacet(address(this)).checkRevealProof(_a, _b, _c, _input);
 
@@ -114,11 +117,28 @@ contract DFCaptureFacet is WithStorage {
         emit PlanetCaptured(msg.sender, locationId);
     }
 
+    function claimVictory(uint256 locationId) public onlyWhitelisted notPaused {
+        LibPlanet.refreshPlanet(locationId);
+        Planet memory planet = gs().planets[locationId];
+        PlanetExtendedInfo memory planetExtendedInfo = gs().planetsExtendedInfo[locationId];
+        PlanetExtendedInfo2 storage planetExtendedInfo2 = gs().planetsExtendedInfo2[locationId];
+
+        require(planet.owner == msg.sender, "you can only capture planets you own");
+        require(!planetExtendedInfo.destroyed, "planet is destroyed");
+
+        require(
+            planetExtendedInfo2.invadeStartBlock +
+                gameConstants().CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED <=
+                block.number,
+            "you have not held the planet long enough to capture it"
+        );
+    }
+
     function planetInCaptureZone(uint256 x, uint256 y) public returns (bool) {
         setNextGenerationBlock();
 
-        uint256 generationBlock =
-            gs().nextChangeBlock - gameConstants().CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL;
+        uint256 generationBlock = gs().nextChangeBlock -
+            gameConstants().CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL;
         bytes32 generationBlockHash = blockhash(generationBlock);
 
         int256 planetX = getIntFromUInt(x);
@@ -182,8 +202,7 @@ contract DFCaptureFacet is WithStorage {
     }
 
     function getIntFromUInt(uint256 n) public pure returns (int256) {
-        uint256 LOCATION_ID_UB =
-            21888242871839275222246405745257275088548364400416034343698204186575808495617;
+        uint256 LOCATION_ID_UB = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
         require(n < LOCATION_ID_UB, "Number outside of AbsoluteModP Range");
         if (n > (LOCATION_ID_UB / 2)) {
             return 0 - int256(LOCATION_ID_UB - n);

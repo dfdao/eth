@@ -25,14 +25,20 @@ struct GameStorage {
     // Game world state
     uint256[] planetIds;
     uint256[] revealedPlanetIds;
+
+    // These are ratchet solidity sets, might add to extended info
     uint256[] targetPlanetIds;
     uint256[] spawnPlanetIds;
+    mapping(uint256 => bool) targetPlanets;
+    mapping(uint256 => bool) spawnPlanets;
+
     address[] playerIds;
     uint256 worldRadius;
     uint256 planetEventsCount;
     uint256 miscNonce;
     mapping(uint256 => Planet) planets;
     mapping(uint256 => RevealedCoords) revealedCoords;
+
     mapping(uint256 => PlanetExtendedInfo) planetsExtendedInfo;
     mapping(uint256 => PlanetExtendedInfo2) planetsExtendedInfo2;
     mapping(uint256 => uint256) artifactIdToPlanetId;

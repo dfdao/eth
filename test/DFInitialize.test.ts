@@ -272,14 +272,15 @@ describe('DarkForestInit', function () {
     }
 
     const numTargetPlanets = await world.contract.getNTargetPlanets();
+    const targetPlanetId = await world.contract.targetPlanetIds(0);
+    const targetPlanet = await world.contract.targetPlanets(location);
+
     expect(numTargetPlanets).to.equal(1);
-
-    const targetPlanet = await world.contract.targetPlanetIds(0);
-
-    expect(targetPlanet).to.equal(location);
+    expect(targetPlanetId).to.equal(location);
+    expect(targetPlanet).to.equal(true);
   });
 
-  it.only('allows admin to create a spawn planet', async function () {
+  it('allows admin to create a spawn planet', async function () {
     const perlin = 20;
     const level = 5;
     const planetType = 1; // asteroid field
@@ -299,10 +300,12 @@ describe('DarkForestInit', function () {
 
     
     const numSpawnPlanets = await world.contract.getNSpawnPlanets();
+    const spawnPlanetId = await world.contract.spawnPlanetIds(0);
+    const spawnPlanet = await world.contract.spawnPlanets(ADMIN_PLANET_CLOAKED.id);
+
     expect(numSpawnPlanets).to.equal(1);
+    expect(spawnPlanetId).to.equal(ADMIN_PLANET_CLOAKED.id);
+    expect(spawnPlanet).to.equal(true);
 
-    const spawnPlanet = await world.contract.spawnPlanetIds(0);
-
-    expect(spawnPlanet).to.equal(ADMIN_PLANET_CLOAKED.id);
   });
 });
