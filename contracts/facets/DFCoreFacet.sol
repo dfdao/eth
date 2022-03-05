@@ -148,30 +148,31 @@ contract DFCoreFacet is WithStorage {
         uint256 _perlin = _input[1];
         uint256 _radius = _input[2];
 
-        bool manualSpawn = false;
-        uint256[] memory revealedIds = gs().revealedPlanetIds;
-        console.log('revealed Ids Length %s', revealedIds.length);
-        // Assumes planets are already intialized by createPlanets
-        if(revealedIds.length > 0) {
-            for (uint i = 0; i < revealedIds.length; i++) {
-                console.log('testing revealed Id %s', revealedIds[i]);
-                Planet storage _planet = gs().planets[revealedId[i]];
-                if(_location == revealedIds[i] && !_planet.isHomePlanet) {
-                    console.log('found id match');
-                    manualSpawn = true;
+        if(gameConstants().MANUAL_SPAWN) {
+            // TODO: Move this logic to LibPlanet initializeManualSpawn or smthing
+            uint256[] memory spawnIds = gs().spawnPlanetIds;
+            bool foundSpawn = false;
+
+            // Check planets are already intialized by createPlanets
+            require(spawnIds.length > 0, "No manual spawn planets");
+
+            for (uint i = 0; i < spawnIds.length; i++) {
+                console.log('testing revealed Id %s', spawnIds[i]);
+                Planet storage _planet = gs().planets[spawnIds[i]];
+                if(_location == spawnIds[i] && !_planet.isHomePlanet) {
+                    foundSpawn = true;
                     // get planet from storage and set it as homePlanet
-                    gs().planets[planetId].isHomePlanet = true;
+                    _planet.isHomePlanet = true;
                     break;
                 }
             }
-            // If we don't find a spawn planet, revert with error No Available Manual Spawn Planet Found.
+            require(foundSpawn, "No available manual spawn planet found");                
         }
-
-        // ignore these for manual spawn test
-        if(!manualSpawn) {
+        else {
             LibPlanet.initializePlanet(_a, _b, _c, _input, true);
         }
 
+        // Checks player hasn't already initialized and confirms PERLIN.
         require(LibPlanet.checkPlayerInit(_location, _perlin, _radius));
 
         // Initialize player data

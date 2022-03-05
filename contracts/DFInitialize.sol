@@ -45,6 +45,7 @@ import {PlanetDefaultStats, Upgrade, UpgradeBranch} from "./DFTypes.sol";
 struct InitArgs {
     bool START_PAUSED;
     bool ADMIN_CAN_ADD_PLANETS;
+    bool MANUAL_SPAWN;
     uint256 LOCATION_REVEAL_COOLDOWN;
     uint256 TOKEN_MINT_END_TIMESTAMP;
     bool WORLD_RADIUS_LOCKED;
@@ -152,6 +153,7 @@ contract DFInitialize is WithStorage {
         snarkConstants().PERLIN_LENGTH_SCALE = initArgs.PERLIN_LENGTH_SCALE;
 
         gameConstants().ADMIN_CAN_ADD_PLANETS = initArgs.ADMIN_CAN_ADD_PLANETS;
+        gameConstants().MANUAL_SPAWN = initArgs.MANUAL_SPAWN;
         gameConstants().WORLD_RADIUS_LOCKED = initArgs.WORLD_RADIUS_LOCKED;
         gameConstants().WORLD_RADIUS_MIN = initArgs.WORLD_RADIUS_MIN;
         gameConstants().MAX_NATURAL_PLANET_LEVEL = initArgs.MAX_NATURAL_PLANET_LEVEL;

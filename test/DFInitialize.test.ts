@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import hre from 'hardhat';
 import { fixtureLoader, makeInitArgs, makeRevealArgs, ZERO_ADDRESS } from './utils/TestUtils';
-import { defaultWorldFixture, World } from './utils/TestWorld';
+import { defaultWorldFixture, manualSpawnFixture, World } from './utils/TestWorld';
 import { fakeHash, mimcHash, perlin } from '@darkforest_eth/hashing';
 import {
   ADMIN_PLANET,
@@ -235,31 +235,14 @@ describe('DarkForestInit', function () {
     await expect(await world.contract.revealedPlanetIds(0)).to.be.equal(ADMIN_PLANET_CLOAKED.id);
   });
 
-  it('allows player to spawn at admin planet that is initialized', async function () {
-    const perlin = VALID_INIT_PERLIN;
-    const level = 0;
-    const planetType = 0; // asteroid field
-    const x = 10;
-    const y = 20;
-    await world.contract.createPlanet({
-      location: ADMIN_PLANET_CLOAKED.id,
-      perlin,
-      level,
-      planetType,
-      requireValidLocationId: false,
-    });
+});
 
-    await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
+describe('DarkForestSpawnandTarget', function () {
 
-    const revealedCoords = await world.contract.revealedCoords(ADMIN_PLANET_CLOAKED.id);
-    expect(revealedCoords.x.toNumber()).to.equal(x);
-    expect(revealedCoords.y.toNumber()).to.equal(y);
-    await expect((await world.contract.getNRevealedPlanets()).toNumber()).to.equal(1);
-    await expect(await world.contract.revealedPlanetIds(0)).to.be.equal(ADMIN_PLANET_CLOAKED.id);
+  let world: World;
 
-    await expect(world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED)))
-      .to.emit(world.contract, 'PlayerInitialized')
-      .withArgs(world.user1.address, ADMIN_PLANET_CLOAKED.id.toString());
+  beforeEach('load fixture', async function () {
+    world = await fixtureLoader(manualSpawnFixture);
   });
 
   it('target planet`s locationId is properly added to targetPlanets array from toml', async function () {
@@ -295,11 +278,12 @@ describe('DarkForestInit', function () {
     }
 
     const numTargetPlanets = await world.contract.getNTargetPlanets();
+    console.log(`numTargetPlanets`, numTargetPlanets);
     expect(numTargetPlanets).to.equal(1);
 
-    const targetPlanet = await world.contract.targetPlanetIds(0);
+    // const targetPlanet = await world.contract.targetPlanetIds(0);
 
-    expect(targetPlanet).to.equal(location);
+    // expect(targetPlanet).to.equal(location);
   });
 
   it('allows admin to create a spawn planet', async function () {
@@ -327,6 +311,59 @@ describe('DarkForestInit', function () {
     const spawnPlanet = await world.contract.spawnPlanetIds(0);
 
     expect(spawnPlanet).to.equal(ADMIN_PLANET_CLOAKED.id);
+  });
+
+  it('allows player to spawn at admin planet that is initialized', async function () {
+    const perlin = VALID_INIT_PERLIN;
+    const level = 0;
+    const planetType = 0; // planet
+    await world.contract.createPlanet({
+      location: ADMIN_PLANET_CLOAKED.id,
+      perlin,
+      level,
+      planetType,
+      requireValidLocationId: false,
+      isTargetPlanet: false,
+      isSpawnPlanet: true
+    });
+
+    const toPlanetExtended = await world.contract.planetsExtendedInfo(ADMIN_PLANET_CLOAKED.id);
+    expect(toPlanetExtended.isInitialized).to.equal(true);
+
+    await expect(world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED)))
+      .to.emit(world.contract, 'PlayerInitialized')
+      .withArgs(world.user1.address, ADMIN_PLANET_CLOAKED.id.toString());
+  });
+
+  it('reverts if no spawn planets', async function () {
+    await expect(world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED)))
+      .to.be.revertedWith('No manual spawn planets')
+  });
+
+  it('reverts if all spawn planets are initialized', async function () {
+    const perlin = VALID_INIT_PERLIN;
+    const level = 0;
+    const planetType = 0; // planet
+    await world.contract.createPlanet({
+      location: ADMIN_PLANET_CLOAKED.id,
+      perlin,
+      level,
+      planetType,
+      requireValidLocationId: false,
+      isTargetPlanet: false,
+      isSpawnPlanet: true
+    });
+
+    const toPlanetExtended = await world.contract.planetsExtendedInfo(ADMIN_PLANET_CLOAKED.id);
+    expect(toPlanetExtended.isInitialized).to.equal(true);
+
+    await expect(world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED)))
+      .to.emit(world.contract, 'PlayerInitialized')
+      .withArgs(world.user1.address, ADMIN_PLANET_CLOAKED.id.toString());    
+
+    await expect(world.user2Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED)))
+    .to.be.revertedWith('No available manual spawn planet found');   
+  
   });
   
 });

@@ -23,6 +23,11 @@ export const noPlanetTransferInitializers = settings.parse(decodeInitializers, {
   PLANET_TRANSFER_ENABLED: false,
 });
 
+export const manualSpawnInitializers = settings.parse(decodeInitializers, {
+  ...defaultInitializerValues,
+  MANUAL_SPAWN: true,
+});
+
 // This builds a fake HRE-like object used to initialize the test contracts
 export const target4Initializers = settings.parse(decodeInitializers, {
   DISABLE_ZK_CHECKS: true,
