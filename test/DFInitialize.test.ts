@@ -1,9 +1,8 @@
 import { expect } from 'chai';
-import { fixtureLoader, makeInitArgs, makeRevealArgs, ZERO_ADDRESS } from './utils/TestUtils';
-import { defaultWorldFixture, World } from './utils/TestWorld';
-import { fakeHash, mimcHash, perlin } from '@darkforest_eth/hashing';
-
 import hre from 'hardhat';
+import { fixtureLoader, makeInitArgs, makeRevealArgs, ZERO_ADDRESS } from './utils/TestUtils';
+import { defaultWorldFixture, manualSpawnFixture, World } from './utils/TestWorld';
+import { fakeHash, mimcHash, perlin } from '@darkforest_eth/hashing';
 import {
   ADMIN_PLANET,
   ADMIN_PLANET_CLOAKED,
@@ -15,6 +14,7 @@ import {
   LVL1_PLANET_NEBULA,
   SPAWN_PLANET_1,
   SPAWN_PLANET_2,
+  VALID_INIT_PERLIN,
 } from './utils/WorldConstants';
 
 describe('DarkForestInit', function () {
@@ -184,6 +184,7 @@ describe('DarkForestInit', function () {
       isSpawnPlanet: false
     });
   });
+  
   it('allows admin to create a planet whose location is revealed', async function () {
     const perlin = 20;
     const level = 5;
@@ -234,12 +235,17 @@ describe('DarkForestInit', function () {
     await expect(await world.contract.revealedPlanetIds(0)).to.be.equal(ADMIN_PLANET_CLOAKED.id);
   });
 
+});
+
+describe('DarkForestSpawnandTarget', function () {
+
+  let world: World;
+
+  beforeEach('load fixture', async function () {
+    world = await fixtureLoader(manualSpawnFixture);
+  });
+
   it('target planet`s locationId is properly added to targetPlanets array from toml', async function () {
-    // const perlin = 20;
-    // const level = 5;
-    // const planetType = 1; // asteroid field
-    // const x = 10;
-    // const y = 20;
     let location = "0";
     for (const adminPlanetInfo of hre.adminPlanets) {
       console.log(adminPlanetInfo);

@@ -14,6 +14,7 @@ import {LibPlanet} from "../libraries/LibPlanet.sol";
 
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
+import 'hardhat/console.sol';
 
 // Type imports
 import {
@@ -143,12 +144,35 @@ contract DFCoreFacet is WithStorage {
         uint256[2] memory _c,
         uint256[8] memory _input
     ) public onlyWhitelisted returns (uint256) {
-        LibPlanet.initializePlanet(_a, _b, _c, _input, true);
-
         uint256 _location = _input[0];
         uint256 _perlin = _input[1];
         uint256 _radius = _input[2];
 
+        if(gameConstants().MANUAL_SPAWN) {
+            // TODO: Move this logic to LibPlanet initializeManualSpawn or smthing
+            uint256[] memory spawnIds = gs().spawnPlanetIds;
+            bool foundSpawn = false;
+
+            // Check planets are already intialized by createPlanets
+            require(spawnIds.length > 0, "No manual spawn planets");
+
+            for (uint i = 0; i < spawnIds.length; i++) {
+                console.log('testing revealed Id %s', spawnIds[i]);
+                Planet storage _planet = gs().planets[spawnIds[i]];
+                if(_location == spawnIds[i] && !_planet.isHomePlanet) {
+                    foundSpawn = true;
+                    // get planet from storage and set it as homePlanet
+                    _planet.isHomePlanet = true;
+                    break;
+                }
+            }
+            require(foundSpawn, "No available manual spawn planet found");                
+        }
+        else {
+            LibPlanet.initializePlanet(_a, _b, _c, _input, true);
+        }
+
+        // Checks player hasn't already initialized and confirms PERLIN.
         require(LibPlanet.checkPlayerInit(_location, _perlin, _radius));
 
         // Initialize player data

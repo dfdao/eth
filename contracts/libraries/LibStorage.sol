@@ -61,6 +61,7 @@ struct GameStorage {
 // Game config
 struct GameConstants {
     bool ADMIN_CAN_ADD_PLANETS;
+    bool MANUAL_SPAWN;
     bool WORLD_RADIUS_LOCKED;
     uint256 WORLD_RADIUS_MIN;
     uint256 MAX_NATURAL_PLANET_LEVEL;
