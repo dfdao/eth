@@ -127,6 +127,7 @@ contract DFCaptureFacet is WithStorage {
         PlanetExtendedInfo memory planetExtendedInfo = gs().planetsExtendedInfo[locationId];
         PlanetExtendedInfo2 memory planetExtendedInfo2 = gs().planetsExtendedInfo2[locationId];
 
+        require(!gs().gameover, "cannot claim victory when game is over");
         require(gs().targetPlanets[locationId], "you can only claim victory with a target planet");
         require(planet.owner == msg.sender, "you can only claim victory with planets you own");
         require(!planetExtendedInfo.destroyed, "planet is destroyed");
