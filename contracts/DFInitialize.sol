@@ -192,7 +192,7 @@ contract DFInitialize is WithStorage {
             .CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED;
         gameConstants().CAPTURE_ZONES_PER_5000_WORLD_RADIUS = initArgs
             .CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
-            
+
         gameConstants().TARGET_PLANET_HOLD_BLOCKS_REQUIRED = initArgs
             .TARGET_PLANET_HOLD_BLOCKS_REQUIRED;
 
@@ -204,6 +204,7 @@ contract DFInitialize is WithStorage {
         gs().TOKEN_MINT_END_TIMESTAMP = initArgs.TOKEN_MINT_END_TIMESTAMP;
 
         gs().gameover = false;
+        gs().winner = 0x0000000000000000000000000000000000000000;
 
         initializeDefaults();
         initializeUpgrades();

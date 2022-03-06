@@ -192,11 +192,15 @@ export function makeFindArtifactArgs(
  */
 export async function increaseBlockchainTime(interval = LARGE_INTERVAL) {
   await ethers.provider.send('evm_increaseTime', [interval]);
-  await ethers.provider.send('evm_mine', []);
+  for (let i = 0; i < 50; i++) await ethers.provider.send('evm_mine', []);
 }
 
 export async function getCurrentTime() {
   return (await ethers.provider.getBlock('latest')).timestamp;
+}
+
+export async function getCurrentBlock() {
+  return await ethers.provider.getBlock('latest');
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

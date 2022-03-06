@@ -64,7 +64,10 @@ contract DFCaptureFacet is WithStorage {
 
         DFCoreFacet(address(this)).checkRevealProof(_a, _b, _c, _input);
 
-        require(planetInCaptureZone(_input[2], _input[3]), "planet is not in capture zone");
+        require(
+            planetInCaptureZone(_input[2], _input[3]) || gs().targetPlanets[locationId],
+            "planet is not in capture zone and is not a target planet"
+        );
 
         LibPlanet.refreshPlanet(locationId);
         Planet memory planet = gs().planets[locationId];
@@ -122,11 +125,15 @@ contract DFCaptureFacet is WithStorage {
         LibPlanet.refreshPlanet(locationId);
         Planet memory planet = gs().planets[locationId];
         PlanetExtendedInfo memory planetExtendedInfo = gs().planetsExtendedInfo[locationId];
-        PlanetExtendedInfo2 storage planetExtendedInfo2 = gs().planetsExtendedInfo2[locationId];
+        PlanetExtendedInfo2 memory planetExtendedInfo2 = gs().planetsExtendedInfo2[locationId];
 
         require(gs().targetPlanets[locationId], "you can only claim victory with a target planet");
         require(planet.owner == msg.sender, "you can only claim victory with planets you own");
         require(!planetExtendedInfo.destroyed, "planet is destroyed");
+        require(
+            planetExtendedInfo2.invader != address(0),
+            "you must invade the planet before capturing"
+        );
 
         require(
             planetExtendedInfo2.invadeStartBlock +
@@ -134,11 +141,10 @@ contract DFCaptureFacet is WithStorage {
                 block.number,
             "you have not held the planet long enough to claim victory with it"
         );
-        
+
         gs().gameover = true;
         gs().winner = msg.sender;
         emit Gameover(msg.sender);
-
     }
 
     function planetInCaptureZone(uint256 x, uint256 y) public returns (bool) {
