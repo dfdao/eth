@@ -34,7 +34,7 @@ contract DFCaptureFacet is WithStorage {
         _;
     }
 
-    event PlanetInvaded(address player, uint256 loc);
+    event PlanetInvaded(address player, uint256 loc, bool isTarget);
     event PlanetCaptured(address player, uint256 loc);
     event Gameover(address winner);
 
@@ -56,16 +56,16 @@ contract DFCaptureFacet is WithStorage {
         uint256[9] memory _input
     ) public onlyWhitelisted notPaused {
         uint256 locationId = _input[0];
-
+        bool isTarget = gs().targetPlanets[locationId];
         require(
-            gameConstants().CAPTURE_ZONES_ENABLED || gs().targetPlanets[locationId],
+            gameConstants().CAPTURE_ZONES_ENABLED || isTarget,
             "capture zones are disabled and planet is not a target"
         );
 
         DFCoreFacet(address(this)).checkRevealProof(_a, _b, _c, _input);
 
         require(
-            planetInCaptureZone(_input[2], _input[3]) || gs().targetPlanets[locationId],
+            planetInCaptureZone(_input[2], _input[3]) || isTarget,
             "planet is not in capture zone and is not a target planet"
         );
 
@@ -82,7 +82,7 @@ contract DFCaptureFacet is WithStorage {
         planetExtendedInfo2.invader = msg.sender;
         planetExtendedInfo2.invadeStartBlock = block.number;
 
-        emit PlanetInvaded(msg.sender, locationId);
+        emit PlanetInvaded(msg.sender, locationId, isTarget);
     }
 
     function capturePlanet(uint256 locationId) public onlyWhitelisted notPaused {

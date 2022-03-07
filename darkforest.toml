@@ -7,7 +7,7 @@ ADMIN_CAN_ADD_PLANETS = true
 TOKEN_MINT_END_TIMESTAMP = 2022-03-01T05:00:00.000Z
 WORLD_RADIUS_LOCKED = false
 WORLD_RADIUS_MIN = 12_000
-MANUAL_SPAWN = false
+MANUAL_SPAWN = true
 
 ##################################
 # SNARK keys & Perlin parameters #
@@ -36,7 +36,7 @@ ABANDON_RANGE_CHANGE_PERCENT = 150
 #################
 # Capture zones #
 #################
-CAPTURE_ZONES_ENABLED = true
+CAPTURE_ZONES_ENABLED = false
 # How often zones change location. Max 255.
 CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL = 255
 # How big the capture zones are
@@ -152,9 +152,9 @@ TARGET_PLANET_HOLD_BLOCKS_REQUIRED = 100
   [[planets]]
   x = 0
   y = 0
-  level = 9
+  level = 0
   planetType = 3
   requireValidLocationId = false
   revealLocation = true
-  isTargetPlanet = true
+  isTargetPlanet = false
   isSpawnPlanet = true
