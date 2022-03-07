@@ -9,6 +9,7 @@ import {
   makeRevealArgs,
   getCurrentTime,
   getCurrentBlock,
+  increaseBlockchainBlocks,
 } from './utils/TestUtils';
 import { defaultWorldFixture, World } from './utils/TestWorld';
 import { ADMIN_PLANET, SPAWN_PLANET_1, SPAWN_PLANET_2 } from './utils/WorldConstants';
@@ -86,7 +87,7 @@ describe('Claim Victory', function () {
     });
     describe('time elapsed', async function () {
       beforeEach(async function () {
-        await increaseBlockchainTime(1000);
+        await increaseBlockchainBlocks();
       });
       it('cant claim victory with a non-target planet', async function () {
         await expect(world.user1Core.claimVictory(SPAWN_PLANET_1.id)).to.be.revertedWith(

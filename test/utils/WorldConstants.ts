@@ -323,3 +323,4 @@ export const INVALID_PLANET = new TestLocation({
 export const SMALL_INTERVAL = 5; // seconds
 export const TOLERANCE = 2; // seconds
 export const LARGE_INTERVAL = 3 * 86400; // seconds
+export const NUM_BLOCKS = 50;
