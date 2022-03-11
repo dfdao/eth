@@ -15,6 +15,15 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 contract DFLobbyFacet is WithStorage {
     event LobbyCreated(address ownerAddress, address lobbyAddress);
 
+    /*
+    initAddress is the address of DFInitialize.sol
+    initData is an object that is defined in ts as
+        initFunctionCall = initInterface.encodeFunctionData('init', [
+            whitelistEnabled,
+            artifactBaseURI,
+            initializers,
+        ]);
+  */
     function createLobby(address initAddress, bytes calldata initData) public {
 
         // the original diamond's address
@@ -33,6 +42,7 @@ contract DFLobbyFacet is WithStorage {
 
         // facetCut is an array of facet cut structs that align with the facets from the original diamondAddress
         IDiamondCut.FacetCut[] memory facetCut = new IDiamondCut.FacetCut[](facets.length - 1);
+        
         uint256 cutIdx = 0;
         // loop through all of the facets. If the facetAddress is the diamond cut address, skip.
         // If not, add information about the original facet to the array of facet cuts

@@ -221,7 +221,6 @@ contract DFInitialize is WithStorage, WithArenaStorage {
             .TARGET_PLANET_HOLD_BLOCKS_REQUIRED;
         arenaStorage().MANUAL_SPAWN = initArgs.MANUAL_SPAWN;
 
-
         LibGameUtils.updateWorldRadius();
     }
 

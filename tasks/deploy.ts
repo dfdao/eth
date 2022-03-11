@@ -463,6 +463,25 @@ export async function deployTargetPlanetFacet(
   return contract;
 }
 
+export async function deployArenaFacet(
+  {},
+  { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet }: Libraries,
+  hre: HardhatRuntimeEnvironment
+) {
+  const factory = await hre.ethers.getContractFactory('DFMoveFacet', {
+    libraries: {
+      Verifier,
+      LibGameUtils,
+      LibArtifactUtils,
+      LibPlanet,
+    },
+  });
+  const contract = await factory.deploy();
+  await contract.deployTransaction.wait();
+  console.log(`DFMoveFacet deployed to: ${contract.address}`);
+  return contract;
+}
+
 async function deployDiamondCutFacet({}, libraries: Libraries, hre: HardhatRuntimeEnvironment) {
   const factory = await hre.ethers.getContractFactory('DiamondCutFacet');
   const contract = await factory.deploy();

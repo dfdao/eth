@@ -19,7 +19,18 @@ import {IERC173} from "../vendor/interfaces/IERC173.sol";
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
 import {WithArenaStorage} from "../libraries/LibArenaStorage.sol";
-import {PlanetType, SpaceType, DFPInitPlanetArgs} from "../DFTypes.sol";
+import {
+    SpaceType,
+    DFPInitPlanetArgs,
+    AdminCreatePlanetArgs,
+    Artifact,
+    ArtifactType,
+    Player,
+    Planet,
+    PlanetType,
+    PlanetExtendedInfo,
+    PlanetExtendedInfo2
+} from "../DFTypes.sol";
 
 // SHOULD WE SPLIT THESE DATA STRUCTURES UP? THEY ARE COMING FROM ALL OVER
 
@@ -35,10 +46,10 @@ struct ArenaAdminCreatePlanetArgs {
 }
 
 contract DFArenaFacet is WithStorage, WithArenaStorage {
-    event AdminPlanetCreated(uint256 loc);
+    event ArenaAdminPlanetCreated(uint256 loc);
     event TargetPlanetInvaded(address player, uint256 loc);
     event Gameover(address winner);
-    event PlayerInitialized(address player, uint256 loc);
+    event ArenaPlayerInitialized(address player, uint256 loc);
 
 
     modifier onlyAdmin() {
@@ -60,7 +71,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
         _;
     }
 
-    modifier targetPlanets() {
+    modifier targetPlanetsActive() {
         require(arenaStorage().TARGET_PLANETS, "target planets are disabled");
         _;
     }
@@ -99,7 +110,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
         gs().planetIds.push(args.location);
         gs().initializedPlanetCountByLevel[args.level] += 1;
 
-        emit AdminPlanetCreated(args.location);
+        emit ArenaAdminPlanetCreated(args.location);
     }
 
     function initializePlayer(
@@ -121,7 +132,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
             require(spawnIds.length > 0, "No manual spawn planets");
 
             for (uint i = 0; i < spawnIds.length; i++) {
-                console.log('testing revealed Id %s', spawnIds[i]);
+                // console.log('testing revealed Id %s', spawnIds[i]);
                 Planet storage _planet = gs().planets[spawnIds[i]];
                 if(_location == spawnIds[i] && !_planet.isHomePlanet) {
                     foundSpawn = true;
@@ -154,7 +165,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
         );
 
         LibGameUtils.updateWorldRadius();
-        emit PlayerInitialized(msg.sender, _location);
+        emit ArenaPlayerInitialized(msg.sender, _location);
         return _location;
     } 
 
@@ -164,7 +175,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
         uint256[2][2] memory _b,
         uint256[2] memory _c,
         uint256[9] memory _input
-    ) public onlyWhitelisted notPaused targetPlanets {
+    ) public onlyWhitelisted notPaused targetPlanetsActive {
         DFCoreFacet(address(this)).checkRevealProof(_a, _b, _c, _input);
 
         uint256 locationId = _input[0];
@@ -189,7 +200,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
         public
         onlyWhitelisted
         notPaused
-        targetPlanets
+        targetPlanetsActive
     {
         require(!arenaStorage().gameover, "cannot claim victory when game is over");
 
