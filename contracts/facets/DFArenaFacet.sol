@@ -23,7 +23,7 @@ import {PlanetType, SpaceType, DFPInitPlanetArgs} from "../DFTypes.sol";
 
 // SHOULD WE SPLIT THESE DATA STRUCTURES UP? THEY ARE COMING FROM ALL OVER
 
-// Typing mods
+// Updated types
 struct ArenaAdminCreatePlanetArgs {
     uint256 location;
     uint256 perlin;
@@ -281,7 +281,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
         return gs().spawnPlanetIds.length;
     }
 
-        function bulkGetTargetPlanetIds(uint256 startIdx, uint256 endIdx)
+    function bulkGetTargetPlanetIds(uint256 startIdx, uint256 endIdx)
         public
         view
         returns (uint256[] memory ret)
