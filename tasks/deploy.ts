@@ -247,6 +247,7 @@ export async function deployAndCut(
   const coreFacet = await deployCoreFacet({}, libraries, hre);
   const moveFacet = await deployMoveFacet({}, libraries, hre);
   const captureFacet = await deployCaptureFacet({}, libraries, hre);
+  const targetFacet = await deployTargetPlanetFacet({}, libraries, hre);
   const artifactFacet = await deployArtifactFacet(
     { diamondAddress: diamond.address },
     libraries,
@@ -262,6 +263,7 @@ export async function deployAndCut(
     ...changes.getFacetCuts('DFCoreFacet', coreFacet),
     ...changes.getFacetCuts('DFMoveFacet', moveFacet),
     ...changes.getFacetCuts('DFCaptureFacet', captureFacet),
+    ...changes.getFacetCuts('DFTargetPlanetFacet', targetFacet),
     ...changes.getFacetCuts('DFArtifactFacet', artifactFacet),
     ...changes.getFacetCuts('DFGetterFacet', getterFacet),
     ...changes.getFacetCuts('DFWhitelistFacet', whitelistFacet),
@@ -442,6 +444,22 @@ export async function deployCaptureFacet(
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
   console.log(`DFCaptureFacet deployed to: ${contract.address}`);
+  return contract;
+}
+
+export async function deployTargetPlanetFacet(
+  {},
+  { LibPlanet }: Libraries,
+  hre: HardhatRuntimeEnvironment
+) {
+  const factory = await hre.ethers.getContractFactory('DFTargetPlanetFacet', {
+    libraries: {
+      LibPlanet,
+    },
+  });
+  const contract = await factory.deploy();
+  await contract.deployTransaction.wait();
+  console.log(`DFTargetPlanetFacet deployed to: ${contract.address}`);
   return contract;
 }
 

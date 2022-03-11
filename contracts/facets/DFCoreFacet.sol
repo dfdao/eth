@@ -27,7 +27,6 @@ import {
     DFPInitPlanetArgs,
     DFPMoveArgs,
     DFPFindArtifactArgs,
-    AdminCreatePlanetArgs
 } from "../DFTypes.sol";
 
 contract DFCoreFacet is WithStorage {

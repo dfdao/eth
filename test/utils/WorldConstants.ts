@@ -28,6 +28,11 @@ export const manualSpawnInitializers = settings.parse(decodeInitializers, {
   MANUAL_SPAWN: true,
 });
 
+export const targetPlanetInitializers = settings.parse(decodeInitializers, {
+  ...defaultInitializerValues,
+  TARGET_PLANETS : true,
+});
+
 // This builds a fake HRE-like object used to initialize the test contracts
 export const target4Initializers = settings.parse(decodeInitializers, {
   DISABLE_ZK_CHECKS: true,

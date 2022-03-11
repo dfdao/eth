@@ -34,9 +34,8 @@ contract DFCaptureFacet is WithStorage {
         _;
     }
 
-    event PlanetInvaded(address player, uint256 loc, bool isTarget);
+    event PlanetInvaded(address player, uint256 loc);
     event PlanetCaptured(address player, uint256 loc);
-    event Gameover(address winner);
 
     struct Zone {
         int256 x;
@@ -55,18 +54,19 @@ contract DFCaptureFacet is WithStorage {
         uint256[2] memory _c,
         uint256[9] memory _input
     ) public onlyWhitelisted notPaused {
-        uint256 locationId = _input[0];
-        bool isTarget = gs().targetPlanets[locationId];
+
         require(
-            gameConstants().CAPTURE_ZONES_ENABLED || isTarget,
-            "capture zones are disabled and planet is not a target"
+            gameConstants().CAPTURE_ZONES_ENABLED,
+            "capture zones are disabled"
         );
+
+        uint256 locationId = _input[0];
 
         DFCoreFacet(address(this)).checkRevealProof(_a, _b, _c, _input);
 
         require(
-            planetInCaptureZone(_input[2], _input[3]) || isTarget,
-            "planet is not in capture zone and is not a target planet"
+            planetInCaptureZone(_input[2], _input[3]),
+            "planet is not in capture zone"
         );
 
         LibPlanet.refreshPlanet(locationId);
@@ -82,7 +82,7 @@ contract DFCaptureFacet is WithStorage {
         planetExtendedInfo2.invader = msg.sender;
         planetExtendedInfo2.invadeStartBlock = block.number;
 
-        emit PlanetInvaded(msg.sender, locationId, isTarget);
+        emit PlanetInvaded(msg.sender, locationId);
     }
 
     function capturePlanet(uint256 locationId) public onlyWhitelisted notPaused {
@@ -118,34 +118,8 @@ contract DFCaptureFacet is WithStorage {
         gs().players[msg.sender].score += gameConstants().CAPTURE_ZONE_PLANET_LEVEL_SCORE[
             planet.planetLevel
         ];
+        
         emit PlanetCaptured(msg.sender, locationId);
-    }
-
-    function claimVictory(uint256 locationId) public onlyWhitelisted notPaused {
-        LibPlanet.refreshPlanet(locationId);
-        Planet memory planet = gs().planets[locationId];
-        PlanetExtendedInfo memory planetExtendedInfo = gs().planetsExtendedInfo[locationId];
-        PlanetExtendedInfo2 memory planetExtendedInfo2 = gs().planetsExtendedInfo2[locationId];
-
-        require(!gs().gameover, "cannot claim victory when game is over");
-        require(gs().targetPlanets[locationId], "you can only claim victory with a target planet");
-        require(planet.owner == msg.sender, "you can only claim victory with planets you own");
-        require(!planetExtendedInfo.destroyed, "planet is destroyed");
-        require(
-            planetExtendedInfo2.invader != address(0),
-            "you must invade the planet before capturing"
-        );
-
-        require(
-            planetExtendedInfo2.invadeStartBlock +
-                gameConstants().TARGET_PLANET_HOLD_BLOCKS_REQUIRED <=
-                block.number,
-            "you have not held the planet long enough to claim victory with it"
-        );
-
-        gs().gameover = true;
-        gs().winner = msg.sender;
-        emit Gameover(msg.sender);
     }
 
     function planetInCaptureZone(uint256 x, uint256 y) public returns (bool) {

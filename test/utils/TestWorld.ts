@@ -4,7 +4,13 @@ import { BigNumber, utils } from 'ethers';
 import hre from 'hardhat';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { deployAndCut } from '../../tasks/deploy';
-import { initializers, manualSpawnInitializers, noPlanetTransferInitializers, target4Initializers } from './WorldConstants';
+import {
+  initializers,
+  manualSpawnInitializers,
+  targetPlanetInitializers,
+  noPlanetTransferInitializers,
+  target4Initializers,
+} from './WorldConstants';
 
 export interface World {
   contract: DarkForest;
@@ -60,6 +66,13 @@ export function noPlanetTransferFixture(): Promise<World> {
 export function manualSpawnFixture(): Promise<World> {
   return initializeWorld({
     initializers: manualSpawnInitializers,
+    whitelistEnabled: false,
+  });
+}
+
+export function targetPlanetFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: targetPlanetInitializers,
     whitelistEnabled: false,
   });
 }

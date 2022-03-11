@@ -259,7 +259,6 @@ library LibArtifactUtils {
                 2 * uint256(artifact.rarity) >= planet.planetLevel,
                 "artifact is not powerful enough to apply effect to this planet level"
             );
-            require(!gs().targetPlanets[locationId], "cannot destroy target planet");
             info.destroyed = true;
             shouldDeactivateAndBurn = true;
         }

@@ -144,6 +144,7 @@ PLANET_TYPE_WEIGHTS = [
 ##############
 # Arena Mode #
 ##############
+TARGET_PLANETS = true
 TARGET_PLANET_HOLD_BLOCKS_REQUIRED = 100
 
 ##########################

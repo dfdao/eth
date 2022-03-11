@@ -37,6 +37,7 @@ import {
 // Library imports
 import {LibDiamond} from "./vendor/libraries/LibDiamond.sol";
 import {WithStorage} from "./libraries/LibStorage.sol";
+import {WithArenaStorage} from "./libraries/LibArenaStorage.sol";
 import {LibGameUtils} from "./libraries/LibGameUtils.sol";
 
 // Type imports
@@ -107,9 +108,14 @@ struct InitArgs {
     uint256[10] CAPTURE_ZONE_PLANET_LEVEL_SCORE;
     uint256 CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED;
     uint256 CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
+    // Target Planet
+    bool TARGET_PLANETS;
+    uint256 TARGET_PLANET_HOLD_BLOCKS_REQUIRED;
+    // Manual Spawn
+    bool MANUAL_SPAWN;
 }
 
-contract DFInitialize is WithStorage {
+contract DFInitialize is WithStorage, WithArenaStorage {
     using ERC721MetadataStorage for ERC721MetadataStorage.Layout;
 
     // You can add parameters to this function in order to pass in
@@ -197,9 +203,6 @@ contract DFInitialize is WithStorage {
         gs().paused = initArgs.START_PAUSED;
         gs().TOKEN_MINT_END_TIMESTAMP = initArgs.TOKEN_MINT_END_TIMESTAMP;
 
-        gs().gameover = false;
-        gs().winner = address(0);
-
         initializeDefaults();
         initializeUpgrades();
 
@@ -209,6 +212,15 @@ contract DFInitialize is WithStorage {
                 (2**24 / gs().planetLevelThresholds[i]) * initArgs.PLANET_RARITY
             );
         }
+
+        //arenaMode initialization
+        arenaStorage().gameover = false;
+        arenaStorage().winner = address(0);
+        arenaStorage().TARGET_PLANETS = initArgs.TARGET_PLANETS;
+        arenaStorage().TARGET_PLANET_HOLD_BLOCKS_REQUIRED = initArgs
+            .TARGET_PLANET_HOLD_BLOCKS_REQUIRED;
+        arenaStorage().MANUAL_SPAWN = initArgs.MANUAL_SPAWN;
+
 
         LibGameUtils.updateWorldRadius();
     }
