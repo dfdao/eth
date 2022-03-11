@@ -8,8 +8,8 @@ import {LibPlanet} from "../libraries/LibPlanet.sol";
 
 // Contract imports
 import {Diamond} from "../vendor/Diamond.sol";
-import {DFWhitelistFacet} from "./DFWhitelistFacet.sol";
-import {DFCoreFacet} from "./DFCoreFacet.sol";
+import {DFWhitelistFacet} from "../facets/DFWhitelistFacet.sol";
+import {DFCoreFacet} from "../facets/DFCoreFacet.sol";
 
 // Interface imports
 import {IDiamondCut} from "../vendor/interfaces/IDiamondCut.sol";
@@ -18,7 +18,8 @@ import {IERC173} from "../vendor/interfaces/IERC173.sol";
 
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
-import {WithArenaStorage} from "../libraries/LibArenaStorage.sol";
+import {WithArenaStorage} from "./LibArenaStorage.sol";
+
 import {
     SpaceType,
     DFPInitPlanetArgs,
@@ -46,7 +47,7 @@ struct ArenaAdminCreatePlanetArgs {
 }
 
 contract DFArenaFacet is WithStorage, WithArenaStorage {
-    event ArenaAdminPlanetCreated(uint256 loc);
+    event AdminPlanetCreated(uint256 loc);
     event TargetPlanetInvaded(address player, uint256 loc);
     event Gameover(address winner);
     event ArenaPlayerInitialized(address player, uint256 loc);
@@ -110,7 +111,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
         gs().planetIds.push(args.location);
         gs().initializedPlanetCountByLevel[args.level] += 1;
 
-        emit ArenaAdminPlanetCreated(args.location);
+        emit AdminPlanetCreated(args.location);
     }
 
     function initializePlayer(

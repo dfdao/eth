@@ -37,7 +37,7 @@ import {
 // Library imports
 import {LibDiamond} from "./vendor/libraries/LibDiamond.sol";
 import {WithStorage} from "./libraries/LibStorage.sol";
-import {WithArenaStorage} from "./libraries/LibArenaStorage.sol";
+import {WithArenaStorage} from "./arena/LibArenaStorage.sol";
 import {LibGameUtils} from "./libraries/LibGameUtils.sol";
 
 // Type imports
