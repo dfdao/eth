@@ -136,6 +136,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
                 // console.log('testing revealed Id %s', spawnIds[i]);
                 Planet storage _planet = gs().planets[spawnIds[i]];
                 if(_location == spawnIds[i] && !_planet.isHomePlanet) {
+                    LibPlanet.initializePlanet(_a, _b, _c, _input, true);
                     foundSpawn = true;
                     // get planet from storage and set it as homePlanet
                     _planet.isHomePlanet = true;

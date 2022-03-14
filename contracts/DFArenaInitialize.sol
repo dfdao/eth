@@ -115,7 +115,7 @@ struct InitArgs {
     bool MANUAL_SPAWN;
 }
 
-contract DFInitialize is WithStorage, WithArenaStorage {
+contract DFArenaInitialize is WithStorage, WithArenaStorage {
     using ERC721MetadataStorage for ERC721MetadataStorage.Layout;
 
     // You can add parameters to this function in order to pass in

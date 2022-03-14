@@ -517,7 +517,7 @@ async function deployDiamond(
 async function deployDiamondInit({}, { LibGameUtils }: Libraries, hre: HardhatRuntimeEnvironment) {
   // DFInitialize provides a function that is called when the diamond is upgraded to initialize state variables
   // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
-  const factory = await hre.ethers.getContractFactory('contracts\\DFInitialize.sol:DFInitialize', {
+  const factory = await hre.ethers.getContractFactory('DFInitialize', {
     libraries: { LibGameUtils },
   });
   const contract = await factory.deploy();
@@ -529,7 +529,7 @@ async function deployDiamondInit({}, { LibGameUtils }: Libraries, hre: HardhatRu
 async function deployArenaDiamondInit({}, { LibGameUtils }: Libraries, hre: HardhatRuntimeEnvironment) {
   // DFInitialize provides a function that is called when the diamond is upgraded to initialize state variables
   // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
-  const factory = await hre.ethers.getContractFactory('contracts\\DFArenaInitialize.sol:DFInitialize', {
+  const factory = await hre.ethers.getContractFactory('DFArenaInitialize', {
     libraries: { LibGameUtils },
   });
   const contract = await factory.deploy();
