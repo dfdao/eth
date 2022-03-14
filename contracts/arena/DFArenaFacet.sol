@@ -50,7 +50,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
     event AdminPlanetCreated(uint256 loc);
     event TargetPlanetInvaded(address player, uint256 loc);
     event Gameover(address winner);
-    event ArenaPlayerInitialized(address player, uint256 loc);
+    event PlayerInitialized(address player, uint256 loc);
 
 
     modifier onlyAdmin() {
@@ -96,13 +96,13 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
             )
         );
         if (args.isTargetPlanet) {
-            require(gameConstants().TARGET_PLANETS, "admin cannot create target planets");
+            require(arenaStorage().TARGET_PLANETS, "admin cannot create target planets");
             arenaStorage().targetPlanetIds.push(args.location);
             arenaStorage().targetPlanets[args.location] = true;
         }
 
         if (args.isSpawnPlanet) {
-            require(gameConstants().MANUAL_SPAWN, "admin cannot create spawn planets");
+            require(arenaStorage().MANUAL_SPAWN, "admin cannot create spawn planets");
 
             arenaStorage().spawnPlanetIds.push(args.location);
             arenaStorage().spawnPlanets[args.location] = true;
@@ -166,9 +166,9 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
         );
 
         LibGameUtils.updateWorldRadius();
-        emit ArenaPlayerInitialized(msg.sender, _location);
+        emit PlayerInitialized(msg.sender, _location);
         return _location;
-    } 
+    }
 
     // FUNCTIONS TO ADD
     function invadeTargetPlanet(
@@ -214,6 +214,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
             arenaStorage().targetPlanets[locationId],
             "you can only claim victory with a target planet"
         );
+        
         require(planet.owner == msg.sender, "you can only claim victory with planets you own");
         require(!planetExtendedInfo.destroyed, "planet is destroyed");
         require(
@@ -223,7 +224,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
 
         require(
             planetExtendedInfo2.invadeStartBlock +
-                gameConstants().TARGET_PLANET_HOLD_BLOCKS_REQUIRED <=
+                arenaStorage().TARGET_PLANET_HOLD_BLOCKS_REQUIRED <=
                 block.number,
             "you have not held the planet long enough to claim victory with it"
         );
@@ -270,27 +271,27 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
 
     // Getters 
     function targetPlanetIds(uint256 idx) public view returns (uint256) {
-        return gs().targetPlanetIds[idx];
+        return arenaStorage().targetPlanetIds[idx];
     }
 
     function spawnPlanetIds(uint256 idx) public view returns (uint256) {
-        return gs().spawnPlanetIds[idx];
+        return arenaStorage().spawnPlanetIds[idx];
     }
 
     function targetPlanets(uint256 location) public view returns (bool) {
-        return gs().targetPlanets[location];
+        return arenaStorage().targetPlanets[location];
     }
 
     function spawnPlanets(uint256 location) public view returns (bool) {
-        return gs().spawnPlanets[location];
+        return arenaStorage().spawnPlanets[location];
     }
 
     function getNTargetPlanets() public view returns (uint256) {
-        return gs().targetPlanetIds.length;
+        return arenaStorage().targetPlanetIds.length;
     }
     
     function getNSpawnPlanets() public view returns (uint256) {
-        return gs().spawnPlanetIds.length;
+        return arenaStorage().spawnPlanetIds.length;
     }
 
     function bulkGetTargetPlanetIds(uint256 startIdx, uint256 endIdx)
@@ -301,7 +302,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
         // return slice of targetPlanetIds array from startIdx through endIdx - 1
         ret = new uint256[](endIdx - startIdx);
         for (uint256 i = startIdx; i < endIdx; i++) {
-            ret[i - startIdx] = gs().targetPlanetIds[i];
+            ret[i - startIdx] = arenaStorage().targetPlanetIds[i];
         }
     }
 
@@ -313,7 +314,15 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
         // return slice of spawnPlanetIds array from startIdx through endIdx - 1
         ret = new uint256[](endIdx - startIdx);
         for (uint256 i = startIdx; i < endIdx; i++) {
-            ret[i - startIdx] = gs().spawnPlanetIds[i];
+            ret[i - startIdx] = arenaStorage().spawnPlanetIds[i];
         }
+    }
+
+    function getWinner() public view returns (address) {
+        return arenaStorage().winner;
+    }
+
+    function getGameover() public view returns (bool) {
+        return arenaStorage().gameover;
     }
 }

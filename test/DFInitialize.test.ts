@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import hre from 'hardhat';
 import { fixtureLoader, makeInitArgs, makeRevealArgs, ZERO_ADDRESS } from './utils/TestUtils';
-import { defaultWorldFixture, manualSpawnFixture, World } from './utils/TestWorld';
+import { defaultWorldFixture, manualSpawnFixture, targetPlanetFixture, World } from './utils/TestWorld';
 import { fakeHash, mimcHash, perlin } from '@darkforest_eth/hashing';
 import {
   ADMIN_PLANET,
@@ -241,52 +241,40 @@ describe('DarkForestSpawnandTarget', function () {
 
   let world: World;
 
-  beforeEach('load fixture', async function () {
-    world = await fixtureLoader(manualSpawnFixture);
-  });
+  it('allows admin to create target planet', async function () {
+    world = await fixtureLoader(targetPlanetFixture);
 
-  it('target planet`s locationId is properly added to targetPlanets array from toml', async function () {
-    let location = "0";
-    for (const adminPlanetInfo of hre.adminPlanets) {
-      console.log(adminPlanetInfo);
-      location = hre.initializers.DISABLE_ZK_CHECKS
-        ? fakeHash(hre.initializers.PLANET_RARITY)(adminPlanetInfo.x, adminPlanetInfo.y).toString()
-        : mimcHash(hre.initializers.PLANETHASH_KEY)(
-            adminPlanetInfo.x,
-            adminPlanetInfo.y
-          ).toString();
+    const perlin = 20;
+    const level = 5;
+    const planetType = 1; // asteroid field
+    const x = 10;
+    const y = 20;
+    await world.contract.createPlanet({
+      location: ADMIN_PLANET_CLOAKED.id,
+      perlin,
+      level,
+      planetType,
+      requireValidLocationId: false,
+      isTargetPlanet: true,
+      isSpawnPlanet: false
+    });
 
-      const perlinValue = perlin(
-        { x: adminPlanetInfo.x, y: adminPlanetInfo.y },
-        {
-          key: hre.initializers.SPACETYPE_KEY,
-          scale: hre.initializers.PERLIN_LENGTH_SCALE,
-          mirrorX: hre.initializers.PERLIN_MIRROR_X,
-          mirrorY: hre.initializers.PERLIN_MIRROR_Y,
-          floor: true,
-        }
-      );
-      await world.contract.createPlanet({
-        location: location,
-        perlin: perlinValue,
-        level: adminPlanetInfo.level,
-        planetType: adminPlanetInfo.planetType,
-        requireValidLocationId: adminPlanetInfo.requireValidLocationId,
-        isTargetPlanet: adminPlanetInfo.isTargetPlanet,
-        isSpawnPlanet: adminPlanetInfo.isSpawnPlanet,
-      });
-    }
+    await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
 
+    
     const numTargetPlanets = await world.contract.getNTargetPlanets();
-    const targetPlanetId = await world.contract.targetPlanetIds(0);
-    const targetPlanet = await world.contract.targetPlanets(location);
-
     expect(numTargetPlanets).to.equal(1);
-    expect(targetPlanetId).to.equal(location);
+
+    const targetPlanetId = await world.contract.targetPlanetIds(0);
+    expect(targetPlanetId).to.equal(ADMIN_PLANET_CLOAKED.id);
+
+    const targetPlanet = await world.contract.targetPlanets(ADMIN_PLANET_CLOAKED.id);
     expect(targetPlanet).to.equal(true);
   });
 
   it('allows admin to create a spawn planet', async function () {
+    world = await fixtureLoader(manualSpawnFixture);
+
     const perlin = 20;
     const level = 5;
     const planetType = 1; // asteroid field
@@ -306,11 +294,12 @@ describe('DarkForestSpawnandTarget', function () {
 
     
     const numSpawnPlanets = await world.contract.getNSpawnPlanets();
-    const spawnPlanetId = await world.contract.spawnPlanetIds(0);
-    const spawnPlanet = await world.contract.spawnPlanets(ADMIN_PLANET_CLOAKED.id);
-
     expect(numSpawnPlanets).to.equal(1);
+
+    const spawnPlanetId = await world.contract.spawnPlanetIds(0);
     expect(spawnPlanetId).to.equal(ADMIN_PLANET_CLOAKED.id);
+
+    const spawnPlanet = await world.contract.spawnPlanets(ADMIN_PLANET_CLOAKED.id);
     expect(spawnPlanet).to.equal(true);
 
   });

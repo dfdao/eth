@@ -31,6 +31,7 @@ export const manualSpawnInitializers = settings.parse(decodeInitializers, {
 export const targetPlanetInitializers = settings.parse(decodeInitializers, {
   ...defaultInitializerValues,
   TARGET_PLANETS : true,
+  TARGET_PLANET_HOLD_BLOCKS_REQUIRED: 49
 });
 
 // This builds a fake HRE-like object used to initialize the test contracts

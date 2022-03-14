@@ -502,13 +502,4 @@ contract DFGetterFacet is WithStorage {
             });
         }
     }
-
-    // Arena Mode
-    function getWinner() public view returns (address) {
-        return gs().winner;
-    }
-
-    function getGameover() public view returns (bool) {
-        return gs().gameover;
-    }
 }

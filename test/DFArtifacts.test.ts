@@ -38,8 +38,8 @@ describe('DarkForestArtifacts', function () {
 
   async function worldFixture() {
     const world = await fixtureLoader(defaultWorldFixture);
-
     // Initialize player
+    // console.log(JSON.stringify(world.user1Core))
     await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
     await world.user1Core.giveSpaceShips(SPAWN_PLANET_1.id);
     await world.user2Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_2));

@@ -1,98 +1,62 @@
 import { task } from 'hardhat/config';
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DiamondChanges } from '../utils/diamond';
-import {
-  deployAdminFacet,
-  deployArtifactFacet,
-  deployCaptureFacet,
-  deployCoreFacet,
-  deployGetterFacet,
-  deployLibraries,
-  deployLobbyFacet,
-  deployMoveFacet,
-  deployWhitelistFacet,
-} from './deploy';
 
-task('arena', 'upgrade contracts to use arena mode rules').setAction(arena);
+task('arena:create', 'create a arena from the command line').setAction(deployArena);
 
-async function arena({}, hre: HardhatRuntimeEnvironment) {
-  await hre.run('utils:assertChainId');
-
+async function deployArena({}, hre: HardhatRuntimeEnvironment): Promise<void> {
   const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
 
-  // need to force a compile for tasks
-  await hre.run('compile');
+  // Were only using one account, getSigners()[0], the deployer. Becomes the ProxyAdmin
+  const [deployer] = await hre.ethers.getSigners();
 
-  const diamond = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
+  // TODO: The deployer balance should be checked for production.
+  // Need to investigate how much this actually costs.
 
-  const previousFacets = await diamond.facets();
+  const baseURI = isDev ? 'http://localhost:8081' : 'https://zkga.me';
 
-  const changes = new DiamondChanges(previousFacets);
+  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
-  const libraries = await deployLibraries({}, hre);
+  const { abi: InitABI } = await hre.artifacts.readArtifact('contracts\\DFArenaInitialize.sol:DFInitialize');
+  const initInterface = hre.ethers.Contract.getInterface(InitABI);
 
-  // Dark Forest facets
-  const coreFacet = await deployCoreFacet({}, libraries, hre);
-  const moveFacet = await deployMoveFacet({}, libraries, hre);
-  const artifactFacet = await deployArtifactFacet(
-    { diamondAddress: diamond.address },
-    libraries,
-    hre
-  );
-  const getterFacet = await deployGetterFacet({}, libraries, hre);
-  const whitelistFacet = await deployWhitelistFacet({}, libraries, hre);
-  const adminFacet = await deployAdminFacet({}, libraries, hre);
-  const lobbyFacet = await deployLobbyFacet({}, libraries, hre);
-  const captureFacet = await deployCaptureFacet({}, libraries, hre);
+  const whitelistEnabled = false;
+  const artifactBaseURI = '';
+  const initializers = { ...hre.initializers, DISABLE_ZK_CHECKS: true };
 
-  // The `cuts` to perform for Dark Forest facets
-  const darkForestCuts = [
-    ...changes.getFacetCuts('DFCoreFacet', coreFacet),
-    ...changes.getFacetCuts('DFMoveFacet', moveFacet),
-    ...changes.getFacetCuts('DFArtifactFacet', artifactFacet),
-    ...changes.getFacetCuts('DFGetterFacet', getterFacet),
-    ...changes.getFacetCuts('DFWhitelistFacet', whitelistFacet),
-    ...changes.getFacetCuts('DFAdminFacet', adminFacet),
-    ...changes.getFacetCuts('DFLobbyFacet', lobbyFacet),
-    ...changes.getFacetCuts('DFCaptureFacet', captureFacet),
-  ];
+  const initAddress = hre.contracts.INIT_ADDRESS;
+  const initFunctionCall = initInterface.encodeFunctionData('init', [
+    whitelistEnabled,
+    artifactBaseURI,
+    initializers,
+  ]);
 
-  // The `cuts` to remove any old, unused functions
-  const removeCuts = changes.getRemoveCuts(darkForestCuts);
-
-  const shouldUpgrade = await changes.verify();
-  if (!shouldUpgrade) {
-    console.log('Upgrade aborted');
-    return;
+  function waitForCreated(): Promise<void> {
+    return new Promise(async (resolve) => {
+      contract.on('ArenaCreated', async (ownerAddress, arenaAddress) => {
+        if (deployer.address === ownerAddress) {
+          console.log(`Arena created. Play at ${baseURI}/play/${arenaAddress}`);
+          resolve();
+        }
+      });
+    });
   }
 
-  const toCut = [...darkForestCuts, ...removeCuts];
+  // We setup the event handler before creating the arena
+  const result = waitForCreated();
 
-  // As mentioned in the `deploy` task, EIP-2535 specifies that the `diamondCut`
-  // function takes two optional arguments: address _init and bytes calldata _calldata
-  // However, in a standard upgrade, no state modifications are done, so the 0x0 address
-  // and empty calldata are specified for those `diamondCut` parameters.
-  // If the Diamond storage needs to be changed on an upgrade, a contract would need to be
-  // deployed and these variables would need to be adjusted similar to the `deploy` task.
-  const initAddress = hre.ethers.constants.AddressZero;
-  const initFunctionCall = '0x';
+  const tx = await contract.createLobby(initAddress, initFunctionCall);
 
-  const upgradeTx = await diamond.diamondCut(toCut, initAddress, initFunctionCall);
-  const upgradeReceipt = await upgradeTx.wait();
-  if (!upgradeReceipt.status) {
-    throw Error(`Diamond cut failed: ${upgradeTx.hash}`);
-  }
-  console.log('Completed diamond cut');
-
-  // TODO: Upstream change to update task name from `hardhat-4byte-uploader`
-  if (!isDev) {
-    try {
-      await hre.run('upload-selectors', { noCompile: true });
-    } catch {
-      console.warn('WARNING: Unable to update 4byte database with our selectors');
-      console.warn('Please run the `upload-selectors` task manually so selectors can be reversed');
-    }
+  const receipt = await tx.wait();
+  if (!receipt.status) {
+    throw Error(`Arena creation failed: ${tx.hash}`);
   }
 
-  console.log('Upgraded successfully. Godspeed cadet.');
+  await result;
+
+  // const diamond = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
+
+  // const previousFacets = await diamond.facets();
+
+  // const changes = new DiamondChanges(previousFacets);
 }

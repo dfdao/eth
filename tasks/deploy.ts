@@ -242,12 +242,13 @@ export async function deployAndCut(
   );
 
   const diamondInit = await deployDiamondInit({}, libraries, hre);
+  const arenaDiamondInit = await deployArenaDiamondInit({}, libraries, hre);
 
   // Dark Forest facets
   const coreFacet = await deployCoreFacet({}, libraries, hre);
   const moveFacet = await deployMoveFacet({}, libraries, hre);
   const captureFacet = await deployCaptureFacet({}, libraries, hre);
-  const targetFacet = await deployTargetPlanetFacet({}, libraries, hre);
+  const arenaFacet = await deployArenaFacet({}, libraries, hre);
   const artifactFacet = await deployArtifactFacet(
     { diamondAddress: diamond.address },
     libraries,
@@ -263,7 +264,7 @@ export async function deployAndCut(
     ...changes.getFacetCuts('DFCoreFacet', coreFacet),
     ...changes.getFacetCuts('DFMoveFacet', moveFacet),
     ...changes.getFacetCuts('DFCaptureFacet', captureFacet),
-    ...changes.getFacetCuts('DFTargetPlanetFacet', targetFacet),
+    ...changes.getFacetCuts('DFArenaFacet', arenaFacet),
     ...changes.getFacetCuts('DFArtifactFacet', artifactFacet),
     ...changes.getFacetCuts('DFGetterFacet', getterFacet),
     ...changes.getFacetCuts('DFWhitelistFacet', whitelistFacet),
@@ -286,8 +287,15 @@ export async function deployAndCut(
   // These arguments are used to execute an arbitrary function using delegatecall
   // in order to set state variables in the diamond during deployment or an upgrade
   // More info here: https://eips.ethereum.org/EIPS/eip-2535#diamond-interface
-  const initAddress = diamondInit.address;
-  const initFunctionCall = diamondInit.interface.encodeFunctionData('init', [
+  // const initAddress = diamondInit.address;
+  // const initFunctionCall = diamondInit.interface.encodeFunctionData('init', [
+  //   whitelistEnabled,
+  //   tokenBaseUri,
+  //   initializers,
+  // ]);
+
+  const initAddress = arenaDiamondInit.address;
+  const initFunctionCall = arenaDiamondInit.interface.encodeFunctionData('init', [
     whitelistEnabled,
     tokenBaseUri,
     initializers,
@@ -468,17 +476,15 @@ export async function deployArenaFacet(
   { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet }: Libraries,
   hre: HardhatRuntimeEnvironment
 ) {
-  const factory = await hre.ethers.getContractFactory('DFMoveFacet', {
+  const factory = await hre.ethers.getContractFactory('DFArenaFacet', {
     libraries: {
-      Verifier,
       LibGameUtils,
-      LibArtifactUtils,
       LibPlanet,
     },
   });
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
-  console.log(`DFMoveFacet deployed to: ${contract.address}`);
+  console.log(`DFArenaFacet deployed to: ${contract.address}`);
   return contract;
 }
 
@@ -511,12 +517,24 @@ async function deployDiamond(
 async function deployDiamondInit({}, { LibGameUtils }: Libraries, hre: HardhatRuntimeEnvironment) {
   // DFInitialize provides a function that is called when the diamond is upgraded to initialize state variables
   // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
-  const factory = await hre.ethers.getContractFactory('DFInitialize', {
+  const factory = await hre.ethers.getContractFactory('contracts\\DFInitialize.sol:DFInitialize', {
     libraries: { LibGameUtils },
   });
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
   console.log(`DFInitialize deployed to: ${contract.address}`);
+  return contract;
+}
+
+async function deployArenaDiamondInit({}, { LibGameUtils }: Libraries, hre: HardhatRuntimeEnvironment) {
+  // DFInitialize provides a function that is called when the diamond is upgraded to initialize state variables
+  // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
+  const factory = await hre.ethers.getContractFactory('contracts\\DFArenaInitialize.sol:DFInitialize', {
+    libraries: { LibGameUtils },
+  });
+  const contract = await factory.deploy();
+  await contract.deployTransaction.wait();
+  console.log(`DFArenaInitialize deployed to: ${contract.address}`);
   return contract;
 }
 

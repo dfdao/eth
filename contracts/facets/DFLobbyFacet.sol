@@ -22,8 +22,8 @@ contract DFLobbyFacet is WithStorage {
             whitelistEnabled,
             artifactBaseURI,
             initializers,
-        ]);
-  */
+        ]); 
+    */
     function createLobby(address initAddress, bytes calldata initData) public {
 
         // the original diamond's address

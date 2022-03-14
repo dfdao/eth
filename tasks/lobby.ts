@@ -5,6 +5,7 @@ task('lobby:create', 'create a lobby from the command line').setAction(deployLob
 
 async function deployLobbies({}, hre: HardhatRuntimeEnvironment): Promise<void> {
   const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
+  console.log("hello1")
 
   // Were only using one account, getSigners()[0], the deployer. Becomes the ProxyAdmin
   const [deployer] = await hre.ethers.getSigners();
@@ -15,8 +16,9 @@ async function deployLobbies({}, hre: HardhatRuntimeEnvironment): Promise<void> 
   const baseURI = isDev ? 'http://localhost:8081' : 'https://zkga.me';
 
   const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
+  // console.log(JSON.stringify(contract));
 
-  const { abi: InitABI } = await hre.artifacts.readArtifact('DFInitialize');
+  const { abi: InitABI } = await hre.artifacts.readArtifact('contracts\\DFInitialize.sol:DFInitialize');
   const initInterface = hre.ethers.Contract.getInterface(InitABI);
 
   const whitelistEnabled = false;
@@ -45,11 +47,15 @@ async function deployLobbies({}, hre: HardhatRuntimeEnvironment): Promise<void> 
   const result = waitForCreated();
 
   const tx = await contract.createLobby(initAddress, initFunctionCall);
+  console.log("hello4")
 
   const receipt = await tx.wait();
   if (!receipt.status) {
     throw Error(`Lobby creation failed: ${tx.hash}`);
+  } else {
+    console.log("Lobby created successfully");
   }
 
   await result;
+  console.log("herro")
 }

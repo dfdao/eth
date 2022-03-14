@@ -25,7 +25,7 @@ import {
 
 contract DFAdminFacet is WithStorage {
     event AdminOwnershipChanged(uint256 loc, address newOwner);
-    event AdminPlanetCreated(uint256 loc);
+    // event AdminPlanetCreated(uint256 loc);
     event AdminGiveSpaceship(uint256 loc, address owner, ArtifactType artifactType);
     event PauseStateChanged(bool paused);
 
@@ -120,29 +120,29 @@ contract DFAdminFacet is WithStorage {
         gs().TOKEN_MINT_END_TIMESTAMP = newTokenMintEndTime;
     }
 
-    function createPlanet(AdminCreatePlanetArgs memory args) public onlyAdmin {
-        require(gameConstants().ADMIN_CAN_ADD_PLANETS, "admin can no longer add planets");
-        if (args.requireValidLocationId) {
-            require(LibGameUtils._locationIdValid(args.location), "Not a valid planet location");
-        }
-        SpaceType spaceType = LibGameUtils.spaceTypeFromPerlin(args.perlin);
-        LibPlanet._initializePlanet(
-            DFPInitPlanetArgs(
-                args.location,
-                args.perlin,
-                args.level,
-                gameConstants().TIME_FACTOR_HUNDREDTHS,
-                spaceType,
-                args.planetType,
-                false
-            )
-        );
+    // function createPlanet(AdminCreatePlanetArgs memory args) public onlyAdmin {
+    //     require(gameConstants().ADMIN_CAN_ADD_PLANETS, "admin can no longer add planets");
+    //     if (args.requireValidLocationId) {
+    //         require(LibGameUtils._locationIdValid(args.location), "Not a valid planet location");
+    //     }
+    //     SpaceType spaceType = LibGameUtils.spaceTypeFromPerlin(args.perlin);
+    //     LibPlanet._initializePlanet(
+    //         DFPInitPlanetArgs(
+    //             args.location,
+    //             args.perlin,
+    //             args.level,
+    //             gameConstants().TIME_FACTOR_HUNDREDTHS,
+    //             spaceType,
+    //             args.planetType,
+    //             false
+    //         )
+    //     );
         
-        gs().planetIds.push(args.location);
-        gs().initializedPlanetCountByLevel[args.level] += 1;
+    //     gs().planetIds.push(args.location);
+    //     gs().initializedPlanetCountByLevel[args.level] += 1;
 
-        emit AdminPlanetCreated(args.location);
-    }
+    //     emit AdminPlanetCreated(args.location);
+    // }
 
     function adminGiveSpaceShip(
         uint256 locationId,
