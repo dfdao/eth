@@ -4,24 +4,22 @@ pragma solidity ^0.8.0;
 // Type imports
 import {Planet, PlanetExtendedInfo, PlanetExtendedInfo2, PlanetEventMetadata, PlanetDefaultStats, Upgrade, RevealedCoords, Player, ArrivalData, Artifact} from "../DFTypes.sol";
 
-struct ArenaStorage {
-    // Arena Mode
-    address winner;
-    bool gameover;
-    // These are ratchet solidity sets, might add to extended info
-    uint256[] targetPlanetIds;
-    uint256[] spawnPlanetIds;
-    mapping(uint256 => bool) targetPlanets;
-    mapping(uint256 => bool) spawnPlanets;
+struct ArenaPlanetInfo {
+    bool spawnPlanet;
+    bool targetPlanet;
+}
 
-    // Constants -- Do we want to make an ArenaConstants struct?
+struct ArenaStorage {
+    address[] winners;
+    bool gameover;
+    mapping(uint256 => ArenaPlanetInfo) arenaPlanetInfo;
+    uint256[] spawnPlanetIds;
+    uint256[] targetPlanetIds;
 }
 
 struct ArenaConstants {
-    // Target Planet
     bool TARGET_PLANETS;
     uint256 TARGET_PLANET_HOLD_BLOCKS_REQUIRED;
-    // Manual Spawn
     bool MANUAL_SPAWN;
 }
 

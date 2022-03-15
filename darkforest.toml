@@ -7,7 +7,6 @@ ADMIN_CAN_ADD_PLANETS = true
 TOKEN_MINT_END_TIMESTAMP = 2022-03-01T05:00:00.000Z
 WORLD_RADIUS_LOCKED = false
 WORLD_RADIUS_MIN = 12_000
-MANUAL_SPAWN = true
 
 ##################################
 # SNARK keys & Perlin parameters #
@@ -147,13 +146,15 @@ PLANET_TYPE_WEIGHTS = [
 TARGET_PLANETS = true
 TARGET_PLANET_HOLD_BLOCKS_REQUIRED = 100
 
+MANUAL_SPAWN = false
+
 ##########################
 # Planets to add to game #
 ##########################
   [[planets]]
   x = 0
   y = 0
-  level = 0
+  level = 9
   planetType = 3
   requireValidLocationId = false
   revealLocation = true

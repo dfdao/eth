@@ -215,7 +215,6 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
 
         //arenaMode initialization
         arenaStorage().gameover = false;
-        arenaStorage().winner = address(0);
         arenaConstants().TARGET_PLANETS = initArgs.TARGET_PLANETS;
         arenaConstants().TARGET_PLANET_HOLD_BLOCKS_REQUIRED = initArgs
             .TARGET_PLANET_HOLD_BLOCKS_REQUIRED;

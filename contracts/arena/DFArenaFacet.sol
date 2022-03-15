@@ -18,7 +18,7 @@ import {IERC173} from "../vendor/interfaces/IERC173.sol";
 
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
-import {WithArenaStorage, ArenaStorage, ArenaConstants} from "./LibArenaStorage.sol";
+import {WithArenaStorage, ArenaStorage, ArenaPlanetInfo, ArenaConstants} from "./LibArenaStorage.sol";
 
 import {
     SpaceType,
@@ -83,6 +83,16 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
         if (args.requireValidLocationId) {
             require(LibGameUtils._locationIdValid(args.location), "Not a valid planet location");
         }
+
+        if(args.isTargetPlanet) require(arenaConstants().TARGET_PLANETS, "admin cannot create target planets");
+        if(args.isSpawnPlanet) require(arenaConstants().MANUAL_SPAWN, "admin cannot create spawn planets");
+        
+        if(args.isTargetPlanet || args.isSpawnPlanet) {
+            arenaStorage().arenaPlanetInfo[args.location] = ArenaPlanetInfo(args.isSpawnPlanet, args.isTargetPlanet);
+            if(args.isTargetPlanet) arenaStorage().targetPlanetIds.push(args.location);
+            if(args.isSpawnPlanet) arenaStorage().spawnPlanetIds.push(args.location);
+        }
+
         SpaceType spaceType = LibGameUtils.spaceTypeFromPerlin(args.perlin);
         LibPlanet._initializePlanet(
             DFPInitPlanetArgs(
@@ -95,18 +105,6 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
                 false
             )
         );
-        if (args.isTargetPlanet) {
-            require(arenaConstants().TARGET_PLANETS, "admin cannot create target planets");
-            arenaStorage().targetPlanetIds.push(args.location);
-            arenaStorage().targetPlanets[args.location] = true;
-        }
-
-        if (args.isSpawnPlanet) {
-            require(arenaConstants().MANUAL_SPAWN, "admin cannot create spawn planets");
-
-            arenaStorage().spawnPlanetIds.push(args.location);
-            arenaStorage().spawnPlanets[args.location] = true;
-        }
 
         gs().planetIds.push(args.location);
         gs().initializedPlanetCountByLevel[args.level] += 1;
@@ -212,7 +210,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
         PlanetExtendedInfo2 memory planetExtendedInfo2 = gs().planetsExtendedInfo2[locationId];
 
         require(
-            arenaStorage().targetPlanets[locationId],
+            arenaStorage().arenaPlanetInfo[locationId].targetPlanet,
             "you can only claim victory with a target planet"
         );
         
@@ -231,7 +229,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
         );
 
         arenaStorage().gameover = true;
-        arenaStorage().winner = msg.sender;
+        arenaStorage().winners.push(msg.sender);
         emit Gameover(msg.sender);
     }
 
@@ -279,12 +277,8 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
         return arenaStorage().spawnPlanetIds[idx];
     }
 
-    function targetPlanets(uint256 location) public view returns (bool) {
-        return arenaStorage().targetPlanets[location];
-    }
-
-    function spawnPlanets(uint256 location) public view returns (bool) {
-        return arenaStorage().spawnPlanets[location];
+    function arenaPlanets(uint256 location) public view returns (ArenaPlanetInfo memory) {
+        return arenaStorage().arenaPlanetInfo[location];
     }
 
     function getNTargetPlanets() public view returns (uint256) {
@@ -319,8 +313,8 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
         }
     }
 
-    function getWinner() public view returns (address) {
-        return arenaStorage().winner;
+    function getWinners() public view returns (address[] memory) {
+        return arenaStorage().winners;
     }
 
     function getGameover() public view returns (bool) {

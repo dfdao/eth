@@ -231,8 +231,8 @@ describe('DarkForestInit', function () {
     const revealedCoords = await world.contract.revealedCoords(ADMIN_PLANET_CLOAKED.id);
     expect(revealedCoords.x.toNumber()).to.equal(x);
     expect(revealedCoords.y.toNumber()).to.equal(y);
-    await expect((await world.contract.getNRevealedPlanets()).toNumber()).to.equal(1);
-    await expect(await world.contract.revealedPlanetIds(0)).to.be.equal(ADMIN_PLANET_CLOAKED.id);
+    expect((await world.contract.getNRevealedPlanets()).toNumber()).to.equal(1);
+    expect(await world.contract.revealedPlanetIds(0)).to.be.equal(ADMIN_PLANET_CLOAKED.id);
   });
 
 });
@@ -268,8 +268,10 @@ describe('DarkForestSpawnandTarget', function () {
     const targetPlanetId = await world.contract.targetPlanetIds(0);
     expect(targetPlanetId).to.equal(ADMIN_PLANET_CLOAKED.id);
 
-    const targetPlanet = await world.contract.targetPlanets(ADMIN_PLANET_CLOAKED.id);
-    expect(targetPlanet).to.equal(true);
+    const targetPlanet = await world.contract.arenaPlanets(ADMIN_PLANET_CLOAKED.id);
+    console.log(`targetPlanet: ${targetPlanet}`)
+    expect(targetPlanet.spawnPlanet).to.equal(false);
+    expect(targetPlanet.targetPlanet).to.equal(true);
   });
 
   it('allows admin to create a spawn planet', async function () {
@@ -299,8 +301,12 @@ describe('DarkForestSpawnandTarget', function () {
     const spawnPlanetId = await world.contract.spawnPlanetIds(0);
     expect(spawnPlanetId).to.equal(ADMIN_PLANET_CLOAKED.id);
 
-    const spawnPlanet = await world.contract.spawnPlanets(ADMIN_PLANET_CLOAKED.id);
-    expect(spawnPlanet).to.equal(true);
+    const spawnPlanet = await world.contract.arenaPlanets(ADMIN_PLANET_CLOAKED.id);
+    console.log(`spawnPlanet: ${spawnPlanet}`)
+
+    expect(spawnPlanet.spawnPlanet).to.equal(true);
+    expect(spawnPlanet.targetPlanet).to.equal(false);
+
 
   });
 });

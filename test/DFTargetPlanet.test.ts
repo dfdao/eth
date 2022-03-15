@@ -109,9 +109,9 @@ describe('Claim Victory', function () {
       });
       it('sets gameover to true and winner to msg sender', async function () {
         await world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id);
-        const winner = await world.contract.getWinner();
+        const winners = await world.contract.getWinners();
         const gameover = await world.contract.getGameover();
-        expect(winner).to.equal(world.user1.address);
+        expect(winners[0]).to.equal(world.user1.address);
         expect(gameover).to.equal(true);
       });
     });
