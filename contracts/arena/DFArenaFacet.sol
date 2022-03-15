@@ -18,7 +18,7 @@ import {IERC173} from "../vendor/interfaces/IERC173.sol";
 
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
-import {WithArenaStorage} from "./LibArenaStorage.sol";
+import {WithArenaStorage, ArenaStorage, ArenaConstants} from "./LibArenaStorage.sol";
 
 import {
     SpaceType,
@@ -73,7 +73,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
     }
 
     modifier targetPlanetsActive() {
-        require(arenaStorage().TARGET_PLANETS, "target planets are disabled");
+        require(arenaConstants().TARGET_PLANETS, "target planets are disabled");
         _;
     }
 
@@ -96,13 +96,13 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
             )
         );
         if (args.isTargetPlanet) {
-            require(arenaStorage().TARGET_PLANETS, "admin cannot create target planets");
+            require(arenaConstants().TARGET_PLANETS, "admin cannot create target planets");
             arenaStorage().targetPlanetIds.push(args.location);
             arenaStorage().targetPlanets[args.location] = true;
         }
 
         if (args.isSpawnPlanet) {
-            require(arenaStorage().MANUAL_SPAWN, "admin cannot create spawn planets");
+            require(arenaConstants().MANUAL_SPAWN, "admin cannot create spawn planets");
 
             arenaStorage().spawnPlanetIds.push(args.location);
             arenaStorage().spawnPlanets[args.location] = true;
@@ -124,9 +124,9 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
         uint256 _perlin = _input[1];
         uint256 _radius = _input[2];
 
-        if(arenaStorage().MANUAL_SPAWN) {
+        if(arenaConstants().MANUAL_SPAWN) {
             // TODO: Move this logic to LibPlanet initializeManualSpawn or smthing
-            uint256[] memory spawnIds = gs().spawnPlanetIds;
+            uint256[] memory spawnIds = arenaStorage().spawnPlanetIds;
             bool foundSpawn = false;
 
             // Check planets are already intialized by createPlanets
@@ -225,7 +225,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
 
         require(
             planetExtendedInfo2.invadeStartBlock +
-                arenaStorage().TARGET_PLANET_HOLD_BLOCKS_REQUIRED <=
+                arenaConstants().TARGET_PLANET_HOLD_BLOCKS_REQUIRED <=
                 block.number,
             "you have not held the planet long enough to claim victory with it"
         );
@@ -325,5 +325,9 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
 
     function getGameover() public view returns (bool) {
         return arenaStorage().gameover;
+    }
+    
+    function getArenaConstants() public pure returns (ArenaConstants memory) {
+        return arenaConstants();
     }
 }

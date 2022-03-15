@@ -15,6 +15,9 @@ struct ArenaStorage {
     mapping(uint256 => bool) spawnPlanets;
 
     // Constants -- Do we want to make an ArenaConstants struct?
+}
+
+struct ArenaConstants {
     // Target Planet
     bool TARGET_PLANETS;
     uint256 TARGET_PLANET_HOLD_BLOCKS_REQUIRED;
@@ -65,12 +68,20 @@ struct ArenaStorage {
  * wrote about the benefits of the Diamond Storage pattern over other storage patterns at
  * https://medium.com/1milliondevs/new-storage-layout-for-proxy-contracts-and-diamonds-98d01d0eadb#bfc1
  */
-library LibStorage {
+library LibArenaStorage {
     // Storage are structs where the data gets updated throughout the lifespan of the game
     bytes32 constant ARENA_STORAGE_POSITION = keccak256("darkforest.storage.arena");
+    bytes32 constant ARENA_CONSTANTS_POSITION = keccak256("darkforest.constants.arena");
 
     function arenaStorage() internal pure returns (ArenaStorage storage gs) {
         bytes32 position = ARENA_STORAGE_POSITION;
+        assembly {
+            gs.slot := position
+        }
+    }
+
+     function arenaConstants() internal pure returns (ArenaConstants storage gs) {
+        bytes32 position = ARENA_CONSTANTS_POSITION;
         assembly {
             gs.slot := position
         }
@@ -88,6 +99,10 @@ library LibStorage {
  */
 contract WithArenaStorage {
     function arenaStorage() internal pure returns (ArenaStorage storage) {
-        return LibStorage.arenaStorage();
+        return LibArenaStorage.arenaStorage();
     }
+    function arenaConstants() internal pure returns (ArenaConstants storage) {
+        return LibArenaStorage.arenaConstants();
+    }
+    
 }

@@ -47,15 +47,6 @@ struct GameStorage {
     mapping(uint256 => Artifact) artifacts;
     // Capture Zones
     uint256 nextChangeBlock;
-
-    // Arena Mode
-    address winner;
-    bool gameover;
-    // These are ratchet solidity sets, might add to extended info
-    uint256[] targetPlanetIds;
-    uint256[] spawnPlanetIds;
-    mapping(uint256 => bool) targetPlanets;
-    mapping(uint256 => bool) spawnPlanets;
 }
 
 // Game config
@@ -114,12 +105,6 @@ struct GameConstants {
     uint256[10] CAPTURE_ZONE_PLANET_LEVEL_SCORE;
     uint256 CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED;
     uint256 CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
-    // Target Planet
-    bool TARGET_PLANETS;
-    uint256 TARGET_PLANET_HOLD_BLOCKS_REQUIRED;
-    // Manual Spawn
-    bool MANUAL_SPAWN;
-
 }
 
 // SNARK keys and perlin params

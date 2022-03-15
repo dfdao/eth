@@ -216,10 +216,10 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
         //arenaMode initialization
         arenaStorage().gameover = false;
         arenaStorage().winner = address(0);
-        arenaStorage().TARGET_PLANETS = initArgs.TARGET_PLANETS;
-        arenaStorage().TARGET_PLANET_HOLD_BLOCKS_REQUIRED = initArgs
+        arenaConstants().TARGET_PLANETS = initArgs.TARGET_PLANETS;
+        arenaConstants().TARGET_PLANET_HOLD_BLOCKS_REQUIRED = initArgs
             .TARGET_PLANET_HOLD_BLOCKS_REQUIRED;
-        arenaStorage().MANUAL_SPAWN = initArgs.MANUAL_SPAWN;
+        arenaConstants().MANUAL_SPAWN = initArgs.MANUAL_SPAWN;
 
         LibGameUtils.updateWorldRadius();
     }
