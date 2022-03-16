@@ -272,7 +272,7 @@ describe('DarkForestTarget', function () {
     const targetPlanetId = await world.contract.targetPlanetIds(0);
     expect(targetPlanetId).to.equal(ADMIN_PLANET_CLOAKED.id);
 
-    const targetPlanet = await world.contract.arenaPlanets(ADMIN_PLANET_CLOAKED.id);
+    const targetPlanet = await world.contract.planetsArenaInfo(ADMIN_PLANET_CLOAKED.id);
     console.log(`targetPlanet: ${targetPlanet}`)
     expect(targetPlanet.spawnPlanet).to.equal(false);
     expect(targetPlanet.targetPlanet).to.equal(true);
@@ -366,5 +366,39 @@ describe('DarkForestSpawn', function () {
     await expect(world.user2Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED)))
     .to.be.revertedWith('No available manual spawn planet found');   
   
+  });
+
+  it('gets false for a planet that is neither spawn nor target planet', async function () {
+    world = await fixtureLoader(manualSpawnFixture);
+
+    const perlin = 20;
+    const level = 5;
+    const planetType = 1; // asteroid field
+    const x = 10;
+    const y = 20;
+    await world.contract.createPlanet({
+      location: ADMIN_PLANET_CLOAKED.id,
+      perlin,
+      level,
+      planetType,
+      requireValidLocationId: false,
+      isTargetPlanet: false,
+      isSpawnPlanet: false
+    });
+
+    await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
+
+    
+    const numSpawnPlanets = await world.contract.getNSpawnPlanets();
+    expect(numSpawnPlanets).to.equal(0);
+
+
+    const spawnPlanet = await world.contract.planetsArenaInfo(ADMIN_PLANET_CLOAKED.id);
+    console.log(`spawnPlanet: ${spawnPlanet}`)
+
+    expect(spawnPlanet.spawnPlanet).to.equal(false);
+    expect(spawnPlanet.targetPlanet).to.equal(false);
+
+
   });
 });
