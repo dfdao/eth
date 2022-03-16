@@ -237,9 +237,13 @@ describe('DarkForestInit', function () {
 
 });
 
-describe('DarkForestSpawnandTarget', function () {
+describe('DarkForestTarget', function () {
 
   let world: World;
+
+  beforeEach('load fixture', async function () {
+    world = await fixtureLoader(targetPlanetFixture);
+  });
 
   it('allows admin to create target planet', async function () {
     world = await fixtureLoader(targetPlanetFixture);
@@ -274,9 +278,17 @@ describe('DarkForestSpawnandTarget', function () {
     expect(targetPlanet.targetPlanet).to.equal(true);
   });
 
-  it('allows admin to create a spawn planet', async function () {
-    world = await fixtureLoader(manualSpawnFixture);
+});
 
+describe('DarkForestSpawn', function () {
+
+  let world: World;
+
+  beforeEach('load fixture', async function () {
+    world = await fixtureLoader(manualSpawnFixture);
+  });
+
+  it('allows admin to create a spawn planet', async function () {
     const perlin = 20;
     const level = 5;
     const planetType = 1; // asteroid field
@@ -298,16 +310,62 @@ describe('DarkForestSpawnandTarget', function () {
     const numSpawnPlanets = await world.contract.getNSpawnPlanets();
     expect(numSpawnPlanets).to.equal(1);
 
-    const spawnPlanetId = await world.contract.spawnPlanetIds(0);
-    expect(spawnPlanetId).to.equal(ADMIN_PLANET_CLOAKED.id);
+    const spawnPlanet = await world.contract.spawnPlanetIds(0);
 
-    const spawnPlanet = await world.contract.planetsArenaInfo(ADMIN_PLANET_CLOAKED.id);
-    console.log(`spawnPlanet: ${spawnPlanet}`)
+    expect(spawnPlanet).to.equal(ADMIN_PLANET_CLOAKED.id);
+  });
 
-    expect(spawnPlanet.spawnPlanet).to.equal(true);
-    expect(spawnPlanet.targetPlanet).to.equal(false);
+  it('allows player to spawn at admin planet that is initialized', async function () {
+    const perlin = VALID_INIT_PERLIN;
+    const level = 0;
+    const planetType = 0; // planet
+    await world.contract.createPlanet({
+      location: ADMIN_PLANET_CLOAKED.id,
+      perlin,
+      level,
+      planetType,
+      requireValidLocationId: false,
+      isTargetPlanet: false,
+      isSpawnPlanet: true
+    });
 
+    const toPlanetExtended = await world.contract.planetsExtendedInfo(ADMIN_PLANET_CLOAKED.id);
+    expect(toPlanetExtended.isInitialized).to.equal(true);
 
+    await expect(world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED)))
+      .to.emit(world.contract, 'PlayerInitialized')
+      .withArgs(world.user1.address, ADMIN_PLANET_CLOAKED.id.toString());
+  });
+
+  it('reverts if no spawn planets', async function () {
+    await expect(world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED)))
+      .to.be.revertedWith('No manual spawn planets')
+  });
+
+  it('reverts if all spawn planets are initialized', async function () {
+    const perlin = VALID_INIT_PERLIN;
+    const level = 0;
+    const planetType = 0; // planet
+    await world.contract.createPlanet({
+      location: ADMIN_PLANET_CLOAKED.id,
+      perlin,
+      level,
+      planetType,
+      requireValidLocationId: false,
+      isTargetPlanet: false,
+      isSpawnPlanet: true
+    });
+
+    const toPlanetExtended = await world.contract.planetsExtendedInfo(ADMIN_PLANET_CLOAKED.id);
+    expect(toPlanetExtended.isInitialized).to.equal(true);
+
+    await expect(world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED)))
+      .to.emit(world.contract, 'PlayerInitialized')
+      .withArgs(world.user1.address, ADMIN_PLANET_CLOAKED.id.toString());    
+
+    await expect(world.user2Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED)))
+    .to.be.revertedWith('No available manual spawn planet found');   
+  
   });
 
   it('gets false for a planet that is neither spawn nor target planet', async function () {
