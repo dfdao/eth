@@ -196,7 +196,7 @@ export function makeFindArtifactArgs(
 }
 
 export async function increaseBlockchainBlocks(blocks = NUM_BLOCKS) {
-  await ethers.provider.send('evm_increaseTime', [LARGE_INTERVAL]);
+  // await ethers.provider.send('evm_increaseTime', [LARGE_INTERVAL]);
   for (let i = 0; i < blocks; i++) {
     await ethers.provider.send('evm_mine', []);
   }
