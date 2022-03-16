@@ -277,10 +277,21 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
         return arenaStorage().spawnPlanetIds[idx];
     }
 
-    function arenaPlanets(uint256 location) public view returns (ArenaPlanetInfo memory) {
-        return arenaStorage().arenaPlanetInfo[location];
+    function planetsArenaInfo(uint256 key) public view returns (ArenaPlanetInfo memory) {
+        return arenaStorage().arenaPlanetInfo[key];
     }
+    
+    function bulkGetPlanetsArenaInfoByIds(uint256[] calldata ids)
+        public
+        view
+        returns (ArenaPlanetInfo[] memory ret)
+    {
+        ret = new ArenaPlanetInfo[](ids.length);
 
+        for (uint256 i = 0; i < ids.length; i++) {
+            ret[i] = arenaStorage().arenaPlanetInfo[ids[i]];
+        }
+    }
     function getNTargetPlanets() public view returns (uint256) {
         return arenaStorage().targetPlanetIds.length;
     }

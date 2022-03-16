@@ -49,6 +49,10 @@ describe('Claim Victory', function () {
   });
 
   describe('invading target planet', function () {
+    beforeEach(async function () {
+      world = await fixtureLoader(worldFixture);
+    });
+  
     it('player cannot invade target planet without ownership', async function () {
       await expect(
         world.user1Core.invadeTargetPlanet(...makeRevealArgs(LVL0_PLANET_DEEP_SPACE, 10, 20))
@@ -72,7 +76,11 @@ describe('Claim Victory', function () {
   });
 
   describe('claiming victory on target planet', function () {
+    
     beforeEach(async function () {
+      world = await fixtureLoader(worldFixture);
+      
+    
       const dist = 1;
       const shipsSent = 50000;
       const silverSent = 0;

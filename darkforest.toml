@@ -2,7 +2,7 @@
 # Defined in TOML as per https://toml.io/en/v0.5.0
 
 [initializers]
-START_PAUSED = true
+START_PAUSED = false
 ADMIN_CAN_ADD_PLANETS = true
 TOKEN_MINT_END_TIMESTAMP = 2022-03-01T05:00:00.000Z
 WORLD_RADIUS_LOCKED = false
@@ -158,5 +158,5 @@ MANUAL_SPAWN = false
   planetType = 3
   requireValidLocationId = false
   revealLocation = true
-  isTargetPlanet = false
-  isSpawnPlanet = true
+  isTargetPlanet = true
+  isSpawnPlanet = false
