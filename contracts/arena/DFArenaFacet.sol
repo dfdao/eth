@@ -49,7 +49,7 @@ struct ArenaAdminCreatePlanetArgs {
 contract DFArenaFacet is WithStorage, WithArenaStorage {
     event AdminPlanetCreated(uint256 loc);
     event TargetPlanetInvaded(address player, uint256 loc);
-    event Gameover(address winner);
+    event Gameover(uint256 loc);
     event PlayerInitialized(address player, uint256 loc);
 
 
@@ -228,9 +228,10 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
             "you have not held the planet long enough to claim victory with it"
         );
 
+        planetExtendedInfo2.capturer = msg.sender;
         arenaStorage().gameover = true;
         arenaStorage().winners.push(msg.sender);
-        emit Gameover(msg.sender);
+        emit Gameover(locationId);
     }
 
     /*
