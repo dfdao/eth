@@ -115,27 +115,20 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
         uint256 _perlin = _input[1];
         uint256 _radius = _input[2];
 
-        if (arenaConstants().MANUAL_SPAWN) {
-            // TODO: Move this logic to LibPlanet initializeManualSpawn or smthing
-            uint256[] memory spawnIds = arenaStorage().spawnPlanetIds;
-            bool foundSpawn = false;
+        if (arenaConstants().MANUAL_SPAWN) {            
+            require(arenaStorage().arenaPlanetInfo[_location].spawnPlanet, "Planet is not a spawn planet");
 
-            // Check planets are already intialized by createPlanets
-            require(spawnIds.length > 0, "No manual spawn planets");
+            Planet storage _planet = gs().planets[_location];
+            PlanetExtendedInfo memory _planetExtendedInfo = gs().planetsExtendedInfo[_location];
 
-            for (uint256 i = 0; i < spawnIds.length; i++) {
-                // console.log('testing revealed Id %s', spawnIds[i]);
-                Planet storage _planet = gs().planets[spawnIds[i]];
-                if (_location == spawnIds[i] && !_planet.isHomePlanet) {
-                    // This is already initialized in createPlanet
-                    // LibPlanet.initializePlanet(_a, _b, _c, _input, true);
-                    foundSpawn = true;
-                    // get planet from storage and set it as homePlanet
-                    _planet.isHomePlanet = true;
-                    break;
-                }
-            }
-            require(foundSpawn, "No available manual spawn planet found");
+            require(_planetExtendedInfo.isInitialized, "Planet not initialized");
+            require(_planet.owner == address(0), "Planet is owned");
+            require(!_planet.isHomePlanet, "Planet is already a home planet");
+
+            _planet.isHomePlanet = true;
+            _planet.owner = msg.sender;
+            _planet.population = _planet.populationCap * 25 / 100;
+
         } else {
             LibPlanet.initializePlanet(_a, _b, _c, _input, true);
         }

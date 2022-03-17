@@ -114,12 +114,13 @@ describe('Claim Victory', function () {
         const planet = await world.contract.planetsExtendedInfo2(LVL0_PLANET_DEEP_SPACE.id);
         await expect(world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id))
           .to.emit(world.contract, 'Gameover')
-          .withArgs(world.user1.address);
+          .withArgs(LVL0_PLANET_DEEP_SPACE.id);
       });
       it('sets gameover to true and winner to msg sender', async function () {
         await world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id);
         const winners = await world.contract.getWinners();
         const gameover = await world.contract.getGameover();
+        expect(winners.length).to.equal(1);
         expect(winners[0]).to.equal(world.user1.address);
         expect(gameover).to.equal(true);
       });

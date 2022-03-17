@@ -339,7 +339,7 @@ describe('DarkForestSpawn', function () {
 
   it('reverts if no spawn planets', async function () {
     await expect(world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED)))
-      .to.be.revertedWith('No manual spawn planets')
+      .to.be.revertedWith('Planet is not a spawn planet')
   });
 
   it('reverts if all spawn planets are initialized', async function () {
@@ -364,7 +364,7 @@ describe('DarkForestSpawn', function () {
       .withArgs(world.user1.address, ADMIN_PLANET_CLOAKED.id.toString());    
 
     await expect(world.user2Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED)))
-    .to.be.revertedWith('No available manual spawn planet found');   
+    .to.be.revertedWith('Planet is already owned');   
   
   });
 
