@@ -20,18 +20,7 @@ import {IERC173} from "../vendor/interfaces/IERC173.sol";
 import {WithStorage} from "../libraries/LibStorage.sol";
 import {WithArenaStorage, ArenaStorage, ArenaPlanetInfo, ArenaConstants} from "./LibArenaStorage.sol";
 
-import {
-    SpaceType,
-    DFPInitPlanetArgs,
-    AdminCreatePlanetArgs,
-    Artifact,
-    ArtifactType,
-    Player,
-    Planet,
-    PlanetType,
-    PlanetExtendedInfo,
-    PlanetExtendedInfo2
-} from "../DFTypes.sol";
+import {SpaceType, DFPInitPlanetArgs, AdminCreatePlanetArgs, Artifact, ArtifactType, Player, Planet, PlanetType, PlanetExtendedInfo, PlanetExtendedInfo2} from "../DFTypes.sol";
 
 // SHOULD WE SPLIT THESE DATA STRUCTURES UP? THEY ARE COMING FROM ALL OVER
 
@@ -51,7 +40,6 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
     event TargetPlanetInvaded(address player, uint256 loc);
     event Gameover(uint256 loc);
     event PlayerInitialized(address player, uint256 loc);
-
 
     modifier onlyAdmin() {
         LibDiamond.enforceIsContractOwner();
@@ -84,13 +72,18 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
             require(LibGameUtils._locationIdValid(args.location), "Not a valid planet location");
         }
 
-        if(args.isTargetPlanet) require(arenaConstants().TARGET_PLANETS, "admin cannot create target planets");
-        if(args.isSpawnPlanet) require(arenaConstants().MANUAL_SPAWN, "admin cannot create spawn planets");
-        
-        if(args.isTargetPlanet || args.isSpawnPlanet) {
-            arenaStorage().arenaPlanetInfo[args.location] = ArenaPlanetInfo(args.isSpawnPlanet, args.isTargetPlanet);
-            if(args.isTargetPlanet) arenaStorage().targetPlanetIds.push(args.location);
-            if(args.isSpawnPlanet) arenaStorage().spawnPlanetIds.push(args.location);
+        if (args.isTargetPlanet)
+            require(arenaConstants().TARGET_PLANETS, "admin cannot create target planets");
+        if (args.isSpawnPlanet)
+            require(arenaConstants().MANUAL_SPAWN, "admin cannot create spawn planets");
+
+        if (args.isTargetPlanet || args.isSpawnPlanet) {
+            arenaStorage().arenaPlanetInfo[args.location] = ArenaPlanetInfo(
+                args.isSpawnPlanet,
+                args.isTargetPlanet
+            );
+            if (args.isTargetPlanet) arenaStorage().targetPlanetIds.push(args.location);
+            if (args.isSpawnPlanet) arenaStorage().spawnPlanetIds.push(args.location);
         }
 
         SpaceType spaceType = LibGameUtils.spaceTypeFromPerlin(args.perlin);
@@ -122,7 +115,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
         uint256 _perlin = _input[1];
         uint256 _radius = _input[2];
 
-        if(arenaConstants().MANUAL_SPAWN) {
+        if (arenaConstants().MANUAL_SPAWN) {
             // TODO: Move this logic to LibPlanet initializeManualSpawn or smthing
             uint256[] memory spawnIds = arenaStorage().spawnPlanetIds;
             bool foundSpawn = false;
@@ -130,20 +123,20 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
             // Check planets are already intialized by createPlanets
             require(spawnIds.length > 0, "No manual spawn planets");
 
-            for (uint i = 0; i < spawnIds.length; i++) {
+            for (uint256 i = 0; i < spawnIds.length; i++) {
                 // console.log('testing revealed Id %s', spawnIds[i]);
                 Planet storage _planet = gs().planets[spawnIds[i]];
-                if(_location == spawnIds[i] && !_planet.isHomePlanet) {
-                    LibPlanet.initializePlanet(_a, _b, _c, _input, true);
+                if (_location == spawnIds[i] && !_planet.isHomePlanet) {
+                    // This is already initialized in createPlanet
+                    // LibPlanet.initializePlanet(_a, _b, _c, _input, true);
                     foundSpawn = true;
                     // get planet from storage and set it as homePlanet
                     _planet.isHomePlanet = true;
                     break;
                 }
             }
-            require(foundSpawn, "No available manual spawn planet found");                
-        }
-        else {
+            require(foundSpawn, "No available manual spawn planet found");
+        } else {
             LibPlanet.initializePlanet(_a, _b, _c, _input, true);
         }
 
@@ -213,7 +206,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
             arenaStorage().arenaPlanetInfo[locationId].targetPlanet,
             "you can only claim victory with a target planet"
         );
-        
+
         require(planet.owner == msg.sender, "you can only claim victory with planets you own");
         require(!planetExtendedInfo.destroyed, "planet is destroyed");
         require(
@@ -269,7 +262,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
     */
     }
 
-    // Getters 
+    // Getters
     function targetPlanetIds(uint256 idx) public view returns (uint256) {
         return arenaStorage().targetPlanetIds[idx];
     }
@@ -296,7 +289,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
     function getNTargetPlanets() public view returns (uint256) {
         return arenaStorage().targetPlanetIds.length;
     }
-    
+
     function getNSpawnPlanets() public view returns (uint256) {
         return arenaStorage().spawnPlanetIds.length;
     }
@@ -332,7 +325,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
     function getGameover() public view returns (bool) {
         return arenaStorage().gameover;
     }
-    
+
     function getArenaConstants() public pure returns (ArenaConstants memory) {
         return arenaConstants();
     }

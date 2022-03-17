@@ -22,7 +22,7 @@ describe('Claim Victory', function () {
     let initArgs = makeInitArgs(SPAWN_PLANET_1);
     await world.user1Core.initializePlayer(...initArgs);
     await world.user1Core.giveSpaceShips(SPAWN_PLANET_1.id);
-    await increaseBlockchainTime();
+    // await increaseBlockchainTime();
 
     initArgs = makeInitArgs(SPAWN_PLANET_2);
     await world.user2Core.initializePlayer(...initArgs);
@@ -39,12 +39,13 @@ describe('Claim Victory', function () {
       isTargetPlanet: true,
       isSpawnPlanet: false,
     });
-    await increaseBlockchainTime();
+    // await increaseBlockchainTime();
 
     return world;
   }
 
   beforeEach(async function () {
+    console.log(`loading world`)
     world = await fixtureLoader(worldFixture);
   });
 
