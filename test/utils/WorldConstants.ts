@@ -26,6 +26,9 @@ export const noPlanetTransferInitializers = settings.parse(decodeInitializers, {
 export const manualSpawnInitializers = settings.parse(decodeInitializers, {
   ...defaultInitializerValues,
   MANUAL_SPAWN: true,
+  INIT_PERLIN_MIN: 0,
+  INIT_PERLIN_MAX: 31
+  
 });
 
 export const targetPlanetInitializers = settings.parse(decodeInitializers, {

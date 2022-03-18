@@ -12,6 +12,7 @@ import {
   LVL0_PLANET_DEEP_SPACE,
   LVL0_PLANET_OUT_OF_BOUNDS,
   LVL1_PLANET_NEBULA,
+  LVL2_PLANET_DEEP_SPACE,
   SPAWN_PLANET_1,
   SPAWN_PLANET_2,
   VALID_INIT_PERLIN,
@@ -342,63 +343,105 @@ describe('DarkForestSpawn', function () {
       .to.be.revertedWith('Planet is not a spawn planet')
   });
 
-  it('reverts if all spawn planets are initialized', async function () {
-    const perlin = VALID_INIT_PERLIN;
-    const level = 0;
-    const planetType = 0; // planet
-    await world.contract.createPlanet({
-      location: ADMIN_PLANET_CLOAKED.id,
-      perlin,
-      level,
-      planetType,
-      requireValidLocationId: false,
-      isTargetPlanet: false,
-      isSpawnPlanet: true
-    });
+  describe('manual spawn', async function(){
+    this.beforeEach('load manual spawn', async function () {
+      world = await fixtureLoader(manualSpawnFixture);
+      expect((await world.contract.getArenaConstants()).MANUAL_SPAWN);
+    })
 
-    const toPlanetExtended = await world.contract.planetsExtendedInfo(ADMIN_PLANET_CLOAKED.id);
-    expect(toPlanetExtended.isInitialized).to.equal(true);
-
-    await expect(world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED)))
-      .to.emit(world.contract, 'PlayerInitialized')
-      .withArgs(world.user1.address, ADMIN_PLANET_CLOAKED.id.toString());    
-
-    await expect(world.user2Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED)))
-    .to.be.revertedWith('Planet is already owned');   
+    it('reverts if spawn planet already initialized', async function () {
+      const perlin = VALID_INIT_PERLIN;
+      const level = 0;
+      const planetType = 0; // planet
+      await world.contract.createPlanet({
+        location: ADMIN_PLANET_CLOAKED.id,
+        perlin,
+        level,
+        planetType,
+        requireValidLocationId: false,
+        isTargetPlanet: false,
+        isSpawnPlanet: true
+      });
   
-  });
-
-  it('gets false for a planet that is neither spawn nor target planet', async function () {
-    world = await fixtureLoader(manualSpawnFixture);
-
-    const perlin = 20;
-    const level = 5;
-    const planetType = 1; // asteroid field
-    const x = 10;
-    const y = 20;
-    await world.contract.createPlanet({
-      location: ADMIN_PLANET_CLOAKED.id,
-      perlin,
-      level,
-      planetType,
-      requireValidLocationId: false,
-      isTargetPlanet: false,
-      isSpawnPlanet: false
+      const toPlanetExtended = await world.contract.planetsExtendedInfo(ADMIN_PLANET_CLOAKED.id);
+      expect(toPlanetExtended.isInitialized).to.equal(true);
+  
+      await expect(world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED)))
+        .to.emit(world.contract, 'PlayerInitialized')
+        .withArgs(world.user1.address, ADMIN_PLANET_CLOAKED.id.toString());    
+  
+      await expect(world.user2Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED)))
+      .to.be.revertedWith('Planet is owned');   
+    
+    });
+  
+    it('gets false for a planet that is neither spawn nor target planet', async function () {
+  
+      const perlin = 20;
+      const level = 5;
+      const planetType = 1; // asteroid field
+      const x = 10;
+      const y = 20;
+      await world.contract.createPlanet({
+        location: ADMIN_PLANET_CLOAKED.id,
+        perlin,
+        level,
+        planetType,
+        requireValidLocationId: false,
+        isTargetPlanet: false,
+        isSpawnPlanet: false
+      });
+  
+      await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
+  
+      
+      const numSpawnPlanets = await world.contract.getNSpawnPlanets();
+      expect(numSpawnPlanets).to.equal(0);
+  
+  
+      const spawnPlanet = await world.contract.planetsArenaInfo(ADMIN_PLANET_CLOAKED.id);
+      console.log(`spawnPlanet: ${spawnPlanet}`)
+  
+      expect(spawnPlanet.spawnPlanet).to.equal(false);
+      expect(spawnPlanet.targetPlanet).to.equal(false);
+  
+  
     });
 
-    await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
+    it.only('sets the planet to the proper values', async function () {
+  
+      const perlin = 16;
+      const level = 2;
+      const planetType = 0; // planet
+      const x = 10;
+      const y = 20;
+      await world.contract.createPlanet({
+        location: LVL2_PLANET_DEEP_SPACE.id,
+        perlin,
+        level,
+        planetType,
+        requireValidLocationId: false,
+        isTargetPlanet: false,
+        isSpawnPlanet: true
+      });  
+  
+      await world.contract.revealLocation(...makeRevealArgs(  LVL2_PLANET_DEEP_SPACE, x, y));
+  
+      
+      const numSpawnPlanets = await world.contract.getNSpawnPlanets();
+      expect(numSpawnPlanets).to.equal(1);
 
-    
-    const numSpawnPlanets = await world.contract.getNSpawnPlanets();
-    expect(numSpawnPlanets).to.equal(0);
+      await world.user1Core.initializePlayer(...makeInitArgs(LVL2_PLANET_DEEP_SPACE))
+  
+      const spawnPlanetInfo = await world.contract.planets(LVL2_PLANET_DEEP_SPACE.id);
+      const spawnPlanetArenaInfo = await world.contract.planetsArenaInfo(LVL2_PLANET_DEEP_SPACE.id);
 
+      expect(spawnPlanetArenaInfo.spawnPlanet).to.be.equal(true);
+      expect(spawnPlanetInfo.isHomePlanet).to.be.equal(true);
+      expect(spawnPlanetInfo.owner).to.be.equal(world.user1.address);
+      console.log(`cap: ${spawnPlanetInfo.populationCap}, pop: ${spawnPlanetInfo.population}`);
+      expect(spawnPlanetInfo.population).to.be.equal(Number(spawnPlanetInfo.populationCap)  / 4);  
+    });
+  })
 
-    const spawnPlanet = await world.contract.planetsArenaInfo(ADMIN_PLANET_CLOAKED.id);
-    console.log(`spawnPlanet: ${spawnPlanet}`)
-
-    expect(spawnPlanet.spawnPlanet).to.equal(false);
-    expect(spawnPlanet.targetPlanet).to.equal(false);
-
-
-  });
 });

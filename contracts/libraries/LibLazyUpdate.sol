@@ -62,15 +62,16 @@ library LibLazyUpdate {
             // unowned planet doesn't increase in population
             return;
         }
-
+        // time elapsed = time - last updated
         int128 _timeElapsed =
             ABDKMath64x64.sub(
                 ABDKMath64x64.fromUInt(updateToTime),
                 ABDKMath64x64.fromUInt(planetExtendedInfo.lastUpdated)
             );
-
+        // one = 1
         int128 _one = ABDKMath64x64.fromUInt(1);
 
+        // demoninator = (e ^ ((timeElapsed * (-4 * populatoinGrowth)) / populationCap )) * ((populationCap / population) - 1) + 1
         int128 _denominator =
             ABDKMath64x64.add(
                 ABDKMath64x64.mul(
@@ -97,6 +98,7 @@ library LibLazyUpdate {
                 _one
             );
 
+        // new population = populationCap / _demoninator
         uint256 newPopulation =
             ABDKMath64x64.toUInt(
                 ABDKMath64x64.div(ABDKMath64x64.fromUInt(planet.populationCap), _denominator)
