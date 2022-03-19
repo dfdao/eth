@@ -119,7 +119,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
             require(arenaStorage().arenaPlanetInfo[_location].spawnPlanet, "Planet is not a spawn planet");
 
             Planet storage _planet = gs().planets[_location];
-            PlanetExtendedInfo memory _planetExtendedInfo = gs().planetsExtendedInfo[_location];
+            PlanetExtendedInfo storage _planetExtendedInfo = gs().planetsExtendedInfo[_location];
 
             require(_planetExtendedInfo.isInitialized, "Planet not initialized");
             require(_planet.owner == address(0), "Planet is owned");
@@ -128,6 +128,8 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
             _planet.isHomePlanet = true;
             _planet.owner = msg.sender;
             _planet.population = _planet.populationCap * 25 / 100;
+            _planetExtendedInfo.lastUpdated = block.timestamp;
+
 
         } else {
             LibPlanet.initializePlanet(_a, _b, _c, _input, true);

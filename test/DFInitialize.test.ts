@@ -407,8 +407,7 @@ describe('DarkForestSpawn', function () {
   
   
     });
-
-    it.only('sets the planet to the proper values', async function () {
+    it('sets the planet to the proper values', async function () {
   
       const perlin = 16;
       const level = 2;
