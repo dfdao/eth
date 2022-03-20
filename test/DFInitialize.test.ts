@@ -12,6 +12,7 @@ import {
   LVL0_PLANET_DEEP_SPACE,
   LVL0_PLANET_OUT_OF_BOUNDS,
   LVL1_PLANET_NEBULA,
+  LVL1_PLANET_SPACE,
   LVL2_PLANET_DEEP_SPACE,
   SPAWN_PLANET_1,
   SPAWN_PLANET_2,
@@ -234,6 +235,60 @@ describe('DarkForestInit', function () {
     expect(revealedCoords.y.toNumber()).to.equal(y);
     expect((await world.contract.getNRevealedPlanets()).toNumber()).to.equal(1);
     expect(await world.contract.revealedPlanetIds(0)).to.be.equal(ADMIN_PLANET_CLOAKED.id);
+  });
+
+  it.only('allows admin to bulk create planets', async function () {
+    const perlin = 20;
+    const level = 5;
+    const planetType = 1; // asteroid field
+    const x = 10;
+    const y = 20;
+    const planets = [
+      {
+        location: ADMIN_PLANET.id,
+        perlin,
+        level,
+        planetType,
+        requireValidLocationId: true,
+        isTargetPlanet: false,
+        isSpawnPlanet: false
+      },
+      {
+        location: ADMIN_PLANET_CLOAKED.id,
+        perlin,
+        level,
+        planetType,
+        requireValidLocationId: false,
+        isTargetPlanet: false,
+        isSpawnPlanet: false
+      },
+      {
+        location: LVL1_PLANET_SPACE.id,
+        perlin,
+        level,
+        planetType,
+        requireValidLocationId: true,
+        isTargetPlanet: false,
+        isSpawnPlanet: false
+      }
+    ]
+    await world.contract.bulkCreatePlanet(planets);
+
+    await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET, x, y));
+    await world.contract.revealLocation(...makeRevealArgs(LVL1_PLANET_SPACE, 50, 100));
+
+    const revealedCoords = await world.contract.revealedCoords(ADMIN_PLANET.id);
+    expect(revealedCoords.x.toNumber()).to.equal(x);
+    expect(revealedCoords.y.toNumber()).to.equal(y);
+
+    const revealedCoords1 = await world.contract.revealedCoords(LVL1_PLANET_SPACE.id);
+    expect(revealedCoords1.x.toNumber()).to.equal(50);
+    expect(revealedCoords1.y.toNumber()).to.equal(100);
+
+    expect((await world.contract.getNRevealedPlanets()).toNumber()).to.equal(2);
+    expect(await world.contract.revealedPlanetIds(0)).to.be.equal(ADMIN_PLANET.id);
+    expect(await world.contract.revealedPlanetIds(1)).to.be.equal(LVL1_PLANET_SPACE.id);
+
   });
 
 });

@@ -135,6 +135,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
             LibPlanet.initializePlanet(_a, _b, _c, _input, true);
         }
 
+
         // Checks player hasn't already initialized and confirms PERLIN.
         require(LibPlanet.checkPlayerInit(_location, _perlin, _radius));
 
@@ -222,6 +223,11 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
         emit Gameover(locationId);
     }
 
+    function bulkCreatePlanet(ArenaAdminCreatePlanetArgs[] memory planets) public onlyAdmin {
+        for(uint i = 0; i < planets.length; i++) {
+            createPlanet(planets[i]);
+        }
+    }
     /*
     initAddress is the address of DFInitialize.sol
     initData is an object that is defined in ts as
