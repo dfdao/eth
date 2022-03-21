@@ -55,7 +55,7 @@ async function deploy(
     );
   }
 
-  const [diamond, diamondInit, initReceipt] = await deployAndCut(
+  const [diamond, arenaDiamondInit, initReceipt] = await deployAndCut(
     { ownerAddress: deployer.address, whitelistEnabled, initializers: hre.initializers },
     hre
   );
@@ -64,7 +64,7 @@ async function deploy(
     {
       coreBlockNumber: initReceipt.blockNumber,
       diamondAddress: diamond.address,
-      initAddress: diamondInit.address,
+      initAddress: arenaDiamondInit.address,
     },
     hre
   );
@@ -308,7 +308,7 @@ export async function deployAndCut(
   }
   console.log('Completed diamond cut');
 
-  return [diamond, diamondInit, initReceipt] as const;
+  return [diamond, arenaDiamondInit, initReceipt] as const;
 }
 
 export async function deployGetterFacet(
@@ -527,7 +527,7 @@ async function deployDiamondInit({}, { LibGameUtils }: Libraries, hre: HardhatRu
 }
 
 async function deployArenaDiamondInit({}, { LibGameUtils }: Libraries, hre: HardhatRuntimeEnvironment) {
-  // DFInitialize provides a function that is called when the diamond is upgraded to initialize state variables
+  // DFArenaInitialize provides a function that is called when the diamond is upgraded to initialize state variables
   // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
   const factory = await hre.ethers.getContractFactory('DFArenaInitialize', {
     libraries: { LibGameUtils },
