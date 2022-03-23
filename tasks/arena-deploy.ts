@@ -74,10 +74,10 @@ async function deployArena({}, hre: HardhatRuntimeEnvironment): Promise<void> {
       initializers,
     ]);
   
-    const upgradeTx = await diamond.diamondCut(toCut, initAddress, initFunctionCall);
-    const upgradeReceipt = await upgradeTx.wait();
-    if (!upgradeReceipt.status) {
-      throw Error(`Diamond cut failed: ${upgradeTx.hash}`);
+    const arenaTx = await diamond.diamondCut(toCut, initAddress, initFunctionCall);
+    const arenaReceipt = await arenaTx.wait();
+    if (!arenaReceipt.status) {
+      throw Error(`Diamond cut failed: ${arenaTx.hash}`);
     }
     console.log('Completed diamond cut');
   
@@ -93,7 +93,9 @@ async function deployArena({}, hre: HardhatRuntimeEnvironment): Promise<void> {
   
     console.log('Upgraded successfully. Godspeed cadet.');
 
-    return address;
+    const arena = await hre.ethers.getContractAt("DarkForest", address);
+    
+    return [diamond, diamondInit, arenaReceipt] as const;
   
   }
 
