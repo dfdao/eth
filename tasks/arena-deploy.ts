@@ -5,7 +5,7 @@ import { DiamondChanges } from '../utils/diamond';
 task('arena:create', 'create a lobby from the command line').setAction(deployArena);
 
 async function deployArena({}, hre: HardhatRuntimeEnvironment): Promise<void> {
-  console.log("deploying arena")
+  console.log("creating lobby and cutting arena facets")
 
   const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
 
@@ -43,7 +43,8 @@ async function deployArena({}, hre: HardhatRuntimeEnvironment): Promise<void> {
     const diamond = await hre.ethers.getContractAt('DarkForest', address);
 
     const prevFacets = await diamond.facets();
-    
+    console.log(`facets: ${prevFacets}`);
+
     const changes = new DiamondChanges(prevFacets);
 
     const arenaCutFacet = await deployArenaFacet({}, libraries, hre);
@@ -91,7 +92,7 @@ async function deployArena({}, hre: HardhatRuntimeEnvironment): Promise<void> {
       }
     }
   
-    console.log('Upgraded successfully. Godspeed cadet.');
+    console.log('Arena created successfully. Godspeed cadet.');
 
     const arena = await hre.ethers.getContractAt("DarkForest", address);
     
@@ -125,7 +126,6 @@ async function deployArena({}, hre: HardhatRuntimeEnvironment): Promise<void> {
   }
 
   await result;
-  console.log("herro")
 }
 
 export async function deployArenaFacet(
@@ -161,14 +161,17 @@ export async function deployLibraries({}, hre: HardhatRuntimeEnvironment) {
   const VerifierFactory = await hre.ethers.getContractFactory('Verifier');
   const Verifier = await VerifierFactory.deploy();
   await Verifier.deployTransaction.wait();
+  console.log(`Verifier deployed to: ${Verifier.address}`);
 
   const LibGameUtilsFactory = await hre.ethers.getContractFactory('LibGameUtils');
   const LibGameUtils = await LibGameUtilsFactory.deploy();
   await LibGameUtils.deployTransaction.wait();
+  console.log(`LibGameUtils deployed to: ${LibGameUtils.address}`);
 
   const LibLazyUpdateFactory = await hre.ethers.getContractFactory('LibLazyUpdate');
   const LibLazyUpdate = await LibLazyUpdateFactory.deploy();
   await LibLazyUpdate.deployTransaction.wait();
+  console.log(`LibLazyUpdate deployed to: ${LibLazyUpdate.address}`);
 
   const LibArtifactUtilsFactory = await hre.ethers.getContractFactory('LibArtifactUtils', {
     libraries: {
@@ -178,6 +181,7 @@ export async function deployLibraries({}, hre: HardhatRuntimeEnvironment) {
 
   const LibArtifactUtils = await LibArtifactUtilsFactory.deploy();
   await LibArtifactUtils.deployTransaction.wait();
+  console.log(`LibArtifactUtils deployed to: ${LibArtifactUtils.address}`);
 
   const LibPlanetFactory = await hre.ethers.getContractFactory('LibPlanet', {
     libraries: {
@@ -188,6 +192,7 @@ export async function deployLibraries({}, hre: HardhatRuntimeEnvironment) {
   });
   const LibPlanet = await LibPlanetFactory.deploy();
   await LibPlanet.deployTransaction.wait();
+  console.log(`LibPlanet deployed to: ${LibPlanet.address}`);
 
   return {
     LibGameUtils: LibGameUtils.address,
