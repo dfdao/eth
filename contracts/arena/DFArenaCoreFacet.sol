@@ -35,7 +35,7 @@ struct ArenaAdminCreatePlanetArgs {
     bool isSpawnPlanet;
 }
 
-contract DFArenaFacet is WithStorage, WithArenaStorage {
+contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     event AdminPlanetCreated(uint256 loc);
     event TargetPlanetInvaded(address player, uint256 loc);
     event Gameover(uint256 loc);
@@ -219,7 +219,7 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
 
         planetExtendedInfo2.capturer = msg.sender;
         arenaStorage().gameover = true;
-        arenaStorage().winners.push(msg.sender);
+        arenaStorage().winners = arenaStorage().winners;
         emit Gameover(locationId);
     }
 
@@ -261,73 +261,5 @@ contract DFArenaFacet is WithStorage, WithArenaStorage {
 
         Emit ArenaCreated event
     */
-    }
-
-    // Getters
-    function targetPlanetIds(uint256 idx) public view returns (uint256) {
-        return arenaStorage().targetPlanetIds[idx];
-    }
-
-    function spawnPlanetIds(uint256 idx) public view returns (uint256) {
-        return arenaStorage().spawnPlanetIds[idx];
-    }
-
-    function planetsArenaInfo(uint256 key) public view returns (ArenaPlanetInfo memory) {
-        return arenaStorage().arenaPlanetInfo[key];
-    }
-    
-    function bulkGetPlanetsArenaInfoByIds(uint256[] calldata ids)
-        public
-        view
-        returns (ArenaPlanetInfo[] memory ret)
-    {
-        ret = new ArenaPlanetInfo[](ids.length);
-
-        for (uint256 i = 0; i < ids.length; i++) {
-            ret[i] = arenaStorage().arenaPlanetInfo[ids[i]];
-        }
-    }
-    function getNTargetPlanets() public view returns (uint256) {
-        return arenaStorage().targetPlanetIds.length;
-    }
-
-    function getNSpawnPlanets() public view returns (uint256) {
-        return arenaStorage().spawnPlanetIds.length;
-    }
-
-    function bulkGetTargetPlanetIds(uint256 startIdx, uint256 endIdx)
-        public
-        view
-        returns (uint256[] memory ret)
-    {
-        // return slice of targetPlanetIds array from startIdx through endIdx - 1
-        ret = new uint256[](endIdx - startIdx);
-        for (uint256 i = startIdx; i < endIdx; i++) {
-            ret[i - startIdx] = arenaStorage().targetPlanetIds[i];
-        }
-    }
-
-    function bulkGetSpawnPlanetIds(uint256 startIdx, uint256 endIdx)
-        public
-        view
-        returns (uint256[] memory ret)
-    {
-        // return slice of spawnPlanetIds array from startIdx through endIdx - 1
-        ret = new uint256[](endIdx - startIdx);
-        for (uint256 i = startIdx; i < endIdx; i++) {
-            ret[i - startIdx] = arenaStorage().spawnPlanetIds[i];
-        }
-    }
-
-    function getWinners() public view returns (address[] memory) {
-        return arenaStorage().winners;
-    }
-
-    function getGameover() public view returns (bool) {
-        return arenaStorage().gameover;
-    }
-
-    function getArenaConstants() public pure returns (ArenaConstants memory) {
-        return arenaConstants();
     }
 }

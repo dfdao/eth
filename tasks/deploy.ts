@@ -248,7 +248,9 @@ export async function deployAndCut(
   const coreFacet = await deployCoreFacet({}, libraries, hre);
   const moveFacet = await deployMoveFacet({}, libraries, hre);
   const captureFacet = await deployCaptureFacet({}, libraries, hre);
-  const arenaFacet = await deployArenaFacet({}, libraries, hre);
+  const arenaCoreFacet = await deployArenaCoreFacet({}, libraries, hre);
+  const arenaGetterFacet = await deployArenaGetterFacet({}, libraries, hre);
+
   const artifactFacet = await deployArtifactFacet(
     { diamondAddress: diamond.address },
     libraries,
@@ -264,12 +266,14 @@ export async function deployAndCut(
     ...changes.getFacetCuts('DFCoreFacet', coreFacet),
     ...changes.getFacetCuts('DFMoveFacet', moveFacet),
     ...changes.getFacetCuts('DFCaptureFacet', captureFacet),
-    ...changes.getFacetCuts('DFArenaFacet', arenaFacet),
     ...changes.getFacetCuts('DFArtifactFacet', artifactFacet),
     ...changes.getFacetCuts('DFGetterFacet', getterFacet),
     ...changes.getFacetCuts('DFWhitelistFacet', whitelistFacet),
     ...changes.getFacetCuts('DFAdminFacet', adminFacet),
     ...changes.getFacetCuts('DFLobbyFacet', lobbyFacet),
+    ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
+    ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
+
   ];
 
   const toCut = [...diamondSpecFacetCuts, ...darkForestFacetCuts];
@@ -455,28 +459,12 @@ export async function deployCaptureFacet(
   return contract;
 }
 
-export async function deployTargetPlanetFacet(
+export async function deployArenaCoreFacet(
   {},
-  { LibPlanet }: Libraries,
+  { LibGameUtils, LibPlanet }: Libraries,
   hre: HardhatRuntimeEnvironment
 ) {
-  const factory = await hre.ethers.getContractFactory('DFTargetPlanetFacet', {
-    libraries: {
-      LibPlanet,
-    },
-  });
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DFTargetPlanetFacet deployed to: ${contract.address}`);
-  return contract;
-}
-
-export async function deployArenaFacet(
-  {},
-  { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet }: Libraries,
-  hre: HardhatRuntimeEnvironment
-) {
-  const factory = await hre.ethers.getContractFactory('DFArenaFacet', {
+  const factory = await hre.ethers.getContractFactory('DFArenaCoreFacet', {
     libraries: {
       LibGameUtils,
       LibPlanet,
@@ -484,7 +472,20 @@ export async function deployArenaFacet(
   });
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
-  console.log(`DFArenaFacet deployed to: ${contract.address}`);
+  console.log(`DFArenaCoreFacet deployed to: ${contract.address}`);
+  return contract;
+}
+
+export async function deployArenaGetterFacet(
+  {},
+  {}: Libraries,
+  hre: HardhatRuntimeEnvironment
+) {
+  const factory = await hre.ethers.getContractFactory('DFArenaGetterFacet', {
+  });
+  const contract = await factory.deploy();
+  await contract.deployTransaction.wait();
+  console.log(`DFArenaGetterFacet deployed to: ${contract.address}`);
   return contract;
 }
 
