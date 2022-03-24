@@ -219,7 +219,7 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
 
         planetExtendedInfo2.capturer = msg.sender;
         arenaStorage().gameover = true;
-        arenaStorage().winners = arenaStorage().winners;
+        arenaStorage().winners.push(msg.sender);
         emit Gameover(locationId);
     }
 
@@ -227,39 +227,5 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         for(uint i = 0; i < planets.length; i++) {
             createPlanet(planets[i]);
         }
-    }
-    /*
-    initAddress is the address of DFInitialize.sol
-    initData is an object that is defined in ts as
-        initFunctionCall = initInterface.encodeFunctionData('init', [
-            whitelistEnabled,
-            artifactBaseURI,
-            initializers,
-        ]);
-  */
-    function createArena(address initAddress, bytes calldata initData) public {
-        /*
-        we need to create a lobby with vanilla initData (because that is what the lobby requires)
-            then we need to upgrade the storage structs with our new variables
-            then we need to reinitialize the new storage struct with the full initData
-            
-        Create a new lobby -- how can we do so if the initData type matches the 
-                           --  we need to change the typing of storage structs first?
-        Get the lobby's address
-        Create an array of facetCuts of length (functions to replace + functions to add)
-
-        Fill the facetCuts array with all functions to replace in vanilla lobby
-            - how do we know which function selector is correct? Is there a way to compare function names to derive the function selector?
-
-        Fill the facetCuts array with all functions to add from our own facets
-
-        Cut all changes into the diamond
-
-        update structs at storage locations -- 
-            - how can we do this without rewriting the LibStorage file with rebuilt structs?
-            - Okay I'm pretty sure that we need to write new structs and replace them using the upgrade too
-
-        Emit ArenaCreated event
-    */
     }
 }
