@@ -40,12 +40,20 @@ const AbiItemsToIgnore = [
     facet: 'DFCoreFacet',
     functions: [
       'initializePlayer',
+    ],
+    events: [
+      'PlayerInitialized',
+    ]
+  },
+  {
+    facet: 'DFAdminFacet',
+    functions: [
       'createPlanet'
     ],
     events: [
-      'PlayerInitialized'
+      'AdminPlanetCreated'
     ]
-  },
+  }
 ];
 
 // Warning: If the facet is not in the `facets` directory, getFullyQualifiedFacetName will not work.
