@@ -35,6 +35,26 @@ import './tasks/whitelist';
 
 require('dotenv').config();
 
+const AbiItemsToIgnore = [
+  {
+    facet: 'DFCoreFacet',
+    functions: [
+      'initializePlayer',
+      'createPlanet'
+    ],
+    events: [
+      'PlayerInitialized'
+    ]
+  },
+];
+
+// Warning: If the facet is not in the `facets` directory, getFullyQualifiedFacetName will not work.
+const getFullyQualifiedFacetName = (facet: string) => {
+  // ex: 'contracts/facets/DFWhitelistFacet.sol:DFWhitelistFacet'
+  return `contracts/facets/${facet}.sol:${facet}`
+};
+
+
 const { DEPLOYER_MNEMONIC, ADMIN_PUBLIC_ADDRESS } = process.env;
 
 // Ensure we can lookup the needed workspace packages
@@ -187,6 +207,13 @@ const config: HardhatUserConfig = {
     strict: true,
     // We use our diamond utils to filter some functions we ignore from the combined ABI
     filter(abiElement: unknown, index: number, abi: unknown[], fullyQualifiedName: string) {
+      const facetToIgnore = AbiItemsToIgnore.find((value) => getFullyQualifiedFacetName(value.facet) === fullyQualifiedName);
+      if(facetToIgnore) {
+        //@ts-expect-error because abiElement is type unknown
+        if(facetToIgnore.functions.includes(abiElement.name)) return false;
+        //@ts-expect-error because abiElement is type unknown
+        if(facetToIgnore.events.includes(abiElement.name)) return false;
+      };
       const signature = diamondUtils.toSignature(abiElement);
       return diamondUtils.isIncluded(fullyQualifiedName, signature);
     },
