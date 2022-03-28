@@ -42,7 +42,7 @@ async function deploy(
   // Is deployer of all contracts, but ownership is transferred to ADMIN_PUBLIC_ADDRESS if set
   const [deployer] = await hre.ethers.getSigners();
 
-  const requires = hre.ethers.utils.parseEther('2.1');
+  const requires = hre.ethers.utils.parseEther('5');
   const balance = await deployer.getBalance();
 
   // Only when deploying to production, give the deployer wallet money,
@@ -55,7 +55,7 @@ async function deploy(
     );
   }
 
-  const [diamond, arenaDiamondInit, initReceipt] = await deployAndCut(
+  const [diamond, diamondInit, initReceipt] = await deployAndCut(
     { ownerAddress: deployer.address, whitelistEnabled, initializers: hre.initializers },
     hre
   );
@@ -64,7 +64,7 @@ async function deploy(
     {
       coreBlockNumber: initReceipt.blockNumber,
       diamondAddress: diamond.address,
-      initAddress: arenaDiamondInit.address,
+      initAddress: diamondInit.address,
     },
     hre
   );
@@ -242,7 +242,6 @@ export async function deployAndCut(
   );
 
   const diamondInit = await deployDiamondInit({}, libraries, hre);
-  const arenaDiamondInit = await deployArenaDiamondInit({}, libraries, hre);
 
   // Dark Forest facets
   const coreFacet = await deployCoreFacet({}, libraries, hre);
@@ -294,8 +293,8 @@ export async function deployAndCut(
   //   initializers,
   // ]);
 
-  const initAddress = arenaDiamondInit.address;
-  const initFunctionCall = arenaDiamondInit.interface.encodeFunctionData('init', [
+  const initAddress = diamondInit.address;
+  const initFunctionCall = diamondInit.interface.encodeFunctionData('init', [
     whitelistEnabled,
     tokenBaseUri,
     initializers,
@@ -308,7 +307,7 @@ export async function deployAndCut(
   }
   console.log('Completed diamond cut');
 
-  return [diamond, arenaDiamondInit, initReceipt] as const;
+  return [diamond, diamondInit, initReceipt] as const;
 }
 
 export async function deployGetterFacet(
@@ -455,35 +454,6 @@ export async function deployCaptureFacet(
   return contract;
 }
 
-export async function deployArenaCoreFacet(
-  {},
-  { LibGameUtils, LibPlanet }: Libraries,
-  hre: HardhatRuntimeEnvironment
-) {
-  const factory = await hre.ethers.getContractFactory('DFArenaCoreFacet', {
-    libraries: {
-      LibGameUtils,
-      LibPlanet,
-    },
-  });
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DFArenaCoreFacet deployed to: ${contract.address}`);
-  return contract;
-}
-
-export async function deployArenaGetterFacet(
-  {},
-  {}: Libraries,
-  hre: HardhatRuntimeEnvironment
-) {
-  const factory = await hre.ethers.getContractFactory('DFArenaGetterFacet', {
-  });
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DFArenaGetterFacet deployed to: ${contract.address}`);
-  return contract;
-}
 
 async function deployDiamondCutFacet({}, libraries: Libraries, hre: HardhatRuntimeEnvironment) {
   const factory = await hre.ethers.getContractFactory('DiamondCutFacet');
@@ -520,18 +490,6 @@ async function deployDiamondInit({}, { LibGameUtils }: Libraries, hre: HardhatRu
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
   console.log(`DFInitialize deployed to: ${contract.address}`);
-  return contract;
-}
-
-async function deployArenaDiamondInit({}, { LibGameUtils }: Libraries, hre: HardhatRuntimeEnvironment) {
-  // DFArenaInitialize provides a function that is called when the diamond is upgraded to initialize state variables
-  // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
-  const factory = await hre.ethers.getContractFactory('DFArenaInitialize', {
-    libraries: { LibGameUtils },
-  });
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DFArenaInitialize deployed to: ${contract.address}`);
   return contract;
 }
 
