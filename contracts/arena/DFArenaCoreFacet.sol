@@ -20,7 +20,7 @@ import {IERC173} from "../vendor/interfaces/IERC173.sol";
 import {WithStorage} from "../libraries/LibStorage.sol";
 import {WithArenaStorage, ArenaStorage, ArenaPlanetInfo, ArenaConstants} from "./LibArenaStorage.sol";
 
-import {SpaceType, DFPInitPlanetArgs, AdminCreatePlanetArgs, Artifact, ArtifactType, Player, Planet, PlanetType, PlanetExtendedInfo, PlanetExtendedInfo2} from "../DFTypes.sol";
+import {SpaceType, DFPInitPlanetArgs, Artifact, ArtifactType, Player, Planet, PlanetType, PlanetExtendedInfo, PlanetExtendedInfo2} from "../DFTypes.sol";
 
 // SHOULD WE SPLIT THESE DATA STRUCTURES UP? THEY ARE COMING FROM ALL OVER
 
@@ -66,7 +66,7 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     }
 
     // FUNCTIONS TO REPLACE
-    function createPlanet(ArenaAdminCreatePlanetArgs memory args) public onlyAdmin {
+    function createArenaPlanet(ArenaAdminCreatePlanetArgs memory args) public onlyAdmin {
         require(gameConstants().ADMIN_CAN_ADD_PLANETS, "admin can no longer add planets");
         if (args.requireValidLocationId) {
             require(LibGameUtils._locationIdValid(args.location), "Not a valid planet location");
@@ -225,7 +225,7 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
 
     function bulkCreatePlanet(ArenaAdminCreatePlanetArgs[] memory planets) public onlyAdmin {
         for(uint i = 0; i < planets.length; i++) {
-            createPlanet(planets[i]);
+            createArenaPlanet(planets[i]);
         }
     }
 }
