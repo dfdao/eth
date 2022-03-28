@@ -123,6 +123,11 @@ task(
   'creates the planets defined in the darkforest.toml [[planets]] key. Only works when zk checks are enabled (using regular mimc fn)'
 ).setAction(createPlanets);
 
+task(
+  'game:createArenaPlanets',
+  'creates the planets defined in the darkforest.toml [[planets]] key. Only works when zk checks are enabled (using regular mimc fn) and arena facets have been cut into the lobby successfully'
+).setAction(createArenaPlanets);
+
 task('game:findCheaters', 'finds planets that have been captured more than once').setAction(
   findCheaters
 );
@@ -204,10 +209,12 @@ async function createPlanets({}, hre: HardhatRuntimeEnvironment) {
             adminPlanetInfo.x,
             adminPlanetInfo.y
           ).toString();
+      
       const adminPlanetCoords = {
         x: adminPlanetInfo.x,
         y: adminPlanetInfo.y,
       };
+
       const perlinValue = perlin(adminPlanetCoords, {
         key: hre.initializers.SPACETYPE_KEY,
         scale: hre.initializers.PERLIN_LENGTH_SCALE,
@@ -220,8 +227,8 @@ async function createPlanets({}, hre: HardhatRuntimeEnvironment) {
         ...adminPlanetInfo,
         location,
         perlin: perlinValue
-
       });
+
       await createPlanetReceipt.wait();
       if (adminPlanetInfo.revealLocation) {
         const pfArgs = await makeRevealProof(
@@ -245,6 +252,64 @@ async function createPlanets({}, hre: HardhatRuntimeEnvironment) {
     }
   }
 }
+
+async function createArenaPlanets({}, hre: HardhatRuntimeEnvironment) {
+  await hre.run('utils:assertChainId');
+
+  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
+
+  for (const adminPlanetInfo of hre.adminPlanets) {
+    try {
+      const location = hre.initializers.DISABLE_ZK_CHECKS
+        ? fakeHash(hre.initializers.PLANET_RARITY)(adminPlanetInfo.x, adminPlanetInfo.y).toString()
+        : mimcHash(hre.initializers.PLANETHASH_KEY)(
+            adminPlanetInfo.x,
+            adminPlanetInfo.y
+          ).toString();
+      
+      const adminPlanetCoords = {
+        x: adminPlanetInfo.x,
+        y: adminPlanetInfo.y,
+      };
+
+      const perlinValue = perlin(adminPlanetCoords, {
+        key: hre.initializers.SPACETYPE_KEY,
+        scale: hre.initializers.PERLIN_LENGTH_SCALE,
+        mirrorX: hre.initializers.PERLIN_MIRROR_X,
+        mirrorY: hre.initializers.PERLIN_MIRROR_Y,
+        floor: true,
+      });
+
+      const createPlanetReceipt = await contract.createArenaPlanet({
+        ...adminPlanetInfo,
+        location,
+        perlin: perlinValue
+      });
+
+      await createPlanetReceipt.wait();
+      if (adminPlanetInfo.revealLocation) {
+        const pfArgs = await makeRevealProof(
+          adminPlanetInfo.x,
+          adminPlanetInfo.y,
+          hre.initializers.PLANETHASH_KEY,
+          hre.initializers.SPACETYPE_KEY,
+          hre.initializers.PERLIN_LENGTH_SCALE,
+          hre.initializers.PERLIN_MIRROR_X,
+          hre.initializers.PERLIN_MIRROR_Y,
+          hre.initializers.DISABLE_ZK_CHECKS,
+          hre.initializers.PLANET_RARITY
+        );
+        const revealPlanetReceipt = await contract.revealLocation(...pfArgs);
+        await revealPlanetReceipt.wait();
+      }
+      console.log(`created admin planet at (${adminPlanetInfo.x}, ${adminPlanetInfo.y})`);
+    } catch (e) {
+      console.log(`error creating planet at (${adminPlanetInfo.x}, ${adminPlanetInfo.y}):`);
+      console.log(e);
+    }
+  }
+}
+
 
 async function makeRevealProof(
   x: number,
