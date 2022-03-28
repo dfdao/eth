@@ -47,9 +47,7 @@ const AbiItemsToIgnore = [
   },
   {
     facet: 'DFAdminFacet',
-    functions: [
-      'createPlanet'
-    ],
+    functions: [],
     events: [
       'AdminPlanetCreated'
     ]
