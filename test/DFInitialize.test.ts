@@ -237,7 +237,7 @@ describe('DarkForestInit', function () {
     expect(await world.contract.revealedPlanetIds(0)).to.be.equal(ADMIN_PLANET_CLOAKED.id);
   });
 
-  it.only('allows admin to bulk create planets', async function () {
+  it('allows admin to bulk create planets', async function () {
     const perlin = 20;
     const level = 5;
     const planetType = 1; // asteroid field

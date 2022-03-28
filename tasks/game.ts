@@ -219,9 +219,7 @@ async function createPlanets({}, hre: HardhatRuntimeEnvironment) {
       const createPlanetReceipt = await contract.createPlanet({
         ...adminPlanetInfo,
         location,
-        perlin: perlinValue,
-        isTargetPlanet: adminPlanetInfo.isTargetPlanet,
-        isSpawnPlanet: adminPlanetInfo.isSpawnPlanet
+        perlin: perlinValue
 
       });
       await createPlanetReceipt.wait();

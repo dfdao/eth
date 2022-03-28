@@ -248,8 +248,6 @@ export async function deployAndCut(
   const coreFacet = await deployCoreFacet({}, libraries, hre);
   const moveFacet = await deployMoveFacet({}, libraries, hre);
   const captureFacet = await deployCaptureFacet({}, libraries, hre);
-  const arenaCoreFacet = await deployArenaCoreFacet({}, libraries, hre);
-  const arenaGetterFacet = await deployArenaGetterFacet({}, libraries, hre);
 
   const artifactFacet = await deployArtifactFacet(
     { diamondAddress: diamond.address },
@@ -271,8 +269,6 @@ export async function deployAndCut(
     ...changes.getFacetCuts('DFWhitelistFacet', whitelistFacet),
     ...changes.getFacetCuts('DFAdminFacet', adminFacet),
     ...changes.getFacetCuts('DFLobbyFacet', lobbyFacet),
-    ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
-    ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
 
   ];
 
