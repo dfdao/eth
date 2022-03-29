@@ -26,7 +26,7 @@ import './tasks/debug';
 import './tasks/deploy';
 import './tasks/game';
 import './tasks/lobby';
-import './tasks/arena';
+import './tasks/arena-deploy';
 import './tasks/subgraph';
 import './tasks/upgrades';
 import './tasks/utils';

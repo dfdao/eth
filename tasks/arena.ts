@@ -6,22 +6,24 @@ import { DiamondChanges } from '../utils/diamond';
 import * as path from 'path';
 import * as prettier from 'prettier';
 import { tscompile } from '../utils/tscompile';
-
-import { CONTRACT_ADDRESS, INIT_ADDRESS } from "@darkforest_eth/contracts";
-
+import { deployAndCut } from './deploy';
+import { DFArenaInitialize } from '@darkforest_eth/contracts/typechain';
 
 task('arena:create', 'create a lobby from the command line').setAction(deployArena);
-
-export async function deployArena(  {
-  ownerAddress,
-  whitelistEnabled,
-  initializers,
-}: {
-  ownerAddress: string;
-  whitelistEnabled: boolean;
-  initializers: HardhatRuntimeEnvironment['initializers'];
-}, hre: HardhatRuntimeEnvironment) {
-  console.log("creating lobby and cutting arena facets")
+task('arena:full', 'create an arena from scratch').setAction(deployArena)
+export async function deployArena(
+  {
+    ownerAddress,
+    whitelistEnabled,
+    initializers,
+  }: {
+    ownerAddress: string;
+    whitelistEnabled: boolean;
+    initializers: HardhatRuntimeEnvironment['initializers'];
+  },
+  hre: HardhatRuntimeEnvironment
+) {
+  console.log('creating lobby and cutting arena facets');
   const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
 
   const [deployer] = await hre.ethers.getSigners();
@@ -38,104 +40,106 @@ export async function deployArena(  {
       )} but has ${hre.ethers.utils.formatEther(balance)} top up and rerun`
     );
   }
+  const libraries = await deployLibraries({}, hre);
 
-    const lobbyAddress = await deployLobbyWithDiamond(initializers, hre)
+  const diamondInit = await deployArenaDiamondInit({}, libraries, hre);
 
-    const libraries = await deployLibraries({}, hre);
+  const lobbyAddress = await deployLobbyWithDiamond(hre, diamondInit, initializers);
 
-    const diamondInit = await deployArenaDiamondInit({}, libraries, hre);
-    const diamond = await hre.ethers.getContractAt('DarkForest', lobbyAddress);
+  const diamond = await hre.ethers.getContractAt('DarkForest', lobbyAddress);
 
-    const prevFacets = await diamond.facets();
+  const prevFacets = await diamond.facets();
 
-    const changes = new DiamondChanges(prevFacets);
+  const changes = new DiamondChanges(prevFacets);
 
-    const arenaCoreFacet = await deployArenaCoreFacet({}, libraries, hre);
-    const arenaGetterFacet = await deployArenaGetterFacet({}, libraries, hre);
+  const arenaCoreFacet = await deployArenaCoreFacet({}, libraries, hre);
+  const arenaGetterFacet = await deployArenaGetterFacet({}, libraries, hre);
 
-    const arenaDiamondCuts = [
-      // Note: The `diamondCut` is omitted because it is cut upon deployment
-      ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
-      ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
+  const arenaDiamondCuts = [
+    // Note: The `diamondCut` is omitted because it is cut upon deployment
+    ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
+    ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
+  ];
 
-    ];
+  const shouldUpgrade = await changes.verify();
+  if (!shouldUpgrade) {
+    console.log('Upgrade aborted');
+    throw 'upgrade aborted';
+  }
 
-    const shouldUpgrade = await changes.verify();
-    if (!shouldUpgrade) {
-      console.log('Upgrade aborted');
-      throw('upgrade aborted');
+  const tokenBaseUri = `${
+    isDev
+      ? 'https://nft-test.zkga.me/token-uri/artifact/'
+      : 'https://nft.zkga.me/token-uri/artifact/'
+  }${hre.network.config?.chainId || 'unknown'}-${diamond.address}/`;
+
+  const toCut = [...arenaDiamondCuts];
+
+  const initAddress = diamondInit.address;
+  const initFunctionCall = diamondInit.interface.encodeFunctionData('init', [
+    whitelistEnabled,
+    tokenBaseUri,
+    initializers,
+  ]);
+
+  const arenaTx = await diamond.diamondCut(toCut, initAddress, initFunctionCall);
+  const arenaReceipt = await arenaTx.wait();
+  if (!arenaReceipt.status) {
+    throw Error(`Diamond cut failed: ${arenaTx.hash}`);
+  }
+
+  console.log('Completed diamond cut');
+
+  // TODO: Upstream change to update task name from `hardhat-4byte-uploader`
+  if (!isDev) {
+    try {
+      await hre.run('upload-selectors', { noCompile: true });
+    } catch {
+      console.warn('WARNING: Unable to update 4byte database with our selectors');
+      console.warn('Please run the `upload-selectors` task manually so selectors can be reversed');
     }
+  }
 
-    const tokenBaseUri = `${
-      isDev
-        ? 'https://nft-test.zkga.me/token-uri/artifact/'
-        : 'https://nft.zkga.me/token-uri/artifact/'
-    }${hre.network.config?.chainId || 'unknown'}-${diamond.address}/`;
+  await saveDeploy(
+    {
+      coreBlockNumber: arenaReceipt.blockNumber,
+      diamondAddress: diamond.address,
+      initAddress: diamondInit.address,
+    },
+    hre
+  );
 
-    const toCut = [...arenaDiamondCuts];
+  console.log('Arena created successfully. Godspeed cadet.');
 
-    const initAddress = diamondInit.address;
-    const initFunctionCall = diamondInit.interface.encodeFunctionData('init', [
-      whitelistEnabled,
-      tokenBaseUri,
-      hre.initializers,
-    ]);
-  
-    const arenaTx = await diamond.diamondCut(toCut, initAddress, initFunctionCall);
-    const arenaReceipt = await arenaTx.wait();
-    if (!arenaReceipt.status) {
-      throw Error(`Diamond cut failed: ${arenaTx.hash}`);
-    }
-    
-    console.log('Completed diamond cut');
-  
-    // TODO: Upstream change to update task name from `hardhat-4byte-uploader`
-    if (!isDev) {
-      try {
-        await hre.run('upload-selectors', { noCompile: true });
-      } catch {
-        console.warn('WARNING: Unable to update 4byte database with our selectors');
-        console.warn('Please run the `upload-selectors` task manually so selectors can be reversed');
-      }
-    }
-  
-    await saveDeploy(
-      {
-        coreBlockNumber: arenaReceipt.blockNumber,
-        diamondAddress: diamond.address,
-        initAddress: diamondInit.address,
-      },
-      hre
-    );
-
-    console.log('Arena created successfully. Godspeed cadet.');
-
-    
-    return [diamond, diamondInit, arenaReceipt] as const;
-  
+  return [diamond, diamondInit, arenaReceipt] as const;
 }
 
-async function deployLobbyWithDiamond(initializers: unknown, hre: HardhatRuntimeEnvironment) {
-  const isDev = hre.network.name === "localhost" || hre.network.name === "hardhat";
-
+async function deployLobbyWithDiamond(
+  hre: HardhatRuntimeEnvironment,
+  diamondInit: DFArenaInitialize,
+  initializers: HardhatRuntimeEnvironment["initializers"]
+) {
+  const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
+  console.log('hello0');
   // Were only using one account, getSigners()[0], the deployer. Becomes the ProxyAdmin
   const [deployer] = await hre.ethers.getSigners();
 
   // TODO: The deployer balance should be checked for production.
   // Need to investigate how much this actually costs.
 
-  const baseURI = isDev ? "http://localhost:8081" : "https://zkga.me";
+  const baseURI = isDev ? 'http://localhost:8081' : 'https://zkga.me';
+  console.log(`contract address: ${hre.contracts.CONTRACT_ADDRESS}`);
 
-  const contract = await hre.ethers.getContractAt('DarkForest', CONTRACT_ADDRESS);
+  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
   const { abi: InitABI } = await hre.artifacts.readArtifact('DFArenaInitialize');
-  const initInterface = hre.ethers.Contract.getInterface(InitABI);
 
   const artifactBaseURI = '';
   const whitelistEnabled = false;
-  const initAddress = INIT_ADDRESS;
 
-  const initFunctionCall = initInterface.encodeFunctionData('init', [
+  const initAddress = diamondInit.address;
+
+  const initFunctionCall = diamondInit.interface.encodeFunctionData('init', [
     whitelistEnabled,
     artifactBaseURI,
     initializers,
@@ -143,7 +147,7 @@ async function deployLobbyWithDiamond(initializers: unknown, hre: HardhatRuntime
 
   function waitForCreated(): Promise<string> {
     return new Promise(async (resolve) => {
-      contract.on("LobbyCreated", async (ownerAddress, lobbyAddress) => {
+      contract.on('LobbyCreated', async (ownerAddress, lobbyAddress) => {
         if (deployer.address === ownerAddress) {
           console.log(`Lobby created. Play at ${baseURI}/play/${lobbyAddress}`);
           resolve(lobbyAddress);
@@ -179,130 +183,74 @@ export async function deployAndCutArena(
   },
   hre: HardhatRuntimeEnvironment
 ) {
-  console.log(hre.network.name)
+  console.log('deploying DarkForest and cutting arena facets')
   const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
-  const [deployer] = await hre.ethers.getSigners();
+
+  const [diamond] = await deployAndCut(
+    { ownerAddress, whitelistEnabled, initializers },
+    hre
+  );
+
+  const diamondCut = await hre.ethers.getContractAt('DarkForest', diamond.address);
+
+  const prevFacets = await diamondCut.facets();
+
+  const changes = new DiamondChanges(prevFacets);
 
   const libraries = await deployLibraries({}, hre);
 
   const diamondInit = await deployArenaDiamondInit({}, libraries, hre);
 
-  const { abi: InitABI } = await hre.artifacts.readArtifact('DFArenaInitialize');
-  const initInterface = hre.ethers.Contract.getInterface(InitABI);
+  const arenaCoreFacet = await deployArenaCoreFacet({}, libraries, hre);
+  const arenaGetterFacet = await deployArenaGetterFacet({}, libraries, hre);
 
-  const artifactBaseURI = '';
+  const arenaDiamondCuts = [
+    // Note: The `diamondCut` is omitted because it is cut upon deployment
+    ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
+    ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
+  ];
+
+  // const shouldUpgrade = await changes.verify();
+  // if (!shouldUpgrade) {
+  //   console.log('Upgrade aborted');
+  //   throw 'upgrade aborted';
+  // }
+
+  const tokenBaseUri = `${
+    isDev
+      ? 'https://nft-test.zkga.me/token-uri/artifact/'
+      : 'https://nft.zkga.me/token-uri/artifact/'
+  }${hre.network.config?.chainId || 'unknown'}-${diamond.address}/`;
+
+  const toCut = [...arenaDiamondCuts];
 
   const initAddress = diamondInit.address;
-  const initFunctionCall = initInterface.encodeFunctionData('init', [
+  const initFunctionCall = diamondInit.interface.encodeFunctionData('init', [
     whitelistEnabled,
-    artifactBaseURI,
+    tokenBaseUri,
     initializers,
   ]);
 
-  async function cutArenaFacets(address: string) {
-
-    const diamond = await hre.ethers.getContractAt('DarkForest', address);
-
-    const prevFacets = await diamond.facets();
-
-    const changes = new DiamondChanges(prevFacets);
-
-    const arenaCoreFacet = await deployArenaCoreFacet({}, libraries, hre);
-    const arenaGetterFacet = await deployArenaGetterFacet({}, libraries, hre);
-
-    const arenaDiamondCuts = [
-      // Note: The `diamondCut` is omitted because it is cut upon deployment
-      ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
-      ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
-
-    ];
-
-    const shouldUpgrade = await changes.verify();
-    if (!shouldUpgrade) {
-      console.log('Upgrade aborted');
-      return;
-    }
-
-    const tokenBaseUri = `${
-      isDev
-        ? 'https://nft-test.zkga.me/token-uri/artifact/'
-        : 'https://nft.zkga.me/token-uri/artifact/'
-    }${hre.network.config?.chainId || 'unknown'}-${diamond.address}/`;
-
-    const toCut = [...arenaDiamondCuts];
-
-    const initAddress = diamondInit.address;
-    const initFunctionCall = diamondInit.interface.encodeFunctionData('init', [
-      whitelistEnabled,
-      tokenBaseUri,
-      initializers,
-    ]);
-  
-    const arenaTx = await diamond.diamondCut(toCut, initAddress, initFunctionCall);
-    const arenaReceipt = await arenaTx.wait();
-    if (!arenaReceipt.status) {
-      throw Error(`Diamond cut failed: ${arenaTx.hash}`);
-    }
-    console.log('Completed diamond cut');
-  
-    // TODO: Upstream change to update task name from `hardhat-4byte-uploader`
-    if (!isDev) {
-      try {
-        await hre.run('upload-selectors', { noCompile: true });
-      } catch {
-        console.warn('WARNING: Unable to update 4byte database with our selectors');
-        console.warn('Please run the `upload-selectors` task manually so selectors can be reversed');
-      }
-    }
-  
-    await saveDeploy(
-      {
-        coreBlockNumber: arenaReceipt.blockNumber,
-        diamondAddress: diamond.address,
-        initAddress: diamondInit.address,
-      },
-      hre
-    );
-
-    console.log('Arena created successfully. Godspeed cadet.');
-
-    
-    return [diamond, diamondInit, arenaReceipt] as const;
-  
+  const arenaTx = await diamondCut.diamondCut(toCut, initAddress, initFunctionCall);
+  const arenaReceipt = await arenaTx.wait();
+  if (!arenaReceipt.status) {
+    throw Error(`Diamond cut failed: ${arenaTx.hash}`);
   }
 
-  const baseURI = isDev ? 'http://localhost:8081' : 'https://zkga.me';
+  console.log('Completed diamond cut');
 
-  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
+  // TODO: Upstream change to update task name from `hardhat-4byte-uploader`
 
-  function waitForCreated(): Promise<void> {
-    return new Promise(async (resolve) => {
-      contract.on('LobbyCreated', async (ownerAddress, lobbyAddress) => {
-        if (deployer.address === ownerAddress) {
-          console.log(`Lobby created. Play at ${baseURI}/play/${lobbyAddress}`);
-          await cutArenaFacets(lobbyAddress);
-          resolve();
-        }
-      });
-    });
-      
-  }
+  console.log('Arena created successfully. Godspeed cadet.');
 
-  // We setup the event handler before creating the lobby
-  const result = waitForCreated();
-
-  const tx = await contract.createLobby(initAddress, initFunctionCall);
-
-  const receipt = await tx.wait();
-  if (!receipt.status) {
-    throw Error(`Lobby creation failed: ${tx.hash}`);
-  } else {
-    console.log("Lobby created successfully");
-  }
-  return await result;
+  return [diamond, diamondInit, arenaReceipt] as const;
 }
 
-async function deployArenaDiamondInit({}, { LibGameUtils }: Libraries, hre: HardhatRuntimeEnvironment) {
+async function deployArenaDiamondInit(
+  {},
+  { LibGameUtils }: Libraries,
+  hre: HardhatRuntimeEnvironment
+) {
   // DFInitialize provides a function that is called when the diamond is upgraded to initialize state variables
   // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
   const factory = await hre.ethers.getContractFactory('DFArenaInitialize', {
@@ -376,13 +324,8 @@ export async function deployArenaCoreFacet(
   return contract;
 }
 
-export async function deployArenaGetterFacet(
-  {},
-  {}: Libraries,
-  hre: HardhatRuntimeEnvironment
-) {
-  const factory = await hre.ethers.getContractFactory('DFArenaGetterFacet', {
-  });
+export async function deployArenaGetterFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
+  const factory = await hre.ethers.getContractFactory('DFArenaGetterFacet', {});
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
   console.log(`DFArenaGetterFacet deployed to: ${contract.address}`);

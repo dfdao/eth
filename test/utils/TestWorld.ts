@@ -4,10 +4,7 @@ import { BigNumber, utils } from 'ethers';
 import hre from 'hardhat';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { deployAndCut } from '../../tasks/deploy';
-import { deployArena } from '../../tasks/arena';
-
-import {  } from '../../tasks/deploy';
-
+import {deployAndCutArena} from '../../tasks/arena'
 import {
   initializers,
   manualSpawnInitializers,
@@ -80,7 +77,6 @@ export function manualSpawnFixture(): Promise<World> {
   return initializeWorld({
     initializers: manualSpawnInitializers,
     whitelistEnabled: false,
-    arena:true
   });
 }
 
@@ -88,7 +84,6 @@ export function targetPlanetFixture(): Promise<World> {
   return initializeWorld({
     initializers: targetPlanetInitializers,
     whitelistEnabled: false,
-    arena: true
   });
 }
 
@@ -104,22 +99,12 @@ export async function initializeWorld({
   await hre.network.provider.send('evm_setAutomine', [true]);
   await hre.network.provider.send('evm_setIntervalMining', [0]);
 
-  let contract;
-  const [diamond] = await deployAndCut(
+  const [diamond, _initReceipt] = await deployAndCutArena(
     { ownerAddress: deployer.address, whitelistEnabled, initializers },
     hre
   );
 
-  if(arena) {
-    const [arenaDiamond, x] = await deployArena(
-      { ownerAddress: deployer.address, whitelistEnabled, initializers },
-      hre
-    )
-    contract = await hre.ethers.getContractAt('DarkForest', arenaDiamond.address);
-  } else {
-    contract = await hre.ethers.getContractAt('DarkForest', diamond.address);
-  }
-
+  const contract = await hre.ethers.getContractAt('DarkForest', diamond.address);
 
   await deployer.sendTransaction({
     to: contract.address,
