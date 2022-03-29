@@ -4,6 +4,10 @@ import { BigNumber, utils } from 'ethers';
 import hre from 'hardhat';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { deployAndCut } from '../../tasks/deploy';
+import { deployArena } from '../../tasks/arena';
+
+import {  } from '../../tasks/deploy';
+
 import {
   initializers,
   manualSpawnInitializers,
@@ -33,12 +37,21 @@ export interface Player {
 export interface InitializeWorldArgs {
   initializers: HardhatRuntimeEnvironment['initializers'];
   whitelistEnabled: boolean;
+  arena?: boolean
 }
 
 export function defaultWorldFixture(): Promise<World> {
   return initializeWorld({
     initializers,
     whitelistEnabled: false,
+  });
+}
+
+export function arenaWorldFixture(): Promise<World> {
+  return initializeWorld({
+    initializers,
+    whitelistEnabled: false,
+    arena: true
   });
 }
 
@@ -67,6 +80,7 @@ export function manualSpawnFixture(): Promise<World> {
   return initializeWorld({
     initializers: manualSpawnInitializers,
     whitelistEnabled: false,
+    arena:true
   });
 }
 
@@ -74,12 +88,14 @@ export function targetPlanetFixture(): Promise<World> {
   return initializeWorld({
     initializers: targetPlanetInitializers,
     whitelistEnabled: false,
+    arena: true
   });
 }
 
 export async function initializeWorld({
   initializers,
   whitelistEnabled,
+  arena
 }: InitializeWorldArgs): Promise<World> {
   const [deployer, user1, user2] = await hre.ethers.getSigners();
 
@@ -88,12 +104,22 @@ export async function initializeWorld({
   await hre.network.provider.send('evm_setAutomine', [true]);
   await hre.network.provider.send('evm_setIntervalMining', [0]);
 
-  const [diamond, _initReceipt] = await deployAndCut(
+  let contract;
+  const [diamond] = await deployAndCut(
     { ownerAddress: deployer.address, whitelistEnabled, initializers },
     hre
   );
 
-  const contract = await hre.ethers.getContractAt('DarkForest', diamond.address);
+  if(arena) {
+    const [arenaDiamond, x] = await deployArena(
+      { ownerAddress: deployer.address, whitelistEnabled, initializers },
+      hre
+    )
+    contract = await hre.ethers.getContractAt('DarkForest', arenaDiamond.address);
+  } else {
+    contract = await hre.ethers.getContractAt('DarkForest', diamond.address);
+  }
+
 
   await deployer.sendTransaction({
     to: contract.address,
@@ -111,3 +137,4 @@ export async function initializeWorld({
     user2Core: contract.connect(user2),
   };
 }
+
