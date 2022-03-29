@@ -12,15 +12,7 @@ import { DFArenaInitialize } from '@darkforest_eth/contracts/typechain';
 task('arena:create', 'create a lobby from the command line').setAction(deployArena);
 task('arena:full', 'create an arena from scratch').setAction(deployArena)
 export async function deployArena(
-  {
-    ownerAddress,
-    whitelistEnabled,
-    initializers,
-  }: {
-    ownerAddress: string;
-    whitelistEnabled: boolean;
-    initializers: HardhatRuntimeEnvironment['initializers'];
-  },
+  {},
   hre: HardhatRuntimeEnvironment
 ) {
   console.log('creating lobby and cutting arena facets');
@@ -44,7 +36,7 @@ export async function deployArena(
 
   const diamondInit = await deployArenaDiamondInit({}, libraries, hre);
 
-  const lobbyAddress = await deployLobbyWithDiamond(hre, diamondInit, initializers);
+  const lobbyAddress = await deployLobbyWithDiamond(hre, diamondInit, hre.initializers);
 
   const diamond = await hre.ethers.getContractAt('DarkForest', lobbyAddress);
 
@@ -67,6 +59,7 @@ export async function deployArena(
     throw 'upgrade aborted';
   }
 
+  const whitelistEnabled = false
   const tokenBaseUri = `${
     isDev
       ? 'https://nft-test.zkga.me/token-uri/artifact/'
@@ -79,7 +72,7 @@ export async function deployArena(
   const initFunctionCall = diamondInit.interface.encodeFunctionData('init', [
     whitelistEnabled,
     tokenBaseUri,
-    initializers,
+    hre.initializers,
   ]);
 
   const arenaTx = await diamond.diamondCut(toCut, initAddress, initFunctionCall);
