@@ -98,6 +98,7 @@ export async function deployArena(
       coreBlockNumber: arenaReceipt.blockNumber,
       diamondAddress: diamond.address,
       initAddress: diamondInit.address,
+      libraries: libraries,
     },
     hre
   );
@@ -113,7 +114,6 @@ async function deployLobbyWithDiamond(
   initializers: HardhatRuntimeEnvironment["initializers"]
 ) {
   const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
-  console.log('hello0');
   // Were only using one account, getSigners()[0], the deployer. Becomes the ProxyAdmin
   const [deployer] = await hre.ethers.getSigners();
 
@@ -121,7 +121,6 @@ async function deployLobbyWithDiamond(
   // Need to investigate how much this actually costs.
 
   const baseURI = isDev ? 'http://localhost:8081' : 'https://zkga.me';
-  console.log(`contract address: ${hre.contracts.CONTRACT_ADDRESS}`);
 
   const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
@@ -298,118 +297,4 @@ export async function deployLibraries({}, hre: HardhatRuntimeEnvironment) {
     Verifier: Verifier.address,
     LibArtifactUtils: LibArtifactUtils.address,
   };
-}
-
-export async function deployArenaCoreFacet(
-  {},
-  { LibGameUtils, LibPlanet }: Libraries,
-  hre: HardhatRuntimeEnvironment
-) {
-  const factory = await hre.ethers.getContractFactory('DFArenaCoreFacet', {
-    libraries: {
-      LibGameUtils,
-      LibPlanet,
-    },
-  });
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DFArenaCoreFacet deployed to: ${contract.address}`);
-  return contract;
-}
-
-export async function deployArenaGetterFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
-  const factory = await hre.ethers.getContractFactory('DFArenaGetterFacet', {});
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DFArenaGetterFacet deployed to: ${contract.address}`);
-  return contract;
-}
-
-async function saveDeploy(
-  args: {
-    coreBlockNumber: number;
-    diamondAddress: string;
-    initAddress: string;
-  },
-  hre: HardhatRuntimeEnvironment
-) {
-  const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
-
-  // Save the addresses of the deployed contracts to the `@darkforest_eth/contracts` package
-  const tsContents = `
-  /**
-   * This package contains deployed contract addresses, ABIs, and Typechain types
-   * for the Dark Forest game.
-   *
-   * ## Installation
-   *
-   * You can install this package using [\`npm\`](https://www.npmjs.com) or
-   * [\`yarn\`](https://classic.yarnpkg.com/lang/en/) by running:
-   *
-   * \`\`\`bash
-   * npm install --save @darkforest_eth/contracts
-   * \`\`\`
-   * \`\`\`bash
-   * yarn add @darkforest_eth/contracts
-   * \`\`\`
-   *
-   * When using this in a plugin, you might want to load it with [skypack](https://www.skypack.dev)
-   *
-   * \`\`\`js
-   * import * as contracts from 'http://cdn.skypack.dev/@darkforest_eth/contracts'
-   * \`\`\`
-   *
-   * ## Typechain
-   *
-   * The Typechain types can be found in the \`typechain\` directory.
-   *
-   * ## ABIs
-   *
-   * The contract ABIs can be found in the \`abis\` directory.
-   *
-   * @packageDocumentation
-   */
-
-  /**
-   * The name of the network where these contracts are deployed.
-   */
-  export const NETWORK = '${hre.network.name}';
-  /**
-   * The id of the network where these contracts are deployed.
-   */
-  export const NETWORK_ID = ${hre.network.config.chainId};
-  /**
-   * The block in which the DarkForest contract was initialized.
-   */
-  export const START_BLOCK = ${isDev ? 0 : args.coreBlockNumber};
-  /**
-   * The address for the DarkForest contract.
-   */
-  export const CONTRACT_ADDRESS = '${args.diamondAddress}';
-  /**
-   * The address for the initalizer contract. Useful for lobbies.
-   */
-  export const INIT_ADDRESS = '${args.initAddress}';
-  `;
-
-  const { jsContents, dtsContents } = tscompile(tsContents);
-
-  const contractsFileTS = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'index.ts');
-  const contractsFileJS = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'index.js');
-  const contractsFileDTS = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'index.d.ts');
-
-  const options = prettier.resolveConfig.sync(contractsFileTS);
-
-  fs.writeFileSync(
-    contractsFileTS,
-    prettier.format(tsContents, { ...options, parser: 'babel-ts' })
-  );
-  fs.writeFileSync(
-    contractsFileJS,
-    prettier.format(jsContents, { ...options, parser: 'babel-ts' })
-  );
-  fs.writeFileSync(
-    contractsFileDTS,
-    prettier.format(dtsContents, { ...options, parser: 'babel-ts' })
-  );
 }

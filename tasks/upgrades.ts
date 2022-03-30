@@ -11,7 +11,7 @@ import {
   deployLobbyFacet,
   deployMoveFacet,
   deployWhitelistFacet,
-} from './deploy';
+} from './utils';
 
 task('upgrade', 'upgrade contracts and replace in the diamond').setAction(upgrade);
 
