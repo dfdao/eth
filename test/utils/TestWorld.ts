@@ -11,6 +11,7 @@ import {
   targetPlanetInitializers,
   noPlanetTransferInitializers,
   target4Initializers,
+  arenaInitializers
 } from './WorldConstants';
 
 export interface World {
@@ -46,7 +47,7 @@ export function defaultWorldFixture(): Promise<World> {
 
 export function arenaWorldFixture(): Promise<World> {
   return initializeWorld({
-    initializers,
+    initializers: arenaInitializers,
     whitelistEnabled: false,
     arena: true
   });

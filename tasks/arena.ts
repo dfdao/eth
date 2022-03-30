@@ -8,6 +8,7 @@ import * as prettier from 'prettier';
 import { tscompile } from '../utils/tscompile';
 import { deployAndCut } from './deploy';
 import { DFArenaInitialize } from '@darkforest_eth/contracts/typechain';
+import { deployArenaCoreFacet, deployArenaGetterFacet, saveDeploy } from './utils';
 
 task('arena:create', 'create a lobby from the command line').setAction(deployArena);
 task('arena:full', 'create an arena from scratch').setAction(deployArena)
