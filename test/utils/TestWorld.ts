@@ -100,6 +100,7 @@ export async function initializeWorld({
   await hre.network.provider.send('evm_setAutomine', [true]);
   await hre.network.provider.send('evm_setIntervalMining', [0]);
 
+  // To test on vanilla, change deployandCutArena to deployAndCut
   const [diamond, _initReceipt] = await deployAndCutArena(
     { ownerAddress: deployer.address, whitelistEnabled, initializers },
     hre

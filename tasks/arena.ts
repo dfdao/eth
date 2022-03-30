@@ -33,11 +33,9 @@ export async function deployArena(
       )} but has ${hre.ethers.utils.formatEther(balance)} top up and rerun`
     );
   }
-  const libraries = await deployLibraries({}, hre);
 
-  const diamondInit = await deployArenaDiamondInit({}, libraries, hre);
 
-  const lobbyAddress = await deployLobbyWithDiamond(hre, diamondInit, hre.initializers);
+  const lobbyAddress = await deployLobbyWithDiamond(hre, hre.initializers);
 
   const diamond = await hre.ethers.getContractAt('DarkForest', lobbyAddress);
 
@@ -45,7 +43,12 @@ export async function deployArena(
 
   const changes = new DiamondChanges(prevFacets);
 
+  const libraries = await deployLibraries({}, hre);
+
+  const diamondInit = await deployArenaDiamondInit({}, libraries, hre);
+
   const arenaCoreFacet = await deployArenaCoreFacet({}, libraries, hre);
+  
   const arenaGetterFacet = await deployArenaGetterFacet({}, libraries, hre);
 
   const arenaDiamondCuts = [
@@ -111,7 +114,6 @@ export async function deployArena(
 
 async function deployLobbyWithDiamond(
   hre: HardhatRuntimeEnvironment,
-  diamondInit: DFArenaInitialize,
   initializers: HardhatRuntimeEnvironment["initializers"]
 ) {
   const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
@@ -130,13 +132,8 @@ async function deployLobbyWithDiamond(
   const artifactBaseURI = '';
   const whitelistEnabled = false;
 
-  const initAddress = diamondInit.address;
-
-  const initFunctionCall = diamondInit.interface.encodeFunctionData('init', [
-    whitelistEnabled,
-    artifactBaseURI,
-    initializers,
-  ]);
+  const initAddress = hre.ethers.constants.AddressZero;
+  const initFunctionCall = '0x';
 
   function waitForCreated(): Promise<string> {
     return new Promise(async (resolve) => {
