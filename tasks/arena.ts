@@ -11,7 +11,7 @@ import { DFArenaInitialize } from '@darkforest_eth/contracts/typechain';
 import { deployArenaCoreFacet, deployArenaGetterFacet, saveDeploy } from './utils';
 
 task('arena:create', 'create a lobby from the command line').setAction(deployArena);
-task('arena:full', 'create an arena from scratch').setAction(deployArena)
+
 export async function deployArena(
   {},
   hre: HardhatRuntimeEnvironment
@@ -187,7 +187,12 @@ export async function deployAndCutArena(
 
   const changes = new DiamondChanges(prevFacets);
 
-  const libraries = await deployLibraries({}, hre);
+  const libraries : Libraries = {
+    Verifier: hre.contracts.VERIFIER_ADDRESS,
+    LibGameUtils: hre.contracts.LIB_GAME_UTILS_ADDRESS,
+    LibArtifactUtils: hre.contracts.LIB_ARTIFACT_UTILS_ADDRESS,
+    LibPlanet : hre.contracts.LIB_PLANET_ADDRESS
+  };
 
   const diamondInit = await deployArenaDiamondInit({}, libraries, hre);
 
