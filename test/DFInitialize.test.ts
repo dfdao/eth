@@ -28,6 +28,7 @@ describe('DarkForestInit', function () {
   });
 
   it('initializes player successfully with the correct planet value', async function () {
+
     await expect(world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1)))
       .to.emit(world.contract, 'PlayerInitialized')
       .withArgs(world.user1.address, SPAWN_PLANET_1.id.toString());
@@ -165,26 +166,26 @@ describe('DarkForestInit', function () {
 
     // should fail
     await expect(
-      world.contract.createPlanet({
+      world.contract.createArenaPlanet({
         location: ADMIN_PLANET_CLOAKED.id,
         perlin,
         level,
         planetType,
         requireValidLocationId: true,
-        // isTargetPlanet: false,
-        // isSpawnPlanet: false
+        isTargetPlanet: false,
+        isSpawnPlanet: false
       })
     ).to.be.revertedWith('Not a valid planet location');
 
     // should succeed
-    world.contract.createPlanet({
+    world.contract.createArenaPlanet({
       location: ADMIN_PLANET_CLOAKED.id,
       perlin,
       level,
       planetType,
       requireValidLocationId: false,
-      // isTargetPlanet: false,
-      // isSpawnPlanet: false
+      isTargetPlanet: false,
+      isSpawnPlanet: false
     });
   });
   
@@ -194,14 +195,14 @@ describe('DarkForestInit', function () {
     const planetType = 1; // asteroid field
     const x = 10;
     const y = 20;
-    await world.contract.createPlanet({
+    await world.contract.createArenaPlanet({
       location: ADMIN_PLANET.id,
       perlin,
       level,
       planetType,
       requireValidLocationId: true,
-      // isTargetPlanet: false,
-      // isSpawnPlanet: false
+      isTargetPlanet: false,
+      isSpawnPlanet: false
     });
 
     await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET, x, y));
@@ -219,14 +220,14 @@ describe('DarkForestInit', function () {
     const planetType = 1; // asteroid field
     const x = 10;
     const y = 20;
-    await world.contract.createPlanet({
+    await world.contract.createArenaPlanet({
       location: ADMIN_PLANET_CLOAKED.id,
       perlin,
       level,
       planetType,
       requireValidLocationId: false,
-      // isTargetPlanet: false,
-      // isSpawnPlanet: false
+      isTargetPlanet: false,
+      isSpawnPlanet: false
     });
 
     await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));

@@ -112,7 +112,7 @@ export async function deployArena(
   return [diamond, diamondInit, arenaReceipt] as const;
 }
 
-async function deployLobbyWithDiamond(
+export async function deployLobbyWithDiamond(
   hre: HardhatRuntimeEnvironment,
   initializers: HardhatRuntimeEnvironment["initializers"]
 ) {

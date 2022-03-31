@@ -2,17 +2,21 @@ import type { DarkForest, DFArenaInitialize, Diamond } from '@darkforest_eth/con
 import type { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 import { BigNumber, utils } from 'ethers';
 import hre from 'hardhat';
-import type { HardhatRuntimeEnvironment } from 'hardhat/types';
+import type { HardhatRuntimeEnvironment, Libraries } from 'hardhat/types';
 import { deployAndCut } from '../../tasks/deploy';
-import {deployAndCutArena} from '../../tasks/arena'
+import { deployAndCutArena, deployArenaDiamondInit, deployLibraries } from '../../tasks/arena';
 import {
   initializers,
   manualSpawnInitializers,
   targetPlanetInitializers,
   noPlanetTransferInitializers,
   target4Initializers,
-  arenaInitializers
+  arenaInitializers,
 } from './WorldConstants';
+import { LobbyCreatedEvent } from '@darkforest_eth/contracts/typechain/DFLobbyFacet';
+import { DiamondChanges } from '../../utils/diamond';
+import { deployArenaCoreFacet, deployArenaGetterFacet } from '../../tasks/utils';
+import { Initializers } from '@darkforest_eth/settings';
 
 export interface World {
   contract: DarkForest;
@@ -35,7 +39,7 @@ export interface Player {
 export interface InitializeWorldArgs {
   initializers: HardhatRuntimeEnvironment['initializers'];
   whitelistEnabled: boolean;
-  baseFacets?: boolean
+  baseFacets?: boolean;
 }
 
 export function defaultWorldFixture(): Promise<World> {
@@ -63,6 +67,7 @@ export function whilelistWorldFixture(): Promise<World> {
   return initializeWorld({
     initializers,
     whitelistEnabled: true,
+    // baseFacets: true
   });
 }
 
@@ -91,14 +96,14 @@ export function baseGameFixture(): Promise<World> {
   return initializeWorld({
     initializers: initializers,
     whitelistEnabled: false,
-    baseFacets: true
+    baseFacets: true,
   });
 }
 
 export async function initializeWorld({
   initializers,
   whitelistEnabled,
-  baseFacets
+  baseFacets,
 }: InitializeWorldArgs): Promise<World> {
   const [deployer, user1, user2] = await hre.ethers.getSigners();
 
@@ -109,21 +114,17 @@ export async function initializeWorld({
 
   // To test on vanilla Dark Forest facets (no Arena), set baseFacets to true
   let diamond: Diamond;
-  let _initReceipt: DFArenaInitialize
-  if(baseFacets) {
-    [diamond, _initReceipt] = await deployAndCut(
-      { ownerAddress: deployer.address, whitelistEnabled, initializers },
-      hre
-    );
-  }
-  else {
-    [diamond, _initReceipt] = await deployAndCutArena(
-      { ownerAddress: deployer.address, whitelistEnabled, initializers },
-      hre
-    );
-  }
+  let _initReceipt: DFArenaInitialize;
+  [diamond, _initReceipt] = await deployAndCut(
+    { ownerAddress: deployer.address, whitelistEnabled, initializers },
+    hre
+  );
 
-  const contract = await hre.ethers.getContractAt('DarkForest', diamond.address);
+  let contract: DarkForest = await hre.ethers.getContractAt('DarkForest', diamond.address);
+
+  if (!baseFacets) {
+    contract = await cutArenaFromLobby(hre, contract, initializers, whitelistEnabled);
+  }
 
   await deployer.sendTransaction({
     to: contract.address,
@@ -142,3 +143,70 @@ export async function initializeWorld({
   };
 }
 
+async function cutArenaFromLobby(
+  hre: HardhatRuntimeEnvironment,
+  contract: DarkForest,
+  initializers: Initializers,
+  whitelistEnabled : boolean
+): Promise<DarkForest> {
+  const initAddress = hre.ethers.constants.AddressZero;
+  const initFunctionCall = '0x';
+
+  // Make Lobby
+  const tx = await contract.createLobby(initAddress, initFunctionCall);
+  const rc = await tx.wait();
+  if (!rc.events) throw Error('No event occurred');
+
+  const event = rc.events.find((event) => event.event === 'LobbyCreated') as LobbyCreatedEvent;
+
+  const lobbyAddress = event.args.lobbyAddress;
+
+  if (!lobbyAddress) throw Error('No lobby address found');
+
+  // Connect to Lobby Diamond and check ownership
+  const lobby = await hre.ethers.getContractAt('DarkForest', lobbyAddress);
+  const prevFacets = await lobby.facets();
+
+  const changes = new DiamondChanges(prevFacets);
+
+  const libraries: Libraries = {
+    Verifier: hre.contracts.VERIFIER_ADDRESS,
+    LibGameUtils: hre.contracts.LIB_GAME_UTILS_ADDRESS,
+    LibArtifactUtils: hre.contracts.LIB_ARTIFACT_UTILS_ADDRESS,
+    LibPlanet: hre.contracts.LIB_PLANET_ADDRESS,
+  };
+
+  const diamondInit = await deployArenaDiamondInit({}, libraries, hre);
+
+  const arenaCoreFacet = await deployArenaCoreFacet({}, libraries, hre);
+  const arenaGetterFacet = await deployArenaGetterFacet({}, libraries, hre);
+
+  const arenaDiamondCuts = [
+    // Note: The `diamondCut` is omitted because it is cut upon deployment
+    ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
+    ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
+  ];
+
+  const toCut = [...arenaDiamondCuts];
+
+  const tokenBaseUri = `${'https://nft-test.zkga.me/token-uri/artifact/'}${
+    hre.network.config?.chainId || 'unknown'
+  }-${lobby.address}/`;
+
+  const diamondInitAddress = diamondInit.address;
+  const diamondInitFunctionCall = diamondInit.interface.encodeFunctionData('init', [
+    whitelistEnabled,
+    tokenBaseUri,
+    initializers,
+  ]);
+
+
+  const arenaTx = await lobby.diamondCut(toCut, diamondInitAddress, diamondInitFunctionCall);
+  const arenaReceipt = await arenaTx.wait();
+  if (!arenaReceipt.status) {
+    throw Error(`Diamond cut failed: ${arenaTx.hash}`);
+  }
+
+  console.log('Completed diamond cut');
+  return lobby;
+}
