@@ -236,7 +236,7 @@ export async function deployAndCutArena(
   return [diamond, diamondInit, arenaReceipt] as const;
 }
 
-async function deployArenaDiamondInit(
+export async function deployArenaDiamondInit(
   {},
   { LibGameUtils }: Libraries,
   hre: HardhatRuntimeEnvironment

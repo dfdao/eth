@@ -1,4 +1,4 @@
-import type { DarkForest } from '@darkforest_eth/contracts/typechain';
+import type { DarkForest, DFArenaInitialize, Diamond } from '@darkforest_eth/contracts/typechain';
 import type { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 import { BigNumber, utils } from 'ethers';
 import hre from 'hardhat';
@@ -35,7 +35,7 @@ export interface Player {
 export interface InitializeWorldArgs {
   initializers: HardhatRuntimeEnvironment['initializers'];
   whitelistEnabled: boolean;
-  arena?: boolean
+  baseFacets?: boolean
 }
 
 export function defaultWorldFixture(): Promise<World> {
@@ -49,7 +49,6 @@ export function arenaWorldFixture(): Promise<World> {
   return initializeWorld({
     initializers: arenaInitializers,
     whitelistEnabled: false,
-    arena: true
   });
 }
 
@@ -88,10 +87,18 @@ export function targetPlanetFixture(): Promise<World> {
   });
 }
 
+export function baseGameFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: initializers,
+    whitelistEnabled: false,
+    baseFacets: true
+  });
+}
+
 export async function initializeWorld({
   initializers,
   whitelistEnabled,
-  arena
+  baseFacets
 }: InitializeWorldArgs): Promise<World> {
   const [deployer, user1, user2] = await hre.ethers.getSigners();
 
@@ -100,11 +107,21 @@ export async function initializeWorld({
   await hre.network.provider.send('evm_setAutomine', [true]);
   await hre.network.provider.send('evm_setIntervalMining', [0]);
 
-  // To test on vanilla, change deployandCutArena to deployAndCut
-  const [diamond, _initReceipt] = await deployAndCutArena(
-    { ownerAddress: deployer.address, whitelistEnabled, initializers },
-    hre
-  );
+  // To test on vanilla Dark Forest facets (no Arena), set baseFacets to true
+  let diamond: Diamond;
+  let _initReceipt: DFArenaInitialize
+  if(baseFacets) {
+    [diamond, _initReceipt] = await deployAndCut(
+      { ownerAddress: deployer.address, whitelistEnabled, initializers },
+      hre
+    );
+  }
+  else {
+    [diamond, _initReceipt] = await deployAndCutArena(
+      { ownerAddress: deployer.address, whitelistEnabled, initializers },
+      hre
+    );
+  }
 
   const contract = await hre.ethers.getContractAt('DarkForest', diamond.address);
 
