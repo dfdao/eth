@@ -118,16 +118,6 @@ async function setPlanetOwner(
   await setPlanetOwnerReciept.wait();
 }
 
-task(
-  'game:createPlanets',
-  'creates the planets defined in the darkforest.toml [[planets]] key. Only works when zk checks are enabled (using regular mimc fn)'
-).setAction(createPlanets);
-
-task(
-  'game:createArenaPlanets',
-  'creates the planets defined in the darkforest.toml [[planets]] key. Only works when zk checks are enabled (using regular mimc fn) and arena facets have been cut into the lobby successfully'
-).setAction(createArenaPlanets);
-
 task('game:findCheaters', 'finds planets that have been captured more than once').setAction(
   findCheaters
 );
@@ -196,6 +186,11 @@ async function findCheaters({}, hre: HardhatRuntimeEnvironment) {
   }
 }
 
+task(
+  'game:createPlanets',
+  'creates the planets defined in the darkforest.toml [[planets]] key. Only works when zk checks are enabled (using regular mimc fn)'
+).setAction(createPlanets);
+
 async function createPlanets({}, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
 
@@ -252,6 +247,11 @@ async function createPlanets({}, hre: HardhatRuntimeEnvironment) {
     }
   }
 }
+
+task(
+  'game:createArenaPlanets',
+  'creates the planets defined in the darkforest.toml [[planets]] key. Only works when zk checks are enabled (using regular mimc fn) and arena facets have been cut into the lobby successfully'
+).setAction(createArenaPlanets);
 
 async function createArenaPlanets({}, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');

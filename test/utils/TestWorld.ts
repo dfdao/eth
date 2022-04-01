@@ -143,6 +143,7 @@ export async function initializeWorld({
   };
 }
 
+/* Assumes libraries have alrady been deployed */
 async function cutArenaFromLobby(
   hre: HardhatRuntimeEnvironment,
   contract: DarkForest,

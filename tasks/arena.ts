@@ -1,14 +1,12 @@
-import * as fs from 'fs';
-
+import { DarkForest } from '@darkforest_eth/contracts/typechain';
+import { LobbyCreatedEvent } from '@darkforest_eth/contracts/typechain/DarkForest';
 import { task } from 'hardhat/config';
 import type { HardhatRuntimeEnvironment, Libraries } from 'hardhat/types';
 import { DiamondChanges } from '../utils/diamond';
-import * as path from 'path';
-import * as prettier from 'prettier';
-import { tscompile } from '../utils/tscompile';
 import { deployAndCut } from './deploy';
-import { DFArenaInitialize } from '@darkforest_eth/contracts/typechain';
 import { deployArenaCoreFacet, deployArenaGetterFacet, saveDeploy } from './utils';
+
+const TEMP_DIAMOND_ADDRESS = '0x5da117b8ab8b739346f5edc166789e5afb1a7145'
 
 task('arena:create', 'create a lobby from the command line').setAction(deployArena);
 
@@ -21,7 +19,9 @@ export async function deployArena(
 
   const [deployer] = await hre.ethers.getSigners();
 
-  const requires = hre.ethers.utils.parseEther('4');
+  console.log('deployer', deployer.address);
+
+  const requires = hre.ethers.utils.parseEther('2');
   const balance = await deployer.getBalance();
 
   // Only when deploying to production, give the deployer wallet money,
@@ -34,9 +34,11 @@ export async function deployArena(
     );
   }
 
-
+  // Create lobby with no initializer that is owned by the deployer
   const lobbyAddress = await deployLobbyWithDiamond(hre, hre.initializers);
+  console.log("lobby Address deployArena", lobbyAddress);
 
+  // New diamond 
   const diamond = await hre.ethers.getContractAt('DarkForest', lobbyAddress);
 
   const prevFacets = await diamond.facets();
@@ -125,7 +127,16 @@ export async function deployLobbyWithDiamond(
 
   const baseURI = isDev ? 'http://localhost:8081' : 'https://zkga.me';
 
-  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
+  let contract: DarkForest;
+  if(isDev) {
+    contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
+  }
+  else {
+    contract = await hre.ethers.getContractAt('DarkForest', TEMP_DIAMOND_ADDRESS);
+  }
+
+  console.log(`core contract adddress`, contract.address);
+  console.log(`core contract msg.sender`, await contract.signer.getAddress());
 
   const { abi: InitABI } = await hre.artifacts.readArtifact('DFArenaInitialize');
 
@@ -135,28 +146,52 @@ export async function deployLobbyWithDiamond(
   const initAddress = hre.ethers.constants.AddressZero;
   const initFunctionCall = '0x';
 
-  function waitForCreated(): Promise<string> {
-    return new Promise(async (resolve) => {
-      contract.on('LobbyCreated', async (ownerAddress, lobbyAddress) => {
-        if (deployer.address === ownerAddress) {
-          console.log(`Lobby created. Play at ${baseURI}/play/${lobbyAddress}`);
-          resolve(lobbyAddress);
-        }
-      });
-    });
+  // @ts-expect-error for url property
+  if(!isDev) console.log(`rpc`, hre.config.networks.xdai.url);
+
+  const gasPrice = hre.ethers.utils.parseUnits('40', "gwei");
+  console.log(`gasPrice`, hre.ethers.utils.formatUnits(gasPrice,'gwei'));
+  const createTx = await contract.createLobby(initAddress, initFunctionCall, {gasPrice});
+
+  const rc = await createTx.wait();
+  if (!rc.events) throw Error('No event occurred');
+
+  if (!rc.status) {
+    throw Error(`Lobby creation failed: ${createTx.hash}`);
   }
 
-  // We setup the event handler before creating the lobby
-  const result = waitForCreated();
+  const event = rc.events.find((event) => event.event === 'LobbyCreated') as LobbyCreatedEvent;
 
-  const tx = await contract.createLobby(initAddress, initFunctionCall);
+  const lobbyAddress = event.args.lobbyAddress;
 
-  const receipt = await tx.wait();
-  if (!receipt.status) {
-    throw Error(`Lobby creation failed: ${tx.hash}`);
-  }
+  console.log(`new lobby addy`, lobbyAddress)
 
-  const lobbyAddress = await result;
+
+  // function waitForCreated(): Promise<string> {
+  //   console.log("waiting for lobby creation...")
+  //   return new Promise(async (resolve) => {
+  //     contract.on('LobbyCreated', async (ownerAddress, lobbyAddress) => {
+  //       if (deployer.address === ownerAddress) {
+  //         console.log(`Lobby created. Play at ${baseURI}/play/${lobbyAddress}`);
+  //         resolve(lobbyAddress);
+  //       }
+  //     });
+  //   });
+  // }
+
+  // // We setup the event handler before creating the lobby
+  // const result = waitForCreated();
+
+
+  // const tx = await contract.createLobby(initAddress, initFunctionCall, {gasPrice});
+  // console.log(`createLobbyTx`, tx);
+
+  // const receipt = await tx.wait();
+  // if (!receipt.status) {
+  //   throw Error(`Lobby creation failed: ${tx.hash}`);
+  // }
+
+  // const lobbyAddress = await result;
 
   return lobbyAddress;
 }
