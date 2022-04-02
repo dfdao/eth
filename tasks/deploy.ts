@@ -163,7 +163,7 @@ export async function deployAndCut(
     hre
   );
 
-  const diamondInit = await deployDiamondInit({}, libraries, hre);
+  const diamondInit = await deployUpgradeDiamondInit({}, libraries, hre);
 
   // Dark Forest facets
   const coreFacet = await deployCoreFacet({}, libraries, hre);
@@ -180,6 +180,9 @@ export async function deployAndCut(
   const adminFacet = await deployAdminFacet({}, libraries, hre);
   const lobbyFacet = await deployLobbyFacet({}, {}, hre);
 
+  const arenaCoreFacet = await deployArenaCoreFacet({}, libraries, hre);
+  const arenaGetterFacet = await deployArenaGetterFacet({}, libraries, hre);
+
   // The `cuts` to perform for Dark Forest facets
   const darkForestFacetCuts = [
     ...changes.getFacetCuts('DFCoreFacet', coreFacet),
@@ -190,6 +193,9 @@ export async function deployAndCut(
     ...changes.getFacetCuts('DFWhitelistFacet', whitelistFacet),
     ...changes.getFacetCuts('DFAdminFacet', adminFacet),
     ...changes.getFacetCuts('DFLobbyFacet', lobbyFacet),
+    ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
+    ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
+
 
   ];
 
@@ -208,12 +214,6 @@ export async function deployAndCut(
   // These arguments are used to execute an arbitrary function using delegatecall
   // in order to set state variables in the diamond during deployment or an upgrade
   // More info here: https://eips.ethereum.org/EIPS/eip-2535#diamond-interface
-  // const initAddress = diamondInit.address;
-  // const initFunctionCall = diamondInit.interface.encodeFunctionData('init', [
-  //   whitelistEnabled,
-  //   tokenBaseUri,
-  //   initializers,
-  // ]);
 
   const initAddress = diamondInit.address;
   const initFunctionCall = diamondInit.interface.encodeFunctionData('init', [

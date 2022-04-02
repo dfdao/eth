@@ -9,11 +9,11 @@ import { DarkForest, LobbyCreatedEvent } from "@darkforest_eth/contracts/typecha
 import { INIT_ADDRESS } from "@darkforest_eth/contracts" 
 import InitABI from "@darkforest_eth/contracts/abis/DFInitialize.json";
 import { Contract } from "ethers";
-import { deployArenaDiamondInit } from "../tasks/arena";
+import { deployUpgradeDiamondInit } from "../tasks/utils";
 import { deployArenaCoreFacet, deployArenaGetterFacet, deployLibraries } from "../tasks/utils";
 import { DiamondChanges } from "../utils/diamond";
 
-describe('Dark Forest Arena Upgrade', function (){
+describe.skip('Dark Forest Arena Upgrade', function (){
     describe("Lobby with Initializer", async function() {
         let world: World;
         let lobby: DarkForest;
@@ -84,7 +84,7 @@ describe('Dark Forest Arena Upgrade', function (){
                     
             const libraries = await deployLibraries({}, hre);
           
-            const diamondInit = await deployArenaDiamondInit({}, libraries, hre);
+            const diamondInit = await deployUpgradeDiamondInit({}, libraries, hre);
           
             const arenaCoreFacet = await deployArenaCoreFacet({}, libraries, hre);
             const arenaGetterFacet = await deployArenaGetterFacet({}, libraries, hre);

@@ -4,7 +4,7 @@ import { BigNumber, utils } from 'ethers';
 import hre from 'hardhat';
 import type { HardhatRuntimeEnvironment, Libraries } from 'hardhat/types';
 import { deployAndCut } from '../../tasks/deploy';
-import { deployAndCutArena, deployArenaDiamondInit, deployLibraries } from '../../tasks/arena';
+import {deployUpgradeDiamondInit} from '../../tasks/utils'
 import {
   initializers,
   manualSpawnInitializers,
@@ -105,6 +105,7 @@ export async function initializeWorld({
   whitelistEnabled,
   baseFacets,
 }: InitializeWorldArgs): Promise<World> {
+  console.log(`manual spawn: ${initializers.MANUAL_SPAWN}`)
   const [deployer, user1, user2] = await hre.ethers.getSigners();
 
   // The tests assume that things get mined right away
@@ -122,9 +123,9 @@ export async function initializeWorld({
 
   let contract: DarkForest = await hre.ethers.getContractAt('DarkForest', diamond.address);
 
-  if (!baseFacets) {
-    contract = await cutArenaFromLobby(hre, contract, initializers, whitelistEnabled);
-  }
+  // if (!baseFacets) {
+  //   contract = await cutArenaFromLobby(hre, contract, initializers, whitelistEnabled);
+  // }
 
   await deployer.sendTransaction({
     to: contract.address,

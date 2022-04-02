@@ -32,7 +32,7 @@ import {
 contract DFCoreFacet is WithStorage {
     using ABDKMath64x64 for *;
 
-    event PlayerInitialized(address player, uint256 loc);
+    // event PlayerInitialized(address player, uint256 loc);
     event PlanetUpgraded(address player, uint256 loc, uint256 branch, uint256 toBranchLevel); // emitted in DFPlanet library
     event PlanetHatBought(address player, uint256 loc, uint256 tohatLevel);
     event PlanetTransferred(address sender, uint256 loc, address receiver);
@@ -137,38 +137,38 @@ contract DFCoreFacet is WithStorage {
         emit LocationRevealed(msg.sender, _input[0], _input[2], _input[3]);
     }
     
-    function initializePlayer(
-        uint256[2] memory _a,
-        uint256[2][2] memory _b,
-        uint256[2] memory _c,
-        uint256[8] memory _input
-    ) public onlyWhitelisted returns (uint256) {
-        LibPlanet.initializePlanet(_a, _b, _c, _input, true);
+    // function initializePlayer(
+    //     uint256[2] memory _a,
+    //     uint256[2][2] memory _b,
+    //     uint256[2] memory _c,
+    //     uint256[8] memory _input
+    // ) public onlyWhitelisted returns (uint256) {
+    //     LibPlanet.initializePlanet(_a, _b, _c, _input, true);
 
-        uint256 _location = _input[0];
-        uint256 _perlin = _input[1];
-        uint256 _radius = _input[2];
+    //     uint256 _location = _input[0];
+    //     uint256 _perlin = _input[1];
+    //     uint256 _radius = _input[2];
 
-        require(LibPlanet.checkPlayerInit(_location, _perlin, _radius));
+    //     require(LibPlanet.checkPlayerInit(_location, _perlin, _radius));
 
-        // Initialize player data
-        gs().playerIds.push(msg.sender);
-        gs().players[msg.sender] = Player(
-            true,
-            msg.sender,
-            block.timestamp,
-            _location,
-            0,
-            0,
-            0,
-            gameConstants().SPACE_JUNK_LIMIT,
-            false
-        );
+    //     // Initialize player data
+    //     gs().playerIds.push(msg.sender);
+    //     gs().players[msg.sender] = Player(
+    //         true,
+    //         msg.sender,
+    //         block.timestamp,
+    //         _location,
+    //         0,
+    //         0,
+    //         0,
+    //         gameConstants().SPACE_JUNK_LIMIT,
+    //         false
+    //     );
 
-        LibGameUtils.updateWorldRadius();
-        emit PlayerInitialized(msg.sender, _location);
-        return _location;
-    }
+    //     LibGameUtils.updateWorldRadius();
+    //     emit PlayerInitialized(msg.sender, _location);
+    //     return _location;
+    // }
 
     /**
       Gives players 5 spaceships on their home planet. Can only be called once
