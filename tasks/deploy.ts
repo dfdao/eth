@@ -8,6 +8,8 @@ import { DiamondChanges } from '../utils/diamond';
 import { tscompile } from '../utils/tscompile';
 import {
   deployAdminFacet,
+  deployArenaCoreFacet,
+  deployArenaGetterFacet,
   deployArtifactFacet,
   deployCaptureFacet,
   deployCoreFacet,
@@ -20,6 +22,7 @@ import {
   deployLobbyFacet,
   deployMoveFacet,
   deployOwnershipFacet,
+  deployUpgradeDiamondInit,
   deployWhitelistFacet,
   saveDeploy,
 } from './utils';

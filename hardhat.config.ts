@@ -26,9 +26,9 @@ import './tasks/debug';
 import './tasks/deploy';
 import './tasks/game';
 import './tasks/lobby';
-import './tasks/arena';
+import './tasks/upgrade';
 import './tasks/subgraph';
-import './tasks/upgrades';
+import './tasks/upgrade';
 import './tasks/utils';
 import './tasks/wallet';
 import './tasks/whitelist';
@@ -214,7 +214,7 @@ const config: HardhatUserConfig = {
     // We use our diamond utils to filter some functions we ignore from the combined ABI
     filter(abiElement: unknown, index: number, abi: unknown[], fullyQualifiedName: string) {
       const facetToIgnore = AbiItemsToIgnore.find((value) => getFullyQualifiedFacetName(value.facet) === fullyQualifiedName);
-      if(facetToIgnore) {
+      if(!facetToIgnore) {
         //@ts-expect-error because abiElement is type unknown
         if(facetToIgnore.functions.includes(abiElement.name)) return false;
         //@ts-expect-error because abiElement is type unknown

@@ -7,12 +7,11 @@ import * as path from 'path';
 import * as prettier from 'prettier';
 import { tscompile } from '../utils/tscompile';
 import { deployAndCut } from './deploy';
-import { DFArenaInitialize } from '@darkforest_eth/contracts/typechain';
-import { deployArenaCoreFacet, deployArenaGetterFacet, saveDeploy } from './utils';
+import { deployArenaCoreFacet, deployArenaGetterFacet, deployLibraries, deployUpgradeDiamondInit, saveDeploy } from './utils';
 
-task('arena:create', 'create a lobby from the command line').setAction(deployArena);
+task('arena:upgrade', 'upgrade a lobby from the command line').setAction(deployUpgrades);
 
-export async function deployArena(
+export async function deployUpgrades(
   {},
   hre: HardhatRuntimeEnvironment
 ) {
@@ -45,7 +44,7 @@ export async function deployArena(
 
   const libraries = await deployLibraries({}, hre);
 
-  const diamondInit = await deployArenaDiamondInit({}, libraries, hre);
+  const diamondInit = await deployUpgradeDiamondInit({}, libraries, hre);
 
   const arenaCoreFacet = await deployArenaCoreFacet({}, libraries, hre);
   
@@ -161,7 +160,7 @@ export async function deployLobbyWithDiamond(
   return lobbyAddress;
 }
 
-export async function deployAndCutArena(
+export async function deployAndCutUpgrades(
   {
     ownerAddress,
     whitelistEnabled,
@@ -194,7 +193,7 @@ export async function deployAndCutArena(
     LibPlanet : hre.contracts.LIB_PLANET_ADDRESS
   };
 
-  const diamondInit = await deployArenaDiamondInit({}, libraries, hre);
+  const diamondInit = await deployUpgradeDiamondInit({}, libraries, hre);
 
   const arenaCoreFacet = await deployArenaCoreFacet({}, libraries, hre);
   const arenaGetterFacet = await deployArenaGetterFacet({}, libraries, hre);
@@ -239,65 +238,4 @@ export async function deployAndCutArena(
   console.log('Arena created successfully. Godspeed cadet.');
 
   return [diamond, diamondInit, arenaReceipt] as const;
-}
-
-export async function deployArenaDiamondInit(
-  {},
-  { LibGameUtils }: Libraries,
-  hre: HardhatRuntimeEnvironment
-) {
-  // DFInitialize provides a function that is called when the diamond is upgraded to initialize state variables
-  // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
-  const factory = await hre.ethers.getContractFactory('DFArenaInitialize', {
-    libraries: { LibGameUtils },
-  });
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DFArenaInitialize deployed to: ${contract.address}`);
-  return contract;
-}
-
-export async function deployLibraries({}, hre: HardhatRuntimeEnvironment) {
-  const VerifierFactory = await hre.ethers.getContractFactory('Verifier');
-  const Verifier = await VerifierFactory.deploy();
-  await Verifier.deployTransaction.wait();
-  console.log(`Verifier deployed to: ${Verifier.address}`);
-
-  const LibGameUtilsFactory = await hre.ethers.getContractFactory('LibGameUtils');
-  const LibGameUtils = await LibGameUtilsFactory.deploy();
-  await LibGameUtils.deployTransaction.wait();
-  console.log(`LibGameUtils deployed to: ${LibGameUtils.address}`);
-
-  const LibLazyUpdateFactory = await hre.ethers.getContractFactory('LibLazyUpdate');
-  const LibLazyUpdate = await LibLazyUpdateFactory.deploy();
-  await LibLazyUpdate.deployTransaction.wait();
-  console.log(`LibLazyUpdate deployed to: ${LibLazyUpdate.address}`);
-
-  const LibArtifactUtilsFactory = await hre.ethers.getContractFactory('LibArtifactUtils', {
-    libraries: {
-      LibGameUtils: LibGameUtils.address,
-    },
-  });
-
-  const LibArtifactUtils = await LibArtifactUtilsFactory.deploy();
-  await LibArtifactUtils.deployTransaction.wait();
-  console.log(`LibArtifactUtils deployed to: ${LibArtifactUtils.address}`);
-
-  const LibPlanetFactory = await hre.ethers.getContractFactory('LibPlanet', {
-    libraries: {
-      LibGameUtils: LibGameUtils.address,
-      LibLazyUpdate: LibLazyUpdate.address,
-      Verifier: Verifier.address,
-    },
-  });
-  const LibPlanet = await LibPlanetFactory.deploy();
-  await LibPlanet.deployTransaction.wait();
-  console.log(`LibPlanet deployed to: ${LibPlanet.address}`);
-
-  return {
-    LibGameUtils: LibGameUtils.address,
-    LibPlanet: LibPlanet.address,
-    Verifier: Verifier.address,
-    LibArtifactUtils: LibArtifactUtils.address,
-  };
 }

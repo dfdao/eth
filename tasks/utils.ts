@@ -360,5 +360,18 @@ export async function saveDeploy(
   );
 }
 
-
-
+export async function deployUpgradeDiamondInit(
+  {},
+  { LibGameUtils }: Libraries,
+  hre: HardhatRuntimeEnvironment
+) {
+  // DFInitialize provides a function that is called when the diamond is upgraded to initialize state variables
+  // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
+  const factory = await hre.ethers.getContractFactory('DFArenaInitialize', {
+    libraries: { LibGameUtils },
+  });
+  const contract = await factory.deploy();
+  await contract.deployTransaction.wait();
+  console.log(`DFArenaInitialize deployed to: ${contract.address}`);
+  return contract;
+}

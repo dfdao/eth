@@ -143,7 +143,7 @@ export async function initializeWorld({
   };
 }
 
-async function cutArenaFromLobby(
+async function cutUpgradesFromLobby(
   hre: HardhatRuntimeEnvironment,
   contract: DarkForest,
   initializers: Initializers,
@@ -176,7 +176,7 @@ async function cutArenaFromLobby(
     LibPlanet: hre.contracts.LIB_PLANET_ADDRESS,
   };
 
-  const diamondInit = await deployArenaDiamondInit({}, libraries, hre);
+  const diamondInit = await deployUpgradeDiamondInit({}, libraries, hre);
 
   const arenaCoreFacet = await deployArenaCoreFacet({}, libraries, hre);
   const arenaGetterFacet = await deployArenaGetterFacet({}, libraries, hre);
