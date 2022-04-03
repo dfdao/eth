@@ -37,27 +37,38 @@ require('dotenv').config();
 const AbiItemsToIgnore = [
   {
     facet: 'DFCoreFacet',
-    functions: [
-      'initializePlayer',
-    ],
-    events: [
-      'PlayerInitialized',
-    ]
+    functions: ['initializePlayer'],
+    events: ['PlayerInitialized'],
   },
   {
     facet: 'DFAdminFacet',
-    events: [
-      'AdminPlanetCreated'
-    ]
-  }
+    events: ['AdminPlanetCreated'],
+  },
+  {
+    facet: 'DFMoveFacet',
+    events: ['ArrivalQueued'],
+    functions: [
+      'move',
+      '_executeMove',
+      '_checkMoveValidity',
+      'applySpaceshipDepart',
+      '_removeSpaceshipEffectsFromOriginPlanet',
+      '_checkWormhole',
+      '_checkPhotoid',
+      'abandonPlanet',
+      '_transferPlanetSpaceJunkToPlayer',
+      '_isSpaceshipMove',
+      '_createArrival',
+      '_getDelayedPop'
+    ],
+  },
 ];
 
 // Warning: If the facet is not in the `facets` directory, getFullyQualifiedFacetName will not work.
 const getFullyQualifiedFacetName = (facet: string) => {
   // ex: 'contracts/facets/DFWhitelistFacet.sol:DFWhitelistFacet'
-  return `contracts/facets/${facet}.sol:${facet}`
+  return `contracts/facets/${facet}.sol:${facet}`;
 };
-
 
 const { DEPLOYER_MNEMONIC, ADMIN_PUBLIC_ADDRESS } = process.env;
 
@@ -206,7 +217,7 @@ const config: HardhatUserConfig = {
     // This plugin will combine all ABIs from any Smart Contract with `Facet` in the name or path and output it as `DarkForest.json`
     name: 'DarkForest',
     include: ['Facet'],
-    // exclude: ["Arena"],
+    exclude: ['Archived'],
     // We explicitly set `strict` to `true` because we want to validate our facets don't accidentally provide overlapping functions
     strict: true,
     // We use our diamond utils to filter some functions we ignore from the combined ABI
