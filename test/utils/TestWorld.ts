@@ -4,7 +4,7 @@ import { BigNumber, utils } from 'ethers';
 import hre from 'hardhat';
 import type { HardhatRuntimeEnvironment, Libraries } from 'hardhat/types';
 import { deployAndCut } from '../../tasks/deploy';
-import {deployUpgradeDiamondInit} from '../../tasks/utils'
+import { cutUpgradesFromLobby } from '../../tasks/upgrade';
 import {
   initializers,
   manualSpawnInitializers,
@@ -13,10 +13,6 @@ import {
   target4Initializers,
   arenaInitializers,
 } from './WorldConstants';
-import { LobbyCreatedEvent } from '@darkforest_eth/contracts/typechain/DFLobbyFacet';
-import { DiamondChanges } from '../../utils/diamond';
-import { deployArenaCoreFacet, deployArenaGetterFacet } from '../../tasks/utils';
-import { Initializers } from '@darkforest_eth/settings';
 
 export interface World {
   contract: DarkForest;
@@ -105,7 +101,6 @@ export async function initializeWorld({
   whitelistEnabled,
   baseFacets,
 }: InitializeWorldArgs): Promise<World> {
-  console.log(`manual spawn: ${initializers.MANUAL_SPAWN}`)
   const [deployer, user1, user2] = await hre.ethers.getSigners();
 
   // The tests assume that things get mined right away
@@ -123,9 +118,9 @@ export async function initializeWorld({
 
   let contract: DarkForest = await hre.ethers.getContractAt('DarkForest', diamond.address);
 
-  // if (!baseFacets) {
-  //   contract = await cutArenaFromLobby(hre, contract, initializers, whitelistEnabled);
-  // }
+  if (!baseFacets) {
+    [contract] = await cutUpgradesFromLobby(hre, contract, initializers, whitelistEnabled);
+  }
 
   await deployer.sendTransaction({
     to: contract.address,
@@ -142,72 +137,4 @@ export async function initializeWorld({
     user1Core: contract.connect(user1),
     user2Core: contract.connect(user2),
   };
-}
-
-async function cutUpgradesFromLobby(
-  hre: HardhatRuntimeEnvironment,
-  contract: DarkForest,
-  initializers: Initializers,
-  whitelistEnabled : boolean
-): Promise<DarkForest> {
-  const initAddress = hre.ethers.constants.AddressZero;
-  const initFunctionCall = '0x';
-
-  // Make Lobby
-  const tx = await contract.createLobby(initAddress, initFunctionCall);
-  const rc = await tx.wait();
-  if (!rc.events) throw Error('No event occurred');
-
-  const event = rc.events.find((event) => event.event === 'LobbyCreated') as LobbyCreatedEvent;
-
-  const lobbyAddress = event.args.lobbyAddress;
-
-  if (!lobbyAddress) throw Error('No lobby address found');
-
-  // Connect to Lobby Diamond and check ownership
-  const lobby = await hre.ethers.getContractAt('DarkForest', lobbyAddress);
-  const prevFacets = await lobby.facets();
-
-  const changes = new DiamondChanges(prevFacets);
-
-  const libraries: Libraries = {
-    Verifier: hre.contracts.VERIFIER_ADDRESS,
-    LibGameUtils: hre.contracts.LIB_GAME_UTILS_ADDRESS,
-    LibArtifactUtils: hre.contracts.LIB_ARTIFACT_UTILS_ADDRESS,
-    LibPlanet: hre.contracts.LIB_PLANET_ADDRESS,
-  };
-
-  const diamondInit = await deployUpgradeDiamondInit({}, libraries, hre);
-
-  const arenaCoreFacet = await deployArenaCoreFacet({}, libraries, hre);
-  const arenaGetterFacet = await deployArenaGetterFacet({}, libraries, hre);
-
-  const arenaDiamondCuts = [
-    // Note: The `diamondCut` is omitted because it is cut upon deployment
-    ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
-    ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
-  ];
-
-  const toCut = [...arenaDiamondCuts];
-
-  const tokenBaseUri = `${'https://nft-test.zkga.me/token-uri/artifact/'}${
-    hre.network.config?.chainId || 'unknown'
-  }-${lobby.address}/`;
-
-  const diamondInitAddress = diamondInit.address;
-  const diamondInitFunctionCall = diamondInit.interface.encodeFunctionData('init', [
-    whitelistEnabled,
-    tokenBaseUri,
-    initializers,
-  ]);
-
-
-  const arenaTx = await lobby.diamondCut(toCut, diamondInitAddress, diamondInitFunctionCall);
-  const arenaReceipt = await arenaTx.wait();
-  if (!arenaReceipt.status) {
-    throw Error(`Diamond cut failed: ${arenaTx.hash}`);
-  }
-
-  console.log('Completed diamond cut');
-  return lobby;
 }

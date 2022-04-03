@@ -253,6 +253,38 @@ export async function deployArenaGetterFacet({}, {}: Libraries, hre: HardhatRunt
   return contract;
 }
 
+export async function deployArenaDiamondInit(
+  {},
+  { LibGameUtils }: Libraries,
+  hre: HardhatRuntimeEnvironment
+) {
+  // DFInitialize provides a function that is called when the diamond is upgraded to initialize state variables
+  // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
+  const factory = await hre.ethers.getContractFactory('DFArenaInitialize', {
+    libraries: { LibGameUtils },
+  });
+  const contract = await factory.deploy();
+  await contract.deployTransaction.wait();
+  console.log(`DFArenaInitialize deployed to: ${contract.address}`);
+  return contract;
+}
+
+export async function deployArenaUpgradeDiamondInit(
+  {},
+  { LibGameUtils }: Libraries,
+  hre: HardhatRuntimeEnvironment
+) {
+  // DFInitialize provides a function that is called when the diamond is upgraded to initialize state variables
+  // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
+  const factory = await hre.ethers.getContractFactory('DFArenaUpgradeInitialize', {
+    libraries: { LibGameUtils },
+  });
+  const contract = await factory.deploy();
+  await contract.deployTransaction.wait();
+  console.log(`DFArenaUpgradeInitialize deployed to: ${contract.address}`);
+  return contract;
+}
+
 
 export async function saveDeploy(
   args: {
@@ -358,20 +390,4 @@ export async function saveDeploy(
     contractsFileDTS,
     prettier.format(dtsContents, { ...options, parser: 'babel-ts' })
   );
-}
-
-export async function deployUpgradeDiamondInit(
-  {},
-  { LibGameUtils }: Libraries,
-  hre: HardhatRuntimeEnvironment
-) {
-  // DFInitialize provides a function that is called when the diamond is upgraded to initialize state variables
-  // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
-  const factory = await hre.ethers.getContractFactory('DFArenaInitialize', {
-    libraries: { LibGameUtils },
-  });
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DFArenaInitialize deployed to: ${contract.address}`);
-  return contract;
 }

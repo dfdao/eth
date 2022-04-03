@@ -18,7 +18,7 @@ async function deployLobbies({}, hre: HardhatRuntimeEnvironment): Promise<void> 
   const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
   // console.log(JSON.stringify(contract));
 
-  const { abi: InitABI } = await hre.artifacts.readArtifact('contracts\\DFInitialize.sol:DFInitialize');
+  const { abi: InitABI } = await hre.artifacts.readArtifact('DFArenaInitialize');
   const initInterface = hre.ethers.Contract.getInterface(InitABI);
 
   const whitelistEnabled = false;

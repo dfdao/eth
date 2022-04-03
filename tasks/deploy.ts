@@ -1,14 +1,13 @@
-import * as fs from 'fs';
 import { task, types } from 'hardhat/config';
-import type { HardhatRuntimeEnvironment, Libraries } from 'hardhat/types';
-import * as path from 'path';
-import * as prettier from 'prettier';
+import type { HardhatRuntimeEnvironment } from 'hardhat/types';
+
 import * as settings from '../settings';
 import { DiamondChanges } from '../utils/diamond';
-import { tscompile } from '../utils/tscompile';
+
 import {
   deployAdminFacet,
   deployArenaCoreFacet,
+  deployArenaDiamondInit,
   deployArenaGetterFacet,
   deployArtifactFacet,
   deployCaptureFacet,
@@ -22,7 +21,6 @@ import {
   deployLobbyFacet,
   deployMoveFacet,
   deployOwnershipFacet,
-  deployUpgradeDiamondInit,
   deployWhitelistFacet,
   saveDeploy,
 } from './utils';
@@ -163,7 +161,7 @@ export async function deployAndCut(
     hre
   );
 
-  const diamondInit = await deployUpgradeDiamondInit({}, libraries, hre);
+  const diamondInit = await deployArenaDiamondInit({}, libraries, hre);
 
   // Dark Forest facets
   const coreFacet = await deployCoreFacet({}, libraries, hre);
