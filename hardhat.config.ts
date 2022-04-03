@@ -26,7 +26,6 @@ import './tasks/debug';
 import './tasks/deploy';
 import './tasks/game';
 import './tasks/lobby';
-import './tasks/upgrade';
 import './tasks/subgraph';
 import './tasks/upgrade';
 import './tasks/utils';
@@ -47,7 +46,6 @@ const AbiItemsToIgnore = [
   },
   {
     facet: 'DFAdminFacet',
-    functions: [],
     events: [
       'AdminPlanetCreated'
     ]
@@ -214,11 +212,11 @@ const config: HardhatUserConfig = {
     // We use our diamond utils to filter some functions we ignore from the combined ABI
     filter(abiElement: unknown, index: number, abi: unknown[], fullyQualifiedName: string) {
       const facetToIgnore = AbiItemsToIgnore.find((value) => getFullyQualifiedFacetName(value.facet) === fullyQualifiedName);
-      if(!facetToIgnore) {
+      if(facetToIgnore) {
         //@ts-expect-error because abiElement is type unknown
-        if(facetToIgnore.functions.includes(abiElement.name)) return false;
+        if(facetToIgnore.functions?.includes(abiElement.name)) return false;
         //@ts-expect-error because abiElement is type unknown
-        if(facetToIgnore.events.includes(abiElement.name)) return false;
+        if(facetToIgnore.events?.includes(abiElement.name)) return false;
       };
       const signature = diamondUtils.toSignature(abiElement);
       return diamondUtils.isIncluded(fullyQualifiedName, signature);
