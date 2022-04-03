@@ -2,15 +2,12 @@ import { task } from 'hardhat/config';
 import type { HardhatRuntimeEnvironment, Libraries } from 'hardhat/types';
 import { DiamondChanges } from '../utils/diamond';
 
-import { deployArenaCoreFacet, deployArenaGetterFacet, deployArenaUpgradeDiamondInit, saveDeploy } from './utils';
+import { deployFacet, saveDeploy } from './utils';
 import { Contract } from 'ethers';
 
 task('arena:upgrade', 'upgrade a lobby from the command line').setAction(deployUpgrades);
 
-export async function deployUpgrades(
-  {},
-  hre: HardhatRuntimeEnvironment
-) {
+export async function deployUpgrades({}, hre: HardhatRuntimeEnvironment) {
   console.log('creating lobby and cutting arena facets');
   const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
 
@@ -28,22 +25,20 @@ export async function deployUpgrades(
       )} but has ${hre.ethers.utils.formatEther(balance)} top up and rerun`
     );
   }
-  
-  const whitelistEnabled = false
+
+  const whitelistEnabled = false;
 
   const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
-  
-  return await cutUpgradesFromLobby(hre, contract, hre.initializers, whitelistEnabled);
 
+  return await cutUpgradesFromLobby(hre, contract, hre.initializers, whitelistEnabled);
 }
 
 export async function cutUpgradesFromLobby(
   hre: HardhatRuntimeEnvironment,
   contract: Contract,
   initializers: HardhatRuntimeEnvironment['initializers'],
-  whitelistEnabled : boolean
+  whitelistEnabled: boolean
 ) {
-
   const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
   const initAddress = hre.ethers.constants.AddressZero;
   const initFunctionCall = '0x';
@@ -66,22 +61,22 @@ export async function cutUpgradesFromLobby(
 
   const changes = new DiamondChanges(prevFacets);
 
-  const libraries: Libraries = {
-    Verifier: hre.contracts.VERIFIER_ADDRESS,
-    LibGameUtils: hre.contracts.LIB_GAME_UTILS_ADDRESS,
-    LibArtifactUtils: hre.contracts.LIB_ARTIFACT_UTILS_ADDRESS,
-    LibPlanet: hre.contracts.LIB_PLANET_ADDRESS,
-  };
+  const Verifier = hre.contracts.VERIFIER_ADDRESS;
+  const LibGameUtils = hre.contracts.LIB_GAME_UTILS_ADDRESS;
+  const LibArtifactUtils = hre.contracts.LIB_ARTIFACT_UTILS_ADDRESS;
+  const LibPlanet = hre.contracts.LIB_PLANET_ADDRESS;
 
-  const diamondInit = await deployArenaUpgradeDiamondInit({}, libraries, hre);
+  const diamondInit = await deployFacet('DFArenaUpgradeInitialize', {LibGameUtils}, hre);
 
-  const arenaCoreFacet = await deployArenaCoreFacet({}, libraries, hre);
-  const arenaGetterFacet = await deployArenaGetterFacet({}, libraries, hre);
+  const moveFacet = await deployFacet(
+    'DFMoveFacet',
+    { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet },
+    hre
+  );
 
   const arenaDiamondCuts = [
     // Note: The `diamondCut` is omitted because it is cut upon deployment
-    ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
-    ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
+    ...changes.getFacetCuts('DFMoveFacet', moveFacet),
   ];
 
   const toCut = [...arenaDiamondCuts];
@@ -99,7 +94,6 @@ export async function cutUpgradesFromLobby(
     initializers,
   ]);
 
-
   const arenaTx = await lobby.diamondCut(toCut, diamondInitAddress, diamondInitFunctionCall);
   const arenaReceipt = await arenaTx.wait();
   if (!arenaReceipt.status) {
@@ -113,7 +107,7 @@ export async function cutUpgradesFromLobby(
       coreBlockNumber: arenaReceipt.blockNumber,
       diamondAddress: lobby.address,
       initAddress: diamondInit.address,
-      libraries: libraries,
+      libraries: { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet },
     },
     hre
   );

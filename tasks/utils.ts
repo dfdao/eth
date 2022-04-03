@@ -21,53 +21,21 @@ async function assertChainId({}, hre: HardhatRuntimeEnvironment) {
 Contract deployment
 */
 
-export async function deployGetterFacet(
-  {},
-  { LibGameUtils }: Libraries,
+export async function deployDiamond(
+  {
+    ownerAddress,
+    diamondCutAddress,
+  }: {
+    ownerAddress: string;
+    diamondCutAddress: string;
+  },
+  {}: Libraries,
   hre: HardhatRuntimeEnvironment
 ) {
-  const factory = await hre.ethers.getContractFactory('DFGetterFacet', {
-    libraries: {
-      LibGameUtils,
-    },
-  });
-  const contract = await factory.deploy();
+  const factory = await hre.ethers.getContractFactory('Diamond');
+  const contract = await factory.deploy(ownerAddress, diamondCutAddress);
   await contract.deployTransaction.wait();
-  console.log('DFGetterFacet deployed to:', contract.address);
-  return contract;
-}
-
-export async function deployAdminFacet(
-  {},
-  { LibGameUtils, LibPlanet, LibArtifactUtils }: Libraries,
-  hre: HardhatRuntimeEnvironment
-) {
-  const factory = await hre.ethers.getContractFactory('DFAdminFacet', {
-    libraries: {
-      LibArtifactUtils,
-      LibGameUtils,
-      LibPlanet,
-    },
-  });
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DFAdminFacet deployed to: ${contract.address}`);
-  return contract;
-}
-
-export async function deployWhitelistFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
-  const factory = await hre.ethers.getContractFactory('DFWhitelistFacet');
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DFWhitelistFacet deployed to: ${contract.address}`);
-  return contract;
-}
-
-export async function deployArtifactFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
-  const factory = await hre.ethers.getContractFactory('DFArtifactFacet');
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DFArtifactFacet deployed to: ${contract.address}`);
+  console.log(`Diamond deployed to: ${contract.address}`);
   return contract;
 }
 
@@ -111,187 +79,26 @@ export async function deployLibraries({}, hre: HardhatRuntimeEnvironment) {
   };
 }
 
-export async function deployCoreFacet(
-  {},
-  { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet }: Libraries,
+export async function deployFacet(
+  facetName: string,
+  libraries: Libraries,
   hre: HardhatRuntimeEnvironment
 ) {
-  const factory = await hre.ethers.getContractFactory('DFCoreFacet', {
-    libraries: {
-      Verifier,
-      LibGameUtils,
-      LibArtifactUtils,
-      LibPlanet,
-    },
+  const factory = await hre.ethers.getContractFactory(facetName, {
+    libraries,
   });
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
-  console.log(`DFCoreFacet deployed to: ${contract.address}`);
+  console.log(`${facetName} deployed to: ${contract.address}`);
   return contract;
 }
-
-export async function deployMoveFacet(
-  {},
-  { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet }: Libraries,
-  hre: HardhatRuntimeEnvironment
-) {
-  const factory = await hre.ethers.getContractFactory('DFMoveFacet', {
-    libraries: {
-      Verifier,
-      LibGameUtils,
-      LibArtifactUtils,
-      LibPlanet,
-    },
-  });
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DFMoveFacet deployed to: ${contract.address}`);
-  return contract;
-}
-
-export async function deployCaptureFacet(
-  {},
-  { LibPlanet }: Libraries,
-  hre: HardhatRuntimeEnvironment
-) {
-  const factory = await hre.ethers.getContractFactory('DFCaptureFacet', {
-    libraries: {
-      LibPlanet,
-    },
-  });
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DFCaptureFacet deployed to: ${contract.address}`);
-  return contract;
-}
-
-
-export async function deployDiamondCutFacet({}, libraries: Libraries, hre: HardhatRuntimeEnvironment) {
-  const factory = await hre.ethers.getContractFactory('DiamondCutFacet');
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DiamondCutFacet deployed to: ${contract.address}`);
-  return contract;
-}
-
-export async function deployDiamond(
-  {
-    ownerAddress,
-    diamondCutAddress,
-  }: {
-    ownerAddress: string;
-    diamondCutAddress: string;
-  },
-  {}: Libraries,
-  hre: HardhatRuntimeEnvironment
-) {
-  const factory = await hre.ethers.getContractFactory('Diamond');
-  const contract = await factory.deploy(ownerAddress, diamondCutAddress);
-  await contract.deployTransaction.wait();
-  console.log(`Diamond deployed to: ${contract.address}`);
-  return contract;
-}
-
-export async function deployDiamondInit({}, { LibGameUtils }: Libraries, hre: HardhatRuntimeEnvironment) {
-  // DFInitialize provides a function that is called when the diamond is upgraded to initialize state variables
-  // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
-  const factory = await hre.ethers.getContractFactory('DFInitialize', {
-    libraries: { LibGameUtils },
-  });
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DFInitialize deployed to: ${contract.address}`);
-  return contract;
-}
-
-export async function deployDiamondLoupeFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
-  const factory = await hre.ethers.getContractFactory('DiamondLoupeFacet');
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DiamondLoupeFacet deployed to: ${contract.address}`);
-  return contract;
-}
-
-export async function deployOwnershipFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
-  const factory = await hre.ethers.getContractFactory('OwnershipFacet');
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`OwnershipFacet deployed to: ${contract.address}`);
-  return contract;
-}
-
-export async function deployLobbyFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
-  const factory = await hre.ethers.getContractFactory('DFLobbyFacet');
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DFLobbyFacet deployed to: ${contract.address}`);
-  return contract;
-}
-
-export async function deployArenaCoreFacet(
-  {},
-  { LibGameUtils, LibPlanet }: Libraries,
-  hre: HardhatRuntimeEnvironment
-) {
-  const factory = await hre.ethers.getContractFactory('DFArenaCoreFacet', {
-    libraries: {
-      LibGameUtils,
-      LibPlanet,
-    },
-  });
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DFArenaCoreFacet deployed to: ${contract.address}`);
-  return contract;
-}
-
-export async function deployArenaGetterFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
-  const factory = await hre.ethers.getContractFactory('DFArenaGetterFacet', {});
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DFArenaGetterFacet deployed to: ${contract.address}`);
-  return contract;
-}
-
-export async function deployArenaDiamondInit(
-  {},
-  { LibGameUtils }: Libraries,
-  hre: HardhatRuntimeEnvironment
-) {
-  // DFInitialize provides a function that is called when the diamond is upgraded to initialize state variables
-  // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
-  const factory = await hre.ethers.getContractFactory('DFArenaInitialize', {
-    libraries: { LibGameUtils },
-  });
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DFArenaInitialize deployed to: ${contract.address}`);
-  return contract;
-}
-
-export async function deployArenaUpgradeDiamondInit(
-  {},
-  { LibGameUtils }: Libraries,
-  hre: HardhatRuntimeEnvironment
-) {
-  // DFInitialize provides a function that is called when the diamond is upgraded to initialize state variables
-  // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
-  const factory = await hre.ethers.getContractFactory('DFArenaUpgradeInitialize', {
-    libraries: { LibGameUtils },
-  });
-  const contract = await factory.deploy();
-  await contract.deployTransaction.wait();
-  console.log(`DFArenaUpgradeInitialize deployed to: ${contract.address}`);
-  return contract;
-}
-
 
 export async function saveDeploy(
   args: {
     coreBlockNumber: number;
     diamondAddress: string;
     initAddress: string;
-    libraries : Libraries;
+    libraries: Libraries;
   },
   hre: HardhatRuntimeEnvironment
 ) {

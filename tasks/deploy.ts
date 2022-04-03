@@ -4,26 +4,7 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import * as settings from '../settings';
 import { DiamondChanges } from '../utils/diamond';
 
-import {
-  deployAdminFacet,
-  deployArenaCoreFacet,
-  deployArenaDiamondInit,
-  deployArenaGetterFacet,
-  deployArtifactFacet,
-  deployCaptureFacet,
-  deployCoreFacet,
-  deployDiamond,
-  deployDiamondCutFacet,
-  deployDiamondInit,
-  deployDiamondLoupeFacet,
-  deployGetterFacet,
-  deployLibraries,
-  deployLobbyFacet,
-  deployMoveFacet,
-  deployOwnershipFacet,
-  deployWhitelistFacet,
-  saveDeploy,
-} from './utils';
+import { deployDiamond, deployFacet, deployLibraries, saveDeploy } from './utils';
 
 task('deploy', 'deploy all contracts')
   .addOptionalParam('whitelist', 'override the whitelist', undefined, types.boolean)
@@ -136,13 +117,13 @@ export async function deployAndCut(
 
   const changes = new DiamondChanges();
 
-  const libraries = await deployLibraries({}, hre);
+  const { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet } = await deployLibraries({}, hre);
 
   // Diamond Spec facets
   // Note: These won't be updated during an upgrade without manual intervention
-  const diamondCutFacet = await deployDiamondCutFacet({}, libraries, hre);
-  const diamondLoupeFacet = await deployDiamondLoupeFacet({}, libraries, hre);
-  const ownershipFacet = await deployOwnershipFacet({}, libraries, hre);
+  const diamondCutFacet = await deployFacet('DiamondCutFacet', {}, hre);
+  const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet', {}, hre);
+  const ownershipFacet = await deployFacet('OwnershipFacet', {}, hre);
 
   // The `cuts` to perform for Diamond Spec facets
   const diamondSpecFacetCuts = [
@@ -157,29 +138,38 @@ export async function deployAndCut(
       // The `diamondCutFacet` is cut upon deployment
       diamondCutAddress: diamondCutFacet.address,
     },
-    libraries,
+    {},
     hre
   );
 
-  const diamondInit = await deployArenaDiamondInit({}, libraries, hre);
+  const diamondInit = await deployFacet('DFArenaInitialize', {LibGameUtils}, hre);
 
   // Dark Forest facets
-  const coreFacet = await deployCoreFacet({}, libraries, hre);
-  const moveFacet = await deployMoveFacet({}, libraries, hre);
-  const captureFacet = await deployCaptureFacet({}, libraries, hre);
-
-  const artifactFacet = await deployArtifactFacet(
-    { diamondAddress: diamond.address },
-    libraries,
+  const coreFacet = await deployFacet(
+    'DFCoreFacet',
+    { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet },
     hre
   );
-  const getterFacet = await deployGetterFacet({}, libraries, hre);
-  const whitelistFacet = await deployWhitelistFacet({}, libraries, hre);
-  const adminFacet = await deployAdminFacet({}, libraries, hre);
-  const lobbyFacet = await deployLobbyFacet({}, {}, hre);
+  const moveFacet = await deployFacet(
+    'DFMoveFacet',
+    { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet },
+    hre
+  );
+  const captureFacet = await deployFacet('DFCaptureFacet', { LibPlanet }, hre);
+  // const captureFacet = await deployCaptureFacet({}, libraries, hre);
 
-  const arenaCoreFacet = await deployArenaCoreFacet({}, libraries, hre);
-  const arenaGetterFacet = await deployArenaGetterFacet({}, libraries, hre);
+  const artifactFacet = await deployFacet('DFArtifactFacet', {}, hre);
+  const getterFacet = await deployFacet('DFGetterFacet', { LibGameUtils }, hre);
+  const whitelistFacet = await deployFacet('DFWhitelistFacet', {}, hre);
+  const adminFacet = await deployFacet(
+    'DFAdminFacet',
+    { LibArtifactUtils, LibGameUtils, LibPlanet },
+    hre
+  );
+  const lobbyFacet = await deployFacet('DFLobbyFacet', {}, hre);
+
+  const arenaCoreFacet = await deployFacet('DFArenaCoreFacet', { LibGameUtils, LibPlanet }, hre);
+  const arenaGetterFacet = await deployFacet('DFArenaGetterFacet', {}, hre);
 
   // The `cuts` to perform for Dark Forest facets
   const darkForestFacetCuts = [
@@ -193,8 +183,6 @@ export async function deployAndCut(
     ...changes.getFacetCuts('DFLobbyFacet', lobbyFacet),
     ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
     ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
-
-
   ];
 
   const toCut = [...diamondSpecFacetCuts, ...darkForestFacetCuts];
@@ -232,10 +220,10 @@ export async function deployAndCut(
       coreBlockNumber: initReceipt.blockNumber,
       diamondAddress: diamond.address,
       initAddress: diamondInit.address,
-      libraries: libraries,
+      libraries: { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet },
     },
     hre
   );
-  
+
   return [diamond, diamondInit, initReceipt] as const;
 }
