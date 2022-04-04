@@ -109,9 +109,7 @@ export async function initializeWorld({
   await hre.network.provider.send('evm_setIntervalMining', [0]);
 
   // To test on vanilla Dark Forest facets (no Arena), set baseFacets to true
-  let diamond: Diamond;
-  let _initReceipt: DFArenaInitialize;
-  [diamond, _initReceipt] = await deployAndCut(
+  const [diamond,_initReceipt] = await deployAndCut(
     { ownerAddress: deployer.address, whitelistEnabled, initializers },
     hre
   );

@@ -83,7 +83,6 @@ describe('Dark Forest Arena', function (){
       expect(targetPlanetId).to.equal(ADMIN_PLANET_CLOAKED.id);
   
       const targetPlanet = await world.contract.planetsArenaInfo(ADMIN_PLANET_CLOAKED.id);
-      console.log(`targetPlanet: ${targetPlanet}`);
       expect(targetPlanet.spawnPlanet).to.equal(false);
       expect(targetPlanet.targetPlanet).to.equal(true);
     });

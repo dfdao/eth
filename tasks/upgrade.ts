@@ -37,7 +37,7 @@ export async function cutUpgradesFromLobby(
   hre: HardhatRuntimeEnvironment,
   contract: Contract,
   initializers: HardhatRuntimeEnvironment['initializers'],
-  whitelistEnabled: boolean
+  whitelistEnabled: boolean = false
 ) {
   const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
   const initAddress = hre.ethers.constants.AddressZero;
@@ -74,6 +74,7 @@ export async function cutUpgradesFromLobby(
     hre
   );
 
+  
   const arenaDiamondCuts = [
     // Note: The `diamondCut` is omitted because it is cut upon deployment
     ...changes.getFacetCuts('DFMoveCapFacet', moveCapFacet),
