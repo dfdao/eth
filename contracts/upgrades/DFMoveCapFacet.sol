@@ -7,15 +7,38 @@ import {LibPlanet} from "../libraries/LibPlanet.sol";
 import {LibArtifactUtils} from "../libraries/LibArtifactUtils.sol";
 import {Verifier} from "../Verifier.sol";
 import {ABDKMath64x64} from "../vendor/libraries/ABDKMath64x64.sol";
+import {LibDiamond} from "../vendor/libraries/LibDiamond.sol";
 
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
-import {WithArenaStorage} from "./LibArenaUpgradeStorage.sol";
+import {WithArenaStorage, ArenaPlayerInfo} from "./LibArenaUpgradeStorage.sol";
 
-import {SpaceType, DFPInitPlanetArgs, Artifact, ArtifactType, Player, Planet, PlanetType, PlanetExtendedInfo, PlanetExtendedInfo2} from "../DFTypes.sol";
+import {SpaceType, 
+    DFPInitPlanetArgs, 
+    Artifact, 
+    ArtifactType, 
+    Player, 
+    Planet, 
+    PlanetType, 
+    PlanetExtendedInfo, 
+    PlanetExtendedInfo2} 
+from "../DFTypes.sol";
 
 // Type imports
-import {ArrivalData, ArrivalType, Artifact, ArtifactType, DFPCreateArrivalArgs, DFPMoveArgs, Planet, PlanetExtendedInfo, PlanetExtendedInfo2, PlanetEventMetadata, PlanetEventType, Upgrade} from "../DFTypes.sol";
+import {
+    ArrivalData, 
+    ArrivalType, 
+    Artifact, 
+    ArtifactType, 
+    DFPCreateArrivalArgs, 
+    DFPMoveArgs, 
+    Planet, 
+    PlanetExtendedInfo, 
+    PlanetExtendedInfo2, 
+    PlanetEventMetadata, 
+    PlanetEventType, 
+    Upgrade
+} from "../DFTypes.sol";
 
 contract DFMoveCapFacet is WithStorage, WithArenaStorage {
 
@@ -59,10 +82,6 @@ contract DFMoveCapFacet is WithStorage, WithArenaStorage {
             [_input[5], _input[6], _input[7], _input[8], _input[9]],
             false
         );
-
-        if(arenaConstants().MOVE_CAP_ENABLED) {
-            require(arenaStorage().moves[msg.sender] < arenaStorage().moveCap, "player cannot make any more moves");
-        }
 
         DFPMoveArgs memory args =
             DFPMoveArgs({
@@ -120,6 +139,7 @@ contract DFMoveCapFacet is WithStorage, WithArenaStorage {
         }
 
         _executeMove(args);
+
 
         LibGameUtils.updateWorldRadius();
         emit ArrivalQueued(
@@ -215,6 +235,7 @@ contract DFMoveCapFacet is WithStorage, WithArenaStorage {
         gs().planets[args.oldLoc].silver -= silverMoved;
         gs().planets[args.oldLoc].population = remainingOriginPlanetPopulation;
         
+
         if(arenaConstants().MOVE_CAP_ENABLED) {
             ArenaPlayerInfo storage player = arenaStorage().arenaPlayerInfo[msg.sender];
             player.moves++;

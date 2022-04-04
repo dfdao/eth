@@ -5,11 +5,13 @@ import {
   makeMoveArgs,
   makeRevealArgs,
   increaseBlockchainBlocks,
+  increaseBlockchainTime,
 } from './utils/TestUtils';
 import {
   arenaWorldFixture,
   manualSpawnFixture,
   targetPlanetFixture,
+  moveCapFixture,
   World,
 } from './utils/TestWorld';
 import {
@@ -23,15 +25,14 @@ import {
   VALID_INIT_PERLIN,
 } from './utils/WorldConstants';
 
-describe('Dark Forest Arena', function (){
-  
+describe('Dark Forest Arena', function () {
   describe('Create Planets', function () {
     let world: World;
-  
+
     beforeEach('load fixture', async function () {
       world = await fixtureLoader(arenaWorldFixture);
     });
-  
+
     it('allows admin to create a spawn planet', async function () {
       const perlin = 20;
       const level = 5;
@@ -47,17 +48,17 @@ describe('Dark Forest Arena', function (){
         isTargetPlanet: false,
         isSpawnPlanet: true,
       });
-  
+
       await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
-  
+
       const numSpawnPlanets = await world.contract.getNSpawnPlanets();
       expect(numSpawnPlanets).to.equal(1);
-  
+
       const spawnPlanet = await world.contract.spawnPlanetIds(0);
-  
+
       expect(spawnPlanet).to.equal(ADMIN_PLANET_CLOAKED.id);
     });
-  
+
     it('allows admin to create target planet', async function () {
       const perlin = 20;
       const level = 5;
@@ -73,20 +74,20 @@ describe('Dark Forest Arena', function (){
         isTargetPlanet: true,
         isSpawnPlanet: false,
       });
-  
+
       await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
-  
+
       const numTargetPlanets = await world.contract.getNTargetPlanets();
       expect(numTargetPlanets).to.equal(1);
-  
+
       const targetPlanetId = await world.contract.targetPlanetIds(0);
       expect(targetPlanetId).to.equal(ADMIN_PLANET_CLOAKED.id);
-  
+
       const targetPlanet = await world.contract.planetsArenaInfo(ADMIN_PLANET_CLOAKED.id);
       expect(targetPlanet.spawnPlanet).to.equal(false);
       expect(targetPlanet.targetPlanet).to.equal(true);
     });
-  
+
     it('allows admin to bulk create planets', async function () {
       const perlin = 20;
       const level = 5;
@@ -123,36 +124,36 @@ describe('Dark Forest Arena', function (){
         },
       ];
       await world.contract.bulkCreatePlanet(planets);
-  
+
       await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET, x, y));
       await world.contract.revealLocation(...makeRevealArgs(LVL1_PLANET_SPACE, 50, 100));
-  
+
       const revealedCoords = await world.contract.revealedCoords(ADMIN_PLANET.id);
       expect(revealedCoords.x.toNumber()).to.equal(x);
       expect(revealedCoords.y.toNumber()).to.equal(y);
-  
+
       const revealedCoords1 = await world.contract.revealedCoords(LVL1_PLANET_SPACE.id);
       expect(revealedCoords1.x.toNumber()).to.equal(50);
       expect(revealedCoords1.y.toNumber()).to.equal(100);
-  
+
       expect((await world.contract.getNRevealedPlanets()).toNumber()).to.equal(2);
       expect(await world.contract.revealedPlanetIds(0)).to.be.equal(ADMIN_PLANET.id);
       expect(await world.contract.revealedPlanetIds(1)).to.be.equal(LVL1_PLANET_SPACE.id);
     });
   });
-  
+
   describe('Manual Spawn', async function () {
     let world: World;
     this.beforeEach('load manual spawn', async function () {
       world = await fixtureLoader(manualSpawnFixture);
     });
-  
+
     it('reverts if planet not initialized as a spawn planet', async function () {
       await expect(
         world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED))
       ).to.be.revertedWith('Planet is not a spawn planet');
     });
-  
+
     it('reverts if spawn planet already initialized', async function () {
       const perlin = VALID_INIT_PERLIN;
       const level = 0;
@@ -166,19 +167,19 @@ describe('Dark Forest Arena', function (){
         isTargetPlanet: false,
         isSpawnPlanet: true,
       });
-  
+
       const toPlanetExtended = await world.contract.planetsExtendedInfo(ADMIN_PLANET_CLOAKED.id);
       expect(toPlanetExtended.isInitialized).to.equal(true);
-  
+
       await expect(world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED)))
         .to.emit(world.contract, 'PlayerInitialized')
         .withArgs(world.user1.address, ADMIN_PLANET_CLOAKED.id.toString());
-  
+
       await expect(
         world.user2Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED))
       ).to.be.revertedWith('Planet is owned');
     });
-    
+
     it('allows player to spawn at admin planet that is initialized', async function () {
       const perlin = VALID_INIT_PERLIN;
       const level = 0;
@@ -192,15 +193,15 @@ describe('Dark Forest Arena', function (){
         isTargetPlanet: false,
         isSpawnPlanet: true,
       });
-  
+
       const toPlanetExtended = await world.contract.planetsExtendedInfo(ADMIN_PLANET_CLOAKED.id);
       expect(toPlanetExtended.isInitialized).to.equal(true);
-  
+
       await expect(world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED)))
         .to.emit(world.contract, 'PlayerInitialized')
         .withArgs(world.user1.address, ADMIN_PLANET_CLOAKED.id.toString());
     });
-  
+
     it('gets false for a planet that is neither spawn nor target planet', async function () {
       const perlin = 20;
       const level = 5;
@@ -216,18 +217,18 @@ describe('Dark Forest Arena', function (){
         isTargetPlanet: false,
         isSpawnPlanet: false,
       });
-  
+
       await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
-  
+
       const numSpawnPlanets = await world.contract.getNSpawnPlanets();
       expect(numSpawnPlanets).to.equal(0);
-  
+
       const spawnPlanet = await world.contract.planetsArenaInfo(ADMIN_PLANET_CLOAKED.id);
-  
+
       expect(spawnPlanet.spawnPlanet).to.equal(false);
       expect(spawnPlanet.targetPlanet).to.equal(false);
     });
-  
+
     it('sets the planet to the proper values', async function () {
       const perlin = 16;
       const level = 2;
@@ -243,51 +244,53 @@ describe('Dark Forest Arena', function (){
         isTargetPlanet: false,
         isSpawnPlanet: true,
       });
-  
+
       await world.contract.revealLocation(...makeRevealArgs(LVL2_PLANET_DEEP_SPACE, x, y));
-  
+
       const numSpawnPlanets = await world.contract.getNSpawnPlanets();
       expect(numSpawnPlanets).to.equal(1);
-  
+
       await world.user1Core.initializePlayer(...makeInitArgs(LVL2_PLANET_DEEP_SPACE));
-  
+
       const spawnPlanetInfo = await world.contract.planets(LVL2_PLANET_DEEP_SPACE.id);
       const spawnPlanetArenaInfo = await world.contract.planetsArenaInfo(LVL2_PLANET_DEEP_SPACE.id);
-  
+
       expect(spawnPlanetArenaInfo.spawnPlanet).to.be.equal(true);
       expect(spawnPlanetInfo.isHomePlanet).to.be.equal(true);
       expect(spawnPlanetInfo.owner).to.be.equal(world.user1.address);
       expect(spawnPlanetInfo.population).to.be.equal(Number(spawnPlanetInfo.populationCap) / 4);
     });
-  
+
     it('reverts if target planet is made', async function () {
       const perlin = VALID_INIT_PERLIN;
       const level = 0;
       const planetType = 0; // planet
-      await expect(world.contract.createArenaPlanet({
-        location: ADMIN_PLANET_CLOAKED.id,
-        perlin,
-        level,
-        planetType,
-        requireValidLocationId: false,
-        isTargetPlanet: true,
-        isSpawnPlanet: false,
-      })).to.be.revertedWith("admin cannot create target planets")
-    })
+      await expect(
+        world.contract.createArenaPlanet({
+          location: ADMIN_PLANET_CLOAKED.id,
+          perlin,
+          level,
+          planetType,
+          requireValidLocationId: false,
+          isTargetPlanet: true,
+          isSpawnPlanet: false,
+        })
+      ).to.be.revertedWith('admin cannot create target planets');
+    });
   });
-  
+
   describe('Invade and Claim Victory', function () {
     let world: World;
-  
+
     async function worldFixture() {
       world = await fixtureLoader(targetPlanetFixture);
       let initArgs = makeInitArgs(SPAWN_PLANET_1);
       await world.user1Core.initializePlayer(...initArgs);
       // await increaseBlockchainTime();
-  
+
       initArgs = makeInitArgs(SPAWN_PLANET_2);
       await world.user2Core.initializePlayer(...initArgs);
-  
+
       const perlin = 20;
       const level = 0;
       const planetType = 1; // asteroid field
@@ -301,22 +304,21 @@ describe('Dark Forest Arena', function (){
         isSpawnPlanet: false,
       });
       // await increaseBlockchainTime();
-  
+
       return world;
     }
-  
+
     beforeEach(async function () {
       world = await fixtureLoader(worldFixture);
     });
-  
+
     describe('invading target planet', function () {
-  
       it('player cannot invade target planet without ownership', async function () {
         await expect(
           world.user1Core.invadeTargetPlanet(...makeRevealArgs(LVL0_PLANET_DEEP_SPACE, 10, 20))
         ).to.be.revertedWith('you can only invade planets you own');
       });
-  
+
       describe('player owns target planet', async function () {
         beforeEach(async function () {
           const dist = 1;
@@ -335,7 +337,7 @@ describe('Dark Forest Arena', function (){
         });
       });
     });
-  
+
     describe('claiming victory on target planet', function () {
       beforeEach(async function () {
         const dist = 1;
