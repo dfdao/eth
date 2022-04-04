@@ -16,7 +16,7 @@ struct ArenaStorage {
     uint256[] spawnPlanetIds;
     uint256[] targetPlanetIds;
 
-    uint256 move_cap;
+    uint256 moveCap;
     mapping(address => uint256) moves;
 }
 

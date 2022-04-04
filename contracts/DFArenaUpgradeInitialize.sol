@@ -218,7 +218,7 @@ contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
 
         //arenaMode initialization
         arenaStorage().gameover = false;
-        arenaStorage().move_cap = initArgs.MOVE_CAP;
+        arenaStorage().moveCap = initArgs.MOVE_CAP;
         arenaConstants().TARGET_PLANETS = initArgs.TARGET_PLANETS;
         arenaConstants().TARGET_PLANET_HOLD_BLOCKS_REQUIRED = initArgs
             .TARGET_PLANET_HOLD_BLOCKS_REQUIRED;

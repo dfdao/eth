@@ -44,7 +44,7 @@ contract DFMoveCapFacet is WithStorage, WithArenaStorage {
         );
 
         if(arenaConstants().MOVE_CAP_ENABLED) {
-            require(arenaStorage().moves[msg.sender] < arenaStorage().move_cap, "player cannot make any more moves");
+            require(arenaStorage().moves[msg.sender] < arenaStorage().moveCap, "player cannot make any more moves");
         }
 
         DFPMoveArgs memory args =
