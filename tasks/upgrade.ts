@@ -74,10 +74,12 @@ export async function cutUpgradesFromLobby(
     hre
   );
 
-  
+  const arenaPlayerGetterFacet = await deployFacet('DFArenaPlayerGetterFacet', {}, hre);
+
   const arenaDiamondCuts = [
     // Note: The `diamondCut` is omitted because it is cut upon deployment
     ...changes.getFacetCuts('DFMoveCapFacet', moveCapFacet),
+    ...changes.getFacetCuts('DFArenaPlayerGetterFacet', arenaPlayerGetterFacet),
   ];
 
   const toCut = [...arenaDiamondCuts];

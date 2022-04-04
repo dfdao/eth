@@ -532,13 +532,4 @@ contract DFMoveCapFacet is WithStorage, WithArenaStorage {
             _decayedPop = 0;
         }
     }
-
-    function getPlayerMove(address playerAddress) public view returns (uint256) {
-        ArenaPlayerInfo memory player = arenaStorage().arenaPlayerInfo[playerAddress];
-        return player.moves;
-    }
-
-    function getMoveCap() public view returns (uint256) {
-        return arenaStorage().moveCap;
-    }
 }

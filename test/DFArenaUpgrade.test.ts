@@ -162,7 +162,7 @@ describe('Arena Upgrade', function () {
     it('creates a new lobby with msg.sender as owner', async function () {
       // from tasks/upgrades.ts
       const initAddress = hre.ethers.constants.AddressZero;
-      const initFunctionCall = '0x';
+      const initFunctionCall = '';
 
       // Make Lobby
       const tx = await world.user1Core.createLobby(initAddress, initFunctionCall);
