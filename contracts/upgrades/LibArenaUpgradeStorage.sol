@@ -9,6 +9,9 @@ struct ArenaPlanetInfo {
     bool targetPlanet;
 }
 
+struct ArenaPlayerInfo {
+    uint256 moves;
+}
 struct ArenaStorage {
     address[] winners;
     bool gameover;
@@ -17,7 +20,7 @@ struct ArenaStorage {
     uint256[] targetPlanetIds;
 
     uint256 moveCap;
-    mapping(address => uint256) moves;
+    mapping(address => ArenaPlayerInfo) arenaPlayerInfo;
 }
 
 struct ArenaConstants {
