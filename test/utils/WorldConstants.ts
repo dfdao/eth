@@ -37,6 +37,12 @@ export const targetPlanetInitializers = settings.parse(decodeInitializers, {
   TARGET_PLANET_HOLD_BLOCKS_REQUIRED: 49
 });
 
+export const moveCapInitializers = settings.parse(decodeInitializers, {
+  ...defaultInitializerValues,
+  MOVE_CAP_ENABLED : true,
+  MOVE_CAP: 1
+});
+
 export const arenaInitializers = settings.parse(decodeInitializers, {
   ...defaultInitializerValues,
   MANUAL_SPAWN: true,

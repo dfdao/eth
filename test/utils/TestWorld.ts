@@ -12,6 +12,7 @@ import {
   noPlanetTransferInitializers,
   target4Initializers,
   arenaInitializers,
+  moveCapInitializers,
 } from './WorldConstants';
 
 export interface World {
@@ -84,6 +85,13 @@ export function manualSpawnFixture(): Promise<World> {
 export function targetPlanetFixture(): Promise<World> {
   return initializeWorld({
     initializers: targetPlanetInitializers,
+    whitelistEnabled: false,
+  });
+}
+
+export function moveCapFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: moveCapInitializers,
     whitelistEnabled: false,
   });
 }

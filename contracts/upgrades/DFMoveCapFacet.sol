@@ -18,10 +18,6 @@ import {SpaceType, DFPInitPlanetArgs, Artifact, ArtifactType, Player, Planet, Pl
 import {ArrivalData, ArrivalType, Artifact, ArtifactType, DFPCreateArrivalArgs, DFPMoveArgs, Planet, PlanetExtendedInfo, PlanetExtendedInfo2, PlanetEventMetadata, PlanetEventType, Upgrade} from "../DFTypes.sol";
 
 contract DFMoveCapFacet is WithStorage, WithArenaStorage {
-    modifier notPaused() {
-        require(!gs().paused, "Game is paused");
-        _;
-    }
 
     event ArrivalQueued(
         address player,
@@ -31,6 +27,27 @@ contract DFMoveCapFacet is WithStorage, WithArenaStorage {
         uint256 artifactId,
         uint256 abandoning
     );
+    event MoveCapChanged(uint256 moveCap);
+
+    modifier onlyAdmin() {
+        LibDiamond.enforceIsContractOwner();
+        _;
+    }
+
+    modifier notPaused() {
+        require(!gs().paused, "Game is paused");
+        _;
+    }
+
+    function setMoveCap(uint256 newMoveCap) public onlyAdmin {
+        arenaStorage().moveCap = newMoveCap;
+        emit MoveCapChanged(newMoveCap);
+    }
+
+    function setPlayerMove(address playerAddress, uint256 newMove) public onlyAdmin {
+        ArenaPlayerInfo storage player = arenaStorage().arenaPlayerInfo[playerAddress];
+        player.moves = newMove;
+    } 
 
     function move(
         uint256[2] memory _a,
@@ -103,10 +120,6 @@ contract DFMoveCapFacet is WithStorage, WithArenaStorage {
         }
 
         _executeMove(args);
-
-        if(arenaConstants().MOVE_CAP_ENABLED) {
-            arenaStorage().moves[msg.sender]++;
-        }
 
         LibGameUtils.updateWorldRadius();
         emit ArrivalQueued(
@@ -201,12 +214,22 @@ contract DFMoveCapFacet is WithStorage, WithArenaStorage {
 
         gs().planets[args.oldLoc].silver -= silverMoved;
         gs().planets[args.oldLoc].population = remainingOriginPlanetPopulation;
+        
+        if(arenaConstants().MOVE_CAP_ENABLED) {
+            ArenaPlayerInfo storage player = arenaStorage().arenaPlayerInfo[msg.sender];
+            player.moves++;
+        }
     }
 
     /**
         Reverts transaction if the movement is invalid.
      */
     function _checkMoveValidity(DFPMoveArgs memory args) private view {
+        ArenaPlayerInfo memory player = arenaStorage().arenaPlayerInfo[msg.sender];
+        if(arenaConstants().MOVE_CAP_ENABLED) {
+            require(player.moves < arenaStorage().moveCap, "player cannot make any more moves");
+        }
+
         if (_isSpaceshipMove(args)) {
             require(args.popMoved == 0, "ship moves must move 0 energy");
             require(args.silverMoved == 0, "ship moves must move 0 silver");
@@ -487,5 +510,14 @@ contract DFMoveCapFacet is WithStorage, WithArenaStorage {
         } else {
             _decayedPop = 0;
         }
+    }
+
+    function getPlayerMove(address playerAddress) public view returns (uint256) {
+        ArenaPlayerInfo memory player = arenaStorage().arenaPlayerInfo[playerAddress];
+        return player.moves;
+    }
+
+    function getMoveCap() public view returns (uint256) {
+        return arenaStorage().moveCap;
     }
 }
