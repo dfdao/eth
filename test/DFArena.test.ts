@@ -385,7 +385,7 @@ describe('Dark Forest Arena', function () {
     });
   });
 
-  describe.only('Move Cap', function () {
+  describe('Move Cap', function () {
     let world: World;
 
     async function worldFixture() {

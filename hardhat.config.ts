@@ -62,6 +62,10 @@ const AbiItemsToIgnore = [
       '_getDelayedPop'
     ],
   },
+  {
+    facet: 'DFArenaGetterFacet',
+    functions: ['getArenaConstants']
+  }
 ];
 
 // Warning: If the facet is not in the `facets` directory, getFullyQualifiedFacetName will not work.
