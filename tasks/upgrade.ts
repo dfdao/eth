@@ -68,7 +68,7 @@ export async function cutUpgradesFromLobby(
 
   const diamondInit = await deployFacet('DFArenaUpgradeInitialize', { LibGameUtils }, hre);
 
-  const moveCapFacet = await deployFacet('DFMoveCapFacet', {}, hre);
+  const moveCapFacet = await deployFacet('DFMoveCapFacet', {Verifier, LibGameUtils, LibArtifactUtils, LibPlanet }, hre);
 
   const arenaGetterFacet2 = await deployFacet('DFArenaGetterFacet2', {}, hre);
 

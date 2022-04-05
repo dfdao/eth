@@ -25,7 +25,7 @@ describe('Arena Upgrade', function () {
 
     it('Arena function on Diamond does not exist', async function () {
       await expect(
-        world.user1Core.arenaMove(...makeMoveArgs(SPAWN_PLANET_1, LVL2_PLANET_SPACE, 1000, 0, 0))
+        world.contract.setMoveCap(0)
         ).to.be.revertedWith('Diamond: Function does not exist');
     });
 
@@ -80,7 +80,7 @@ describe('Arena Upgrade', function () {
 
       const diamondInit = await deployFacet('DFArenaUpgradeInitialize', { LibGameUtils }, hre);
 
-      const moveCapFacet = await deployFacet('DFMoveCapFacet', {}, hre);
+      const moveCapFacet = await deployFacet('DFMoveCapFacet', {Verifier, LibGameUtils, LibArtifactUtils, LibPlanet }, hre);
 
       const arenaDiamondCuts = [
         // Note: The `diamondCut` is omitted because it is cut upon deployment

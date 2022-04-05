@@ -26,6 +26,81 @@ import {
 } from './utils/WorldConstants';
 
 describe('Dark Forest Arena', function () {
+  describe('Arena Move', function () {
+    let world: World;
+
+    async function worldFixture() {
+      const world = await fixtureLoader(moveCapFixture);
+      let initArgs = makeInitArgs(SPAWN_PLANET_1);
+      await world.user1Core.initializePlayer(...initArgs);
+
+      initArgs = makeInitArgs(SPAWN_PLANET_2);
+      await world.user2Core.initializePlayer(...initArgs);
+
+      await increaseBlockchainTime();
+      return world;
+    }
+
+    beforeEach('load fixture', async function () {
+      world = await fixtureLoader(worldFixture);
+    });
+
+    it('player can execute first move', async function () {
+      const dist = 100;
+      const shipsSent = 50000;
+      const silverSent = 0;
+
+      expect(await world.user1Core.getPlayerMove(world.user1.address)).to.equal(0);
+      await world.user1Core.move(
+        ...makeMoveArgs(SPAWN_PLANET_1, LVL1_PLANET_SPACE, dist, shipsSent, silverSent)
+      );
+
+      expect(await world.user1Core.getPlayerMove(world.user1.address)).to.equal(1);
+    });
+
+    it('player cannot execute second move', async function () {
+      const dist = 100;
+      const shipsSent = 50000;
+      const silverSent = 0;
+
+      await world.user1Core.move(
+        ...makeMoveArgs(SPAWN_PLANET_1, LVL1_PLANET_SPACE, dist, shipsSent, silverSent)
+      );
+
+      await expect(
+        world.user1Core.move(
+          ...makeMoveArgs(SPAWN_PLANET_1, LVL1_PLANET_SPACE, dist, shipsSent, silverSent)
+        )
+      ).to.be.revertedWith('player cannot make any more moves');
+    });
+
+    it('only admin can update a players move count', async function () {
+      await expect(world.user1Core.setPlayerMove(world.user1.address, 0)).to.be.revertedWith(
+        'LibDiamond: Must be contract owner'
+      );
+    });
+
+    it('only admin can update move cap', async function () {
+      await expect(world.user1Core.setMoveCap(2)).to.be.revertedWith(
+        'LibDiamond: Must be contract owner'
+      );
+    });
+
+    it('move cap update emits event', async function () {
+      await expect(world.contract.setMoveCap(2))
+        .to.emit(world.contract, 'MoveCapChanged')
+        .withArgs(2);
+
+      expect(await world.user1Core.getMoveCap()).to.equal(2);
+    });
+
+    it('move count update alters player move', async function () {
+      await world.contract.setPlayerMove(world.user1.address, 0);
+
+      expect(await world.user1Core.getPlayerMove(world.user1.address)).to.equal(0);
+    });
+  });
+
   describe('Create Planets', function () {
     let world: World;
 
@@ -324,7 +399,7 @@ describe('Dark Forest Arena', function () {
           const dist = 1;
           const shipsSent = 50000;
           const silverSent = 0;
-          await world.user1Core.arenaMove(
+          await world.user1Core.move(
             ...makeMoveArgs(SPAWN_PLANET_1, LVL0_PLANET_DEEP_SPACE, dist, shipsSent, silverSent)
           );
         });
@@ -343,7 +418,7 @@ describe('Dark Forest Arena', function () {
         const dist = 1;
         const shipsSent = 50000;
         const silverSent = 0;
-        await world.user1Core.arenaMove(
+        await world.user1Core.move(
           ...makeMoveArgs(SPAWN_PLANET_1, LVL0_PLANET_DEEP_SPACE, dist, shipsSent, silverSent)
         );
         await world.user1Core.invadeTargetPlanet(...makeRevealArgs(LVL0_PLANET_DEEP_SPACE, 10, 20));
@@ -382,84 +457,6 @@ describe('Dark Forest Arena', function () {
           expect(gameover).to.equal(true);
         });
       });
-    });
-  });
-
-  describe('Arena Move', function () {
-    let world: World;
-
-    async function worldFixture() {
-      const world = await fixtureLoader(moveCapFixture);
-      let initArgs = makeInitArgs(SPAWN_PLANET_1);
-      await world.user1Core.initializePlayer(...initArgs);
-
-      initArgs = makeInitArgs(SPAWN_PLANET_2);
-      await world.user2Core.initializePlayer(...initArgs);
-
-      await increaseBlockchainTime();
-      return world;
-    }
-
-    beforeEach('load fixture', async function () {
-      world = await fixtureLoader(worldFixture);
-    });
-
-    it('player can execute first move', async function () {
-      const dist = 100;
-      const shipsSent = 50000;
-      const silverSent = 0;
-
-      expect(await world.user1Core.getPlayerMove(world.user1.address)).to.equal(0);
-      await world.user1Core.arenaMove(
-        ...makeMoveArgs(SPAWN_PLANET_1, LVL1_PLANET_SPACE, dist, shipsSent, silverSent)
-      );
-
-      expect(await world.user1Core.getPlayerMove(world.user1.address)).to.equal(1);
-
-    });
-
-    it('player cannot execute second arenaMove', async function () {
-      const dist = 100;
-      const shipsSent = 50000;
-      const silverSent = 0;
-
-      await world.user1Core.arenaMove(
-        ...makeMoveArgs(SPAWN_PLANET_1, LVL1_PLANET_SPACE, dist, shipsSent, silverSent)
-      );
-
-      await expect(
-        world.user1Core.arenaMove(
-          ...makeMoveArgs(SPAWN_PLANET_1, LVL1_PLANET_SPACE, dist, shipsSent, silverSent)
-        )
-      ).to.be.revertedWith('player cannot make any more moves');
-    });
-
-    it('only admin can update a players move count', async function () {
-      await expect(world.user1Core.setPlayerMove(world.user1.address, 0)).to.be.revertedWith(
-        'LibDiamond: Must be contract owner'
-      );
-    });
-
-    it('only admin can update move cap', async function () {
-      await expect(world.user1Core.setMoveCap(2)).to.be.revertedWith(
-        'LibDiamond: Must be contract owner'
-      );
-    });
-
-    it('move cap update emits event', async function () {
-      await expect(world.contract.setMoveCap(2))
-        .to.emit(world.contract, 'MoveCapChanged')
-        .withArgs(2);
-
-      expect(await world.user1Core.getMoveCap()).to.equal(2);
-
-    });
-
-    it('move count update alters player move', async function () {
-      await world.contract.setPlayerMove(world.user1.address, 0);
-
-      expect(await world.user1Core.getPlayerMove(world.user1.address)).to.equal(0);
-
     });
   });
 });
