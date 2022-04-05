@@ -45,24 +45,6 @@ const AbiItemsToIgnore = [
     events: ['AdminPlanetCreated'],
   },
   {
-    facet: 'DFMoveFacet',
-    events: ['ArrivalQueued'],
-    functions: [
-      'move',
-      '_executeMove',
-      '_checkMoveValidity',
-      'applySpaceshipDepart',
-      '_removeSpaceshipEffectsFromOriginPlanet',
-      '_checkWormhole',
-      '_checkPhotoid',
-      'abandonPlanet',
-      '_transferPlanetSpaceJunkToPlayer',
-      '_isSpaceshipMove',
-      '_createArrival',
-      '_getDelayedPop'
-    ],
-  },
-  {
     facet: 'DFArenaGetterFacet',
     functions: ['getArenaConstants']
   }

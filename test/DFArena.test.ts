@@ -324,7 +324,7 @@ describe('Dark Forest Arena', function () {
           const dist = 1;
           const shipsSent = 50000;
           const silverSent = 0;
-          await world.user1Core.move(
+          await world.user1Core.arenaMove(
             ...makeMoveArgs(SPAWN_PLANET_1, LVL0_PLANET_DEEP_SPACE, dist, shipsSent, silverSent)
           );
         });
@@ -343,7 +343,7 @@ describe('Dark Forest Arena', function () {
         const dist = 1;
         const shipsSent = 50000;
         const silverSent = 0;
-        await world.user1Core.move(
+        await world.user1Core.arenaMove(
           ...makeMoveArgs(SPAWN_PLANET_1, LVL0_PLANET_DEEP_SPACE, dist, shipsSent, silverSent)
         );
         await world.user1Core.invadeTargetPlanet(...makeRevealArgs(LVL0_PLANET_DEEP_SPACE, 10, 20));
@@ -385,7 +385,7 @@ describe('Dark Forest Arena', function () {
     });
   });
 
-  describe('Move Cap', function () {
+  describe('Arena Move', function () {
     let world: World;
 
     async function worldFixture() {
@@ -410,24 +410,25 @@ describe('Dark Forest Arena', function () {
       const silverSent = 0;
 
       expect(await world.user1Core.getPlayerMove(world.user1.address)).to.equal(0);
-      await world.user1Core.move(
+      await world.user1Core.arenaMove(
         ...makeMoveArgs(SPAWN_PLANET_1, LVL1_PLANET_SPACE, dist, shipsSent, silverSent)
       );
+
       expect(await world.user1Core.getPlayerMove(world.user1.address)).to.equal(1);
 
     });
 
-    it('player cannot execute second move', async function () {
+    it('player cannot execute second arenaMove', async function () {
       const dist = 100;
       const shipsSent = 50000;
       const silverSent = 0;
 
-      await world.user1Core.move(
+      await world.user1Core.arenaMove(
         ...makeMoveArgs(SPAWN_PLANET_1, LVL1_PLANET_SPACE, dist, shipsSent, silverSent)
       );
 
       await expect(
-        world.user1Core.move(
+        world.user1Core.arenaMove(
           ...makeMoveArgs(SPAWN_PLANET_1, LVL1_PLANET_SPACE, dist, shipsSent, silverSent)
         )
       ).to.be.revertedWith('player cannot make any more moves');

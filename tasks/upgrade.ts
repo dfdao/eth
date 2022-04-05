@@ -66,13 +66,9 @@ export async function cutUpgradesFromLobby(
   const LibArtifactUtils = hre.contracts.LIB_ARTIFACT_UTILS_ADDRESS;
   const LibPlanet = hre.contracts.LIB_PLANET_ADDRESS;
 
-  const diamondInit = await deployFacet('DFArenaUpgradeInitialize', {LibGameUtils}, hre);
+  const diamondInit = await deployFacet('DFArenaUpgradeInitialize', { LibGameUtils }, hre);
 
-  const moveCapFacet = await deployFacet(
-    'DFMoveCapFacet',
-    { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet },
-    hre
-  );
+  const moveCapFacet = await deployFacet('DFMoveCapFacet', {}, hre);
 
   const arenaGetterFacet2 = await deployFacet('DFArenaGetterFacet2', {}, hre);
 

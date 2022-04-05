@@ -1,7 +1,7 @@
 import { expect } from 'chai';
-import { fixtureLoader, makeRevealArgs } from './utils/TestUtils';
+import { fixtureLoader, makeMoveArgs, makeRevealArgs } from './utils/TestUtils';
 import { baseGameFixture, World } from './utils/TestWorld';
-import { ADMIN_PLANET_CLOAKED, arenaInitializers, initializers } from './utils/WorldConstants';
+import { ADMIN_PLANET_CLOAKED, arenaInitializers, initializers, LVL2_PLANET_SPACE, SPAWN_PLANET_1 } from './utils/WorldConstants';
 import hre from 'hardhat';
 import { DarkForest, LobbyCreatedEvent } from '@darkforest_eth/contracts/typechain/DarkForest';
 // Note: The deployed addresses are written to the contracts package on any deploy, including for testing
@@ -9,12 +9,10 @@ import { DarkForest, LobbyCreatedEvent } from '@darkforest_eth/contracts/typecha
 import { INIT_ADDRESS } from '@darkforest_eth/contracts';
 import InitABI from '@darkforest_eth/contracts/abis/DFArenaInitialize.json';
 import { Contract } from 'ethers';
-import {
-  deployFacet,
-  deployLibraries,
-} from '../tasks/utils';
+import { deployFacet, deployLibraries } from '../tasks/utils';
 import { DiamondChanges } from '../utils/diamond';
 import { cutUpgradesFromLobby } from '../tasks/upgrade';
+import { getTrailingCommentRanges } from 'typescript';
 
 describe('Arena Upgrade', function () {
   describe('Lobby with Initializer', async function () {
@@ -25,23 +23,10 @@ describe('Arena Upgrade', function () {
       world = await fixtureLoader(baseGameFixture);
     });
 
-    it.skip('Arena function on Diamond does not exist', async function () {
-      const perlin = 20;
-      const level = 5;
-      const planetType = 1; // asteroid field
-      const x = 10;
-      const y = 20;
+    it('Arena function on Diamond does not exist', async function () {
       await expect(
-        world.contract.createArenaPlanet({
-          location: ADMIN_PLANET_CLOAKED.id,
-          perlin,
-          level,
-          planetType,
-          requireValidLocationId: false,
-          isTargetPlanet: false,
-          isSpawnPlanet: true,
-        })
-      ).to.be.revertedWith('Diamond: Function does not exist');
+        world.user1Core.arenaMove(...makeMoveArgs(SPAWN_PLANET_1, LVL2_PLANET_SPACE, 1000, 0, 0))
+        ).to.be.revertedWith('Diamond: Function does not exist');
     });
 
     it('Creates a new lobby with msg.sender as owner', async function () {
@@ -95,11 +80,7 @@ describe('Arena Upgrade', function () {
 
       const diamondInit = await deployFacet('DFArenaUpgradeInitialize', { LibGameUtils }, hre);
 
-      const moveCapFacet = await deployFacet(
-        'DFMoveCapFacet',
-        { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet },
-        hre
-      );
+      const moveCapFacet = await deployFacet('DFMoveCapFacet', {}, hre);
 
       const arenaDiamondCuts = [
         // Note: The `diamondCut` is omitted because it is cut upon deployment
@@ -162,7 +143,7 @@ describe('Arena Upgrade', function () {
     it('creates a new lobby with msg.sender as owner', async function () {
       // from tasks/upgrades.ts
       const initAddress = hre.ethers.constants.AddressZero;
-      const initFunctionCall = '';
+      const initFunctionCall = '0x';
 
       // Make Lobby
       const tx = await world.user1Core.createLobby(initAddress, initFunctionCall);
