@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { Fixture } from 'ethereum-waffle';
 import {
   fixtureLoader,
   makeInitArgs,
@@ -13,11 +14,15 @@ import {
   targetPlanetFixture,
   moveCapFixture,
   World,
+  nerfedWorldFixture,
+  defaultWorldFixture,
+  buffedWorldFixture,
 } from './utils/TestWorld';
 import {
   ADMIN_PLANET,
   ADMIN_PLANET_CLOAKED,
   LVL0_PLANET_DEEP_SPACE,
+  LVL1_ASTEROID_1,
   LVL1_PLANET_SPACE,
   LVL2_PLANET_DEEP_SPACE,
   SPAWN_PLANET_1,
@@ -457,6 +462,86 @@ describe('Dark Forest Arena', function () {
           expect(gameover).to.equal(true);
         });
       });
+    });
+  });
+
+  describe('World Constants Changed', function () {
+    let defaultWorld: World;
+    let nerfedWorld: World;
+    let buffedWorld: World;
+    beforeEach('load fixture', async function () {
+      buffedWorld = await fixtureLoader(buffedWorldFixture);
+      nerfedWorld = await fixtureLoader(nerfedWorldFixture);
+    });
+
+    it('initializes planets with correct values', async function () {
+      defaultWorld = await fixtureLoader(defaultWorldFixture);
+
+      const perlin = 20;
+      const level = 5;
+      const planetType = 1; // asteroid field
+
+      await defaultWorld.contract.createArenaPlanet({
+        location: LVL1_ASTEROID_1.id,
+        perlin,
+        level,
+        planetType,
+        requireValidLocationId: false,
+        isTargetPlanet: false,
+        isSpawnPlanet: false,
+      });
+
+      await buffedWorld.contract.createArenaPlanet({
+        location: LVL1_ASTEROID_1.id,
+        perlin,
+        level,
+        planetType,
+        requireValidLocationId: false,
+        isTargetPlanet: false,
+        isSpawnPlanet: false,
+      });
+
+      await nerfedWorld.contract.createArenaPlanet({
+        location: LVL1_ASTEROID_1.id,
+        perlin,
+        level,
+        planetType,
+        requireValidLocationId: false,
+        isTargetPlanet: false,
+        isSpawnPlanet: false,
+      });
+
+      const defaultPlanetData = await defaultWorld.contract.planets(LVL1_ASTEROID_1.id);
+      const buffedPlanetData = await buffedWorld.contract.planets(LVL1_ASTEROID_1.id);
+      const nerfedPlanetData = await nerfedWorld.contract.planets(LVL1_ASTEROID_1.id);
+
+      expect(buffedPlanetData.populationCap)
+        .to.be.equal(defaultPlanetData.populationCap.toNumber() * 2)
+        .to.be.equal(nerfedPlanetData.populationCap.toNumber() * 4);
+
+      expect(buffedPlanetData.populationGrowth)
+        .to.be.equal(defaultPlanetData.populationGrowth.toNumber() * 2)
+        .to.be.equal(nerfedPlanetData.populationGrowth.toNumber() * 4);
+
+      expect(buffedPlanetData.silverCap)
+        .to.be.equal(defaultPlanetData.silverCap.toNumber() * 2)
+        .to.be.equal(nerfedPlanetData.silverCap.toNumber() * 4);
+
+      expect(buffedPlanetData.silverGrowth)
+        .to.be.equal(defaultPlanetData.silverGrowth.toNumber() * 2)
+        .to.be.equal(nerfedPlanetData.silverGrowth.toNumber() * 4);
+
+      expect(buffedPlanetData.defense.toNumber())
+        .to.be.approximately(defaultPlanetData.defense.toNumber() * 2, 5)
+        .to.be.approximately(nerfedPlanetData.defense.toNumber() * 4, 5);
+
+      expect(buffedPlanetData.range)
+        .to.be.equal(defaultPlanetData.range.toNumber() * 2)
+        .to.be.equal(nerfedPlanetData.range.toNumber() * 4);
+
+      expect(buffedPlanetData.speed)
+        .to.be.equal(defaultPlanetData.speed.toNumber() * 2)
+        .to.be.equal(nerfedPlanetData.speed.toNumber() * 4);
     });
   });
 });

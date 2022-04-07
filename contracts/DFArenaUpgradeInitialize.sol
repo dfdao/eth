@@ -116,6 +116,14 @@ struct InitArgs {
     // Move Cap
     bool MOVE_CAP_ENABLED;
     uint256 MOVE_CAP;
+    // More Constants
+    uint256 POP_CAP_MULTIPLIER;
+    uint256 POP_GROWTH_MULTIPLIER;
+    uint256 RANGE_MULTIPLIER;
+    uint256 SPEED_MULTIPLIER;
+    uint256 SILVER_GROWTH_MULTIPLIER;
+    uint256 DEFENSE_MULTIPLIER;
+    uint256 SILVER_CAP_MULTIPLIER;
 }
 
 contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
@@ -225,6 +233,15 @@ contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
         arenaConstants().MANUAL_SPAWN = initArgs.MANUAL_SPAWN;
         arenaConstants().MOVE_CAP_ENABLED = initArgs.MOVE_CAP_ENABLED;
 
+        arenaConstants().POP_CAP_MULTIPLIER = initArgs.POP_CAP_MULTIPLIER;
+        arenaConstants().POP_GROWTH_MULTIPLIER = initArgs.POP_GROWTH_MULTIPLIER;
+        arenaConstants().RANGE_MULTIPLIER = initArgs.RANGE_MULTIPLIER;
+        arenaConstants().SPEED_MULTIPLIER = initArgs.SPEED_MULTIPLIER;
+        arenaConstants().SILVER_GROWTH_MULTIPLIER = initArgs.SILVER_GROWTH_MULTIPLIER;
+        arenaConstants().DEFENSE_MULTIPLIER = initArgs.DEFENSE_MULTIPLIER;
+        arenaConstants().SILVER_CAP_MULTIPLIER = initArgs.SILVER_CAP_MULTIPLIER;
+
+        arenaConstants().CONFIG_HASH = keccak256(abi.encode(initArgs));
         LibGameUtils.updateWorldRadius();
     }
 

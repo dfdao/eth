@@ -37,11 +37,12 @@ require('dotenv').config();
 const AbiItemsToIgnore = [
   {
     facet: 'DFCoreFacet',
-    functions: ['initializePlayer'],
-    events: ['PlayerInitialized'],
+    functions: ['initializePlayer', 'revealLocation'],
+    events: ['PlayerInitialized', 'LocationRevealed'],
   },
   {
     facet: 'DFAdminFacet',
+    functions: ['adminInitializePlanet', 'createPlanet'],
     events: ['AdminPlanetCreated'],
   },
   {
@@ -65,7 +66,12 @@ const AbiItemsToIgnore = [
   {
     facet: 'DFArenaGetterFacet',
     functions: ['getArenaConstants']
-  }
+  },
+  {
+    facet: 'DFArenaCoreFacet',
+    functions: ['initializePlayer', 'createArenaPlanet'],
+    events: ['PlayerInitialized', 'AdminPlanetCreated'],
+  },
 ];
 
 // Warning: If the facet is not in the `facets` directory, getFullyQualifiedFacetName will not work.

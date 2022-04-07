@@ -4,7 +4,7 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import * as settings from '../settings';
 import { DiamondChanges } from '../utils/diamond';
 
-import { deployDiamond, deployFacet, deployLibraries, saveDeploy } from './utils';
+import { deployDiamond, deployFacet, saveDeploy } from './utils';
 
 task('deploy', 'deploy all contracts')
   .addOptionalParam('whitelist', 'override the whitelist', undefined, types.boolean)
@@ -117,7 +117,13 @@ export async function deployAndCut(
 
   const changes = new DiamondChanges();
 
-  const { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet } = await deployLibraries({}, hre);
+  const Verifier = (await deployFacet('Verifier', {}, hre)).address;
+  const LibGameUtils = (await deployFacet('LibGameUtils', {}, hre)).address;
+  const LibLazyUpdate = (await deployFacet('LibLazyUpdate', {}, hre)).address;
+  const LibArtifactUtils = (await deployFacet('LibArtifactUtils', {LibGameUtils}, hre)).address;
+  const LibPlanet = (await deployFacet('LibPlanet', {LibGameUtils, LibLazyUpdate, Verifier}, hre)).address;
+
+  // const { LibGameUtils, LibArtifactUtils, LibPlanet } = await deployLibraries({}, hre);
 
   // Diamond Spec facets
   // Note: These won't be updated during an upgrade without manual intervention

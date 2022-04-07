@@ -13,6 +13,8 @@ import {
   target4Initializers,
   arenaInitializers,
   moveCapInitializers,
+  nerfedWorldInitializers,
+  buffedWorldInitializers,
 } from './WorldConstants';
 
 export interface World {
@@ -92,6 +94,20 @@ export function targetPlanetFixture(): Promise<World> {
 export function moveCapFixture(): Promise<World> {
   return initializeWorld({
     initializers: moveCapInitializers,
+    whitelistEnabled: false,
+  });
+}
+
+export function nerfedWorldFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: nerfedWorldInitializers,
+    whitelistEnabled: false,
+  });
+}
+
+export function buffedWorldFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: buffedWorldInitializers,
     whitelistEnabled: false,
   });
 }

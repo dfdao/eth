@@ -9,7 +9,7 @@ import { DarkForest, LobbyCreatedEvent } from '@darkforest_eth/contracts/typecha
 import { INIT_ADDRESS } from '@darkforest_eth/contracts';
 import InitABI from '@darkforest_eth/contracts/abis/DFArenaInitialize.json';
 import { Contract } from 'ethers';
-import { deployFacet, deployLibraries } from '../tasks/utils';
+import { deployFacet } from '../tasks/utils';
 import { DiamondChanges } from '../utils/diamond';
 import { cutUpgradesFromLobby } from '../tasks/upgrade';
 import { getTrailingCommentRanges } from 'typescript';
@@ -73,18 +73,34 @@ describe('Arena Upgrade', function () {
 
       const changes = new DiamondChanges(prevFacets);
 
-      const { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet } = await deployLibraries(
-        {},
-        hre
-      );
+      const Verifier = (await deployFacet('Verifier', {}, hre)).address;
+      const LibGameUtils = (await deployFacet('LibGameUtils', {}, hre)).address;
+      const LibLazyUpdate = (await deployFacet('LibLazyUpdate', {}, hre)).address;
+      const LibArtifactUtils = (await deployFacet('LibArtifactUtils', {LibGameUtils}, hre)).address;
+      const LibPlanet = (await deployFacet('LibPlanet', {LibGameUtils, LibLazyUpdate, Verifier}, hre)).address;
+      const LibPlanetInit = (await deployFacet('LibPlanetInit', {LibGameUtils, LibPlanet, Verifier}, hre)).address;
 
       const diamondInit = await deployFacet('DFArenaUpgradeInitialize', { LibGameUtils }, hre);
-
-      const moveCapFacet = await deployFacet('DFMoveCapFacet', {Verifier, LibGameUtils, LibArtifactUtils, LibPlanet }, hre);
-
+    
+      const moveCapFacet = await deployFacet(
+        'DFMoveCapFacet',
+        { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet, LibPlanetInit },
+        hre
+      );
+    
+      const arenaGetterFacet2 = await deployFacet('DFArenaGetterFacet2', {}, hre);
+    
+      const customConstantsFacet = await deployFacet(
+        'DFCustomConstantsFacet',
+        { LibGameUtils, LibPlanetInit, LibPlanet },
+        hre
+      );
+    
       const arenaDiamondCuts = [
         // Note: The `diamondCut` is omitted because it is cut upon deployment
         ...changes.getFacetCuts('DFMoveCapFacet', moveCapFacet),
+        ...changes.getFacetCuts('DFArenaGetterFacet2', arenaGetterFacet2),
+        ...changes.getFacetCuts('DFCustomConstantsFacet', customConstantsFacet),
       ];
 
       const toCut = [...arenaDiamondCuts];
