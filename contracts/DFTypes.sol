@@ -6,6 +6,16 @@ enum PlanetEventType {ARRIVAL}
 enum SpaceType {NEBULA, SPACE, DEEP_SPACE, DEAD_SPACE}
 enum UpgradeBranch {DEFENSE, RANGE, SPEED}
 
+struct Multipliers {
+    uint256 popCap;
+    uint256 popGrowth;
+    uint256 silverCap;
+    uint256 silverGrowth;
+    uint256 range;
+    uint256 speed;
+    uint256 defense;
+}
+
 struct Player {
     bool isInitialized;
     address player;

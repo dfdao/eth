@@ -41,7 +41,7 @@ import {WithArenaStorage} from "./upgrades/LibArenaUpgradeStorage.sol";
 import {LibGameUtils} from "./libraries/LibGameUtils.sol";
 
 // Type imports
-import {PlanetDefaultStats, Upgrade, UpgradeBranch} from "./DFTypes.sol";
+import {PlanetDefaultStats, Upgrade, UpgradeBranch, Multipliers} from "./DFTypes.sol";
 
 struct InitArgs {
     bool START_PAUSED;
@@ -117,13 +117,14 @@ struct InitArgs {
     bool MOVE_CAP_ENABLED;
     uint256 MOVE_CAP;
     // More Constants
-    uint256 POP_CAP_MULTIPLIER;
-    uint256 POP_GROWTH_MULTIPLIER;
-    uint256 RANGE_MULTIPLIER;
-    uint256 SPEED_MULTIPLIER;
-    uint256 SILVER_GROWTH_MULTIPLIER;
-    uint256 DEFENSE_MULTIPLIER;
-    uint256 SILVER_CAP_MULTIPLIER;
+    Multipliers MULTIPLIERS;
+    // uint256 POP_CAP_MULTIPLIER;
+    // uint256 POP_GROWTH_MULTIPLIER;
+    // uint256 RANGE_MULTIPLIER;
+    // uint256 SPEED_MULTIPLIER;
+    // uint256 SILVER_GROWTH_MULTIPLIER;
+    // uint256 DEFENSE_MULTIPLIER;
+    // uint256 SILVER_CAP_MULTIPLIER;
 }
 
 contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
@@ -233,13 +234,8 @@ contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
         arenaConstants().MANUAL_SPAWN = initArgs.MANUAL_SPAWN;
         arenaConstants().MOVE_CAP_ENABLED = initArgs.MOVE_CAP_ENABLED;
 
-        arenaConstants().POP_CAP_MULTIPLIER = initArgs.POP_CAP_MULTIPLIER;
-        arenaConstants().POP_GROWTH_MULTIPLIER = initArgs.POP_GROWTH_MULTIPLIER;
-        arenaConstants().RANGE_MULTIPLIER = initArgs.RANGE_MULTIPLIER;
-        arenaConstants().SPEED_MULTIPLIER = initArgs.SPEED_MULTIPLIER;
-        arenaConstants().SILVER_GROWTH_MULTIPLIER = initArgs.SILVER_GROWTH_MULTIPLIER;
-        arenaConstants().DEFENSE_MULTIPLIER = initArgs.DEFENSE_MULTIPLIER;
-        arenaConstants().SILVER_CAP_MULTIPLIER = initArgs.SILVER_CAP_MULTIPLIER;
+        arenaConstants().MULTIPLIERS = initArgs.MULTIPLIERS;
+        // enum WorldConstants {POP_CAP, POP_GROWTH, SILVER_CAP, SILVER_GROWTH, RANGE, SPEED, DEFENSE}
 
         arenaConstants().CONFIG_HASH = keccak256(abi.encode(initArgs));
         LibGameUtils.updateWorldRadius();

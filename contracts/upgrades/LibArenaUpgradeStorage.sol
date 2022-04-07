@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 // Type imports
-import {Planet, PlanetExtendedInfo, PlanetExtendedInfo2, PlanetEventMetadata, PlanetDefaultStats, Upgrade, RevealedCoords, Player, ArrivalData, Artifact} from "../DFTypes.sol";
+import {Planet, Multipliers, PlanetExtendedInfo, PlanetExtendedInfo2, PlanetEventMetadata, PlanetDefaultStats, Upgrade, RevealedCoords, Player, ArrivalData, Artifact} from "../DFTypes.sol";
 
 struct ArenaPlanetInfo {
     bool spawnPlanet;
@@ -30,13 +30,14 @@ struct ArenaConstants {
 
     bool MOVE_CAP_ENABLED;
 
-    uint256 POP_CAP_MULTIPLIER;
-    uint256 POP_GROWTH_MULTIPLIER;
-    uint256 RANGE_MULTIPLIER;
-    uint256 SPEED_MULTIPLIER;
-    uint256 SILVER_GROWTH_MULTIPLIER;
-    uint256 DEFENSE_MULTIPLIER;
-    uint256 SILVER_CAP_MULTIPLIER;
+    Multipliers MULTIPLIERS;
+    // uint256 POP_CAP_MULTIPLIER;
+    // uint256 POP_GROWTH_MULTIPLIER;
+    // uint256 RANGE_MULTIPLIER;
+    // uint256 SPEED_MULTIPLIER;
+    // uint256 SILVER_GROWTH_MULTIPLIER;
+    // uint256 DEFENSE_MULTIPLIER;
+    // uint256 SILVER_CAP_MULTIPLIER;
 
     bytes32 CONFIG_HASH;
 }

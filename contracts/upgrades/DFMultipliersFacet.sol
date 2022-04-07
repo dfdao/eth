@@ -20,7 +20,7 @@ import {LibPlanetInit} from "./LibPlanetInit.sol";
 import {LibStorage, WithStorage, GameStorage, GameConstants, SnarkConstants} from "../libraries/LibStorage.sol";
 import {WithArenaStorage, LibArenaStorage, ArenaStorage, ArenaPlanetInfo, ArenaConstants} from "../upgrades/LibArenaUpgradeStorage.sol";
 
-contract DFCustomConstantsFacet is WithStorage, WithArenaStorage {
+contract DFMultipliersFacet is WithStorage, WithArenaStorage {
     event AdminPlanetCreated(uint256 loc);
     event PlayerInitialized(address player, uint256 loc);
     event LocationRevealed(address revealer, uint256 loc, uint256 x, uint256 y);

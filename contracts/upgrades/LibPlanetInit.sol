@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 // Type imports
-import {SpaceType, PlanetType, DFPInitPlanetArgs, Planet, PlanetExtendedInfo, PlanetExtendedInfo2, PlanetDefaultStats} from "../DFTypes.sol";
+import {SpaceType, Multipliers, PlanetType, DFPInitPlanetArgs, Planet, PlanetExtendedInfo, PlanetExtendedInfo2, PlanetDefaultStats} from "../DFTypes.sol";
 
 // Library imports
 import {LibGameUtils} from "../libraries/LibGameUtils.sol";
@@ -249,23 +249,23 @@ library LibPlanetInit {
 
         // apply time factor
         _planet.speed =
-            (_planet.speed * TIME_FACTOR_HUNDREDTHS * arenaConstants().SPEED_MULTIPLIER) /
+            (_planet.speed * TIME_FACTOR_HUNDREDTHS * arenaConstants().MULTIPLIERS.speed) /
             100 /
             100;
         require(_planet.speed != 0, "planet.speed cannot be zero");
-        _planet.populationGrowth = (_planet.populationGrowth * TIME_FACTOR_HUNDREDTHS * arenaConstants().POP_GROWTH_MULTIPLIER) / 100 / 100;
+        _planet.populationGrowth = (_planet.populationGrowth * TIME_FACTOR_HUNDREDTHS * arenaConstants().MULTIPLIERS.popGrowth) / 100 / 100;
 
-        _planet.silverGrowth = (_planet.silverGrowth * TIME_FACTOR_HUNDREDTHS * arenaConstants().SILVER_GROWTH_MULTIPLIER) / 100 / 100;
+        _planet.silverGrowth = (_planet.silverGrowth * TIME_FACTOR_HUNDREDTHS * arenaConstants().MULTIPLIERS.silverGrowth) / 100 / 100;
 
         //apply other factors
 
-        _planet.populationCap = (_planet.populationCap * arenaConstants().POP_CAP_MULTIPLIER) / 100;
+        _planet.populationCap = (_planet.populationCap * arenaConstants().MULTIPLIERS.popCap) / 100;
 
-        _planet.silverCap = (_planet.silverCap * arenaConstants().SILVER_CAP_MULTIPLIER) / 100;
+        _planet.silverCap = (_planet.silverCap * arenaConstants().MULTIPLIERS.silverCap) / 100;
 
-        _planet.range = (_planet.range * arenaConstants().RANGE_MULTIPLIER) / 100;
+        _planet.range = (_planet.range * arenaConstants().MULTIPLIERS.range) / 100;
         require(_planet.range != 0, "planet.range cannot be zero");
 
-        _planet.defense = (_planet.defense * arenaConstants().DEFENSE_MULTIPLIER) / 100;
+        _planet.defense = (_planet.defense * arenaConstants().MULTIPLIERS.defense) / 100;
     }
 }

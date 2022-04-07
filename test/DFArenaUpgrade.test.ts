@@ -90,8 +90,8 @@ describe('Arena Upgrade', function () {
     
       const arenaGetterFacet2 = await deployFacet('DFArenaGetterFacet2', {}, hre);
     
-      const customConstantsFacet = await deployFacet(
-        'DFCustomConstantsFacet',
+      const multipliersFacet = await deployFacet(
+        'DFMultipliersFacet',
         { LibGameUtils, LibPlanetInit, LibPlanet },
         hre
       );
@@ -100,7 +100,7 @@ describe('Arena Upgrade', function () {
         // Note: The `diamondCut` is omitted because it is cut upon deployment
         ...changes.getFacetCuts('DFMoveCapFacet', moveCapFacet),
         ...changes.getFacetCuts('DFArenaGetterFacet2', arenaGetterFacet2),
-        ...changes.getFacetCuts('DFCustomConstantsFacet', customConstantsFacet),
+        ...changes.getFacetCuts('DFMultipliersFacet', multipliersFacet),
       ];
 
       const toCut = [...arenaDiamondCuts];

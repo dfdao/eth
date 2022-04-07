@@ -27,41 +27,32 @@ export const manualSpawnInitializers = settings.parse(decodeInitializers, {
   ...defaultInitializerValues,
   MANUAL_SPAWN: true,
   INIT_PERLIN_MIN: 0,
-  INIT_PERLIN_MAX: 31,
+  INIT_PERLIN_MAX: 31
+  
 });
 
 export const targetPlanetInitializers = settings.parse(decodeInitializers, {
   ...defaultInitializerValues,
-  TARGET_PLANETS: true,
-  TARGET_PLANET_HOLD_BLOCKS_REQUIRED: 49,
+  TARGET_PLANETS : true,
+  TARGET_PLANET_HOLD_BLOCKS_REQUIRED: 49
 });
 
 export const moveCapInitializers = settings.parse(decodeInitializers, {
   ...defaultInitializerValues,
-  MOVE_CAP_ENABLED: true,
-  MOVE_CAP: 1,
+  MOVE_CAP_ENABLED : true,
+  MOVE_CAP: 1
 });
 
 export const buffedWorldInitializers = settings.parse(decodeInitializers, {
   ...defaultInitializerValues,
-  DEFENSE_MULTIPLIER: 200,
-  POP_CAP_MULTIPLIER: 200,
-  POP_GROWTH_MULTIPLIER: 200,
-  RANGE_MULTIPLIER: 200,
-  SILVER_CAP_MULTIPLIER: 200,
-  SILVER_GROWTH_MULTIPLIER: 200,
-  SPEED_MULTIPLIER: 200,
+  // popCap, popGrowth, silverCap, silverGrowth, range, speed, defense
+  MULTIPLIERS: [200,200,200,200,200,200,200]
 });
 
 export const nerfedWorldInitializers = settings.parse(decodeInitializers, {
   ...defaultInitializerValues,
-  DEFENSE_MULTIPLIER: 50,
-  POP_CAP_MULTIPLIER: 50,
-  POP_GROWTH_MULTIPLIER: 50,
-  RANGE_MULTIPLIER: 50,
-  SILVER_CAP_MULTIPLIER: 50,
-  SILVER_GROWTH_MULTIPLIER: 50,
-  SPEED_MULTIPLIER: 50,
+  // popCap, popGrowth, silverCap, silverGrowth, range, speed, defense
+  MULTIPLIERS: [50,50,50,50,50,50,50]
 });
 
 export const arenaInitializers = settings.parse(decodeInitializers, {
@@ -69,9 +60,10 @@ export const arenaInitializers = settings.parse(decodeInitializers, {
   MANUAL_SPAWN: true,
   INIT_PERLIN_MIN: 0,
   INIT_PERLIN_MAX: 31,
-  TARGET_PLANETS: true,
-  TARGET_PLANET_HOLD_BLOCKS_REQUIRED: 49,
+  TARGET_PLANETS : true,
+  TARGET_PLANET_HOLD_BLOCKS_REQUIRED: 49
 });
+
 
 // This builds a fake HRE-like object used to initialize the test contracts
 export const target4Initializers = settings.parse(decodeInitializers, {
