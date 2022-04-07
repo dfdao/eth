@@ -37,7 +37,7 @@ describe('DarkForestInit', function () {
 
     await expect((await world.contract.players(world.user1.address)).isInitialized).equal(true);
     expect(planetData.owner).to.equal(world.user1.address);
-    expect(planetData.population).to.be.equal('50000');
+    expect(planetData.population.toNumber()).to.be.equal(Math.round(planetData.populationCap.toNumber() / 3));
     expect(planetData.populationCap).to.be.equal('100000');
     expect(planetData.planetType).to.be.equal(0); // regular planet
     expect(planetData.isHomePlanet).to.be.equal(true);
@@ -120,14 +120,12 @@ describe('DarkForestInit', function () {
       .to.emit(world.contract, 'PlayerInitialized')
       .withArgs(world.user1.address, SPAWN_PLANET_1.id.toString());
 
+      const spawnPlanet1 = (await world.contract.planets(SPAWN_PLANET_1.id));
+
     await expect((await world.contract.players(world.user1.address)).isInitialized).equal(true);
-    await expect((await world.contract.planets(SPAWN_PLANET_1.id)).owner).to.equal(
-      world.user1.address
-    );
-    await expect((await world.contract.planets(SPAWN_PLANET_1.id)).population).to.be.equal('50000');
-    await expect((await world.contract.planets(SPAWN_PLANET_1.id)).populationCap).to.be.equal(
-      '100000'
-    );
+    await expect(spawnPlanet1.owner).to.equal(world.user1.address);
+    await expect(spawnPlanet1.population.toNumber()).to.be.equal(Math.round(spawnPlanet1.populationCap.toNumber() / 3));
+    await expect(spawnPlanet1.populationCap).to.be.equal('100000');
   });
 
   it('allows admin to create a planet with arbitrary location, perlin, type, level', async function () {

@@ -116,7 +116,7 @@ describe('DarkForestMove', function () {
 
     it("should add space junk to the user's total space junk", async function () {
       const dist = 100;
-      const shipsSent = 50000;
+      const shipsSent = 30000;
       const silverSent = 0;
 
       await world.user1Core.move(
@@ -155,7 +155,7 @@ describe('DarkForestMove', function () {
 
     it("should not add space junk to the user's total space junk", async function () {
       const dist = 100;
-      const shipsSent = 50000;
+      const shipsSent = 30000;
       const silverSent = 0;
 
       await world.user1Core.move(
@@ -181,7 +181,7 @@ describe('DarkForestMove', function () {
       await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_1);
 
       const dist = 100;
-      const shipsSent = 50000;
+      const shipsSent = 30000;
       const silverSent = 0;
       const playerAddress = await world.user1.getAddress();
 
@@ -286,7 +286,7 @@ describe('DarkForestMove', function () {
       await increaseBlockchainTime();
 
       const dist = 100;
-      const shipsSent = 50000;
+      const shipsSent = 30000;
       const silverSent = 0;
       await world.user1Core.move(
         ...makeMoveArgs(SPAWN_PLANET_1, SPAWN_PLANET_2, dist, shipsSent, silverSent)
@@ -301,7 +301,7 @@ describe('DarkForestMove', function () {
 
     it('should emit event', async function () {
       const dist = 100;
-      const shipsSent = 50000;
+      const shipsSent = 30000;
       const silverSent = 0;
 
       await expect(
@@ -359,7 +359,7 @@ describe('DarkForestMove', function () {
       const fromPlanet = await world.contract.planets(fromId);
       const range = fromPlanet.range.toNumber();
       const popCap = fromPlanet.populationCap.toNumber();
-      const shipsSent = 50000;
+      const shipsSent = 30000;
       const dist = 100;
       const decayFactor = Math.pow(2, dist / range);
       const approxArriving = shipsSent / decayFactor - 0.05 * popCap;
@@ -440,7 +440,7 @@ describe('DarkForestMove', function () {
 
       const toId = LVL2_PLANET_SPACE.id;
       const dist = 100;
-      const shipsSent = 50000;
+      const shipsSent = 30000;
       const silverSent = 0;
 
       await world.user1Core.move(
@@ -489,9 +489,9 @@ describe('move to friendly planet', function () {
 
   before(async function () {
     world = await fixtureLoader(defaultWorldFixture);
-
+    await increaseBlockchainTime();
     const dist = 10;
-    const shipsSent = 40000;
+    const shipsSent = 30000;
     const silverSent = 0;
 
     const initArgs = makeInitArgs(SPAWN_PLANET_1);
@@ -522,7 +522,7 @@ describe('move to friendly planet', function () {
     const planet2 = await world.contract.planets(toId);
 
     const dist = 100;
-    const shipsSent = 50000;
+    const shipsSent = 30000;
     const silverSent = 0;
 
     await world.user1Core.move(
@@ -715,6 +715,7 @@ describe('reject move with insufficient resources', function () {
 
   // tried to send more silver than you had
   it('should reject if moving more silver than what the planet has', async function () {
+    await increaseBlockchainTime();
     const dist = 100;
     const shipsSent = 40000;
     const silverSent = 100;
@@ -754,7 +755,7 @@ describe('reject move with insufficient resources', function () {
 
   it('should reject if moving from planet not owned', async function () {
     const dist = 100;
-    const shipsSent = 50000;
+    const shipsSent = 30000;
     const silverSent = 0;
 
     await world.user2Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_2));
@@ -768,7 +769,7 @@ describe('reject move with insufficient resources', function () {
 
   it('should reject if moving out of radius', async function () {
     const dist = 100;
-    const shipsSent = 50000;
+    const shipsSent = 30000;
     const silverSent = 0;
 
     await expect(

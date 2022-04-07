@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-import { Fixture } from 'ethereum-waffle';
 import {
   fixtureLoader,
   makeInitArgs,
@@ -52,7 +51,7 @@ describe('Dark Forest Arena', function () {
 
     it('player can execute first move', async function () {
       const dist = 100;
-      const shipsSent = 50000;
+      const shipsSent = 30000;
       const silverSent = 0;
 
       expect(await world.user1Core.getPlayerMove(world.user1.address)).to.equal(0);
@@ -65,7 +64,7 @@ describe('Dark Forest Arena', function () {
 
     it('player cannot execute second move', async function () {
       const dist = 100;
-      const shipsSent = 50000;
+      const shipsSent = 30000;
       const silverSent = 0;
 
       await world.user1Core.move(
@@ -402,7 +401,7 @@ describe('Dark Forest Arena', function () {
       describe('player owns target planet', async function () {
         beforeEach(async function () {
           const dist = 1;
-          const shipsSent = 50000;
+          const shipsSent = 30000;
           const silverSent = 0;
           await world.user1Core.move(
             ...makeMoveArgs(SPAWN_PLANET_1, LVL0_PLANET_DEEP_SPACE, dist, shipsSent, silverSent)
@@ -421,7 +420,7 @@ describe('Dark Forest Arena', function () {
     describe('claiming victory on target planet', function () {
       beforeEach(async function () {
         const dist = 1;
-        const shipsSent = 50000;
+        const shipsSent = 30000;
         const silverSent = 0;
         await world.user1Core.move(
           ...makeMoveArgs(SPAWN_PLANET_1, LVL0_PLANET_DEEP_SPACE, dist, shipsSent, silverSent)

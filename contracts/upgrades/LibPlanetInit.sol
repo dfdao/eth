@@ -117,7 +117,7 @@ library LibPlanetInit {
         if (args.isHomePlanet) {
             _planet.isHomePlanet = true;
             _planet.owner = msg.sender;
-            _planet.population = 50000;
+            _planet.population = _planet.populationCap / 3;
 
             // _planet.population = _planet.populationCap / 3;
         } else {

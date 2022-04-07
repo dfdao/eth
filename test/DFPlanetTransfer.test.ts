@@ -41,7 +41,7 @@ describe('DarkForestTransferPlanet', function () {
 
     it("can't move forces from planet you don't own", async function () {
       const dist = 100;
-      const shipsSent = 40000;
+      const shipsSent = 33000;
       const silverSent = 100;
 
       await expect(
