@@ -245,7 +245,7 @@ async function createPlanets({}, hre: HardhatRuntimeEnvironment) {
   }
 }
 
-async function makeRevealProof(
+export async function makeRevealProof(
   x: number,
   y: number,
   planetHashKey: number,
