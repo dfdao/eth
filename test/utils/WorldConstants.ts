@@ -2,6 +2,9 @@ import { decodeInitializers } from '@darkforest_eth/settings';
 import * as settings from '../../settings';
 import { TestLocation } from './TestLocation';
 
+export const OPTIMISM_GAS_LIMIT = 15000000;
+export const OPTIMISM_CHAIN_ID = 17;
+
 const defaultInitializerValues = {
   DISABLE_ZK_CHECKS: true,
   PLANETHASH_KEY: 1,
@@ -11,8 +14,10 @@ const defaultInitializerValues = {
   TOKEN_MINT_END_TIMESTAMP: '3031-05-27T18:59:59.000Z',
   WORLD_RADIUS_LOCKED: true,
   WORLD_RADIUS_MIN: 304514,
-  SPAWN_RIM_AREA: 7234560000,
+  SPAWN_RIM_AREA: 7234560000
 };
+
+
 
 // This builds a fake HRE-like object used to initialize the test contracts
 export const initializers = settings.parse(decodeInitializers, defaultInitializerValues);
@@ -21,6 +26,11 @@ export const initializers = settings.parse(decodeInitializers, defaultInitialize
 export const noPlanetTransferInitializers = settings.parse(decodeInitializers, {
   ...defaultInitializerValues,
   PLANET_TRANSFER_ENABLED: false,
+});
+
+export const optimismInitializers = settings.parse(decodeInitializers, {
+  ...defaultInitializerValues,
+  TIME_FACTOR_HUNDREDTHS: 10000,
 });
 
 // This builds a fake HRE-like object used to initialize the test contracts
