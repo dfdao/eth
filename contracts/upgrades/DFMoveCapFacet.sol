@@ -8,7 +8,6 @@ import {LibArtifactUtils} from "../libraries/LibArtifactUtils.sol";
 import {Verifier} from "../Verifier.sol";
 import {ABDKMath64x64} from "../vendor/libraries/ABDKMath64x64.sol";
 import {LibDiamond} from "../vendor/libraries/LibDiamond.sol";
-import {LibPlanetInit} from "./LibPlanetInit.sol";
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
 import {WithArenaStorage, ArenaPlayerInfo} from "./LibArenaUpgradeStorage.sol";
@@ -107,7 +106,7 @@ contract DFMoveCapFacet is WithStorage, WithArenaStorage {
 
         // Only perform if the toPlanet have never initialized previously
         if (!gs().planetsExtendedInfo[args.newLoc].isInitialized) {
-            LibPlanetInit.initializePlanetWithDefaults(args.newLoc, newPerlin, false);
+            LibPlanet.initializePlanetWithDefaults(args.newLoc, newPerlin, false);
         } else {
             // need to do this so people can't deny service to planets with gas limit
             LibPlanet.refreshPlanet(args.newLoc);
@@ -403,7 +402,7 @@ contract DFMoveCapFacet is WithStorage, WithArenaStorage {
         popMoved = gs().planets[args.oldLoc].population;
         silverMoved = gs().planets[args.oldLoc].silver;
         remainingOriginPlanetPopulation =
-            LibPlanetInit
+            LibGameUtils
                 ._defaultPlanet(
                 args
                     .oldLoc,

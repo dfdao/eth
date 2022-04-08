@@ -473,7 +473,7 @@ describe('Dark Forest Arena', function () {
       nerfedWorld = await fixtureLoader(nerfedWorldFixture);
     });
 
-    it('initializes planets with correct values', async function () {
+    it.only('initializes planets with correct values', async function () {
       defaultWorld = await fixtureLoader(defaultWorldFixture);
 
       const perlin = 20;
@@ -514,33 +514,33 @@ describe('Dark Forest Arena', function () {
       const buffedPlanetData = await buffedWorld.contract.planets(LVL1_ASTEROID_1.id);
       const nerfedPlanetData = await nerfedWorld.contract.planets(LVL1_ASTEROID_1.id);
 
-      expect(buffedPlanetData.populationCap)
-        .to.be.equal(defaultPlanetData.populationCap.toNumber() * 2)
-        .to.be.equal(nerfedPlanetData.populationCap.toNumber() * 4);
+      expect(buffedPlanetData.populationCap.toNumber())
+        .to.be.approximately(defaultPlanetData.populationCap.toNumber() * 2, 5)
+        .to.be.approximately(nerfedPlanetData.populationCap.toNumber() * 4, 5);
 
-      expect(buffedPlanetData.populationGrowth)
-        .to.be.equal(defaultPlanetData.populationGrowth.toNumber() * 2)
-        .to.be.equal(nerfedPlanetData.populationGrowth.toNumber() * 4);
+      expect(buffedPlanetData.populationGrowth.toNumber())
+        .to.be.approximately(defaultPlanetData.populationGrowth.toNumber() * 2, 5)
+        .to.be.approximately(nerfedPlanetData.populationGrowth.toNumber() * 4, 5);
 
-      expect(buffedPlanetData.silverCap)
-        .to.be.equal(defaultPlanetData.silverCap.toNumber() * 2)
-        .to.be.equal(nerfedPlanetData.silverCap.toNumber() * 4);
+      expect(buffedPlanetData.silverCap.toNumber())
+        .to.be.approximately(defaultPlanetData.silverCap.toNumber() * 2, 5)
+        .to.be.approximately(nerfedPlanetData.silverCap.toNumber() * 4, 5);
 
-      expect(buffedPlanetData.silverGrowth)
-        .to.be.equal(defaultPlanetData.silverGrowth.toNumber() * 2)
-        .to.be.equal(nerfedPlanetData.silverGrowth.toNumber() * 4);
+      expect(buffedPlanetData.silverGrowth.toNumber())
+        .to.be.approximately(defaultPlanetData.silverGrowth.toNumber() * 2, 5)
+        .to.be.approximately(nerfedPlanetData.silverGrowth.toNumber() * 4, 5);
 
       expect(buffedPlanetData.defense.toNumber())
         .to.be.approximately(defaultPlanetData.defense.toNumber() * 2, 5)
         .to.be.approximately(nerfedPlanetData.defense.toNumber() * 4, 5);
 
-      expect(buffedPlanetData.range)
-        .to.be.equal(defaultPlanetData.range.toNumber() * 2)
-        .to.be.equal(nerfedPlanetData.range.toNumber() * 4);
+      expect(buffedPlanetData.range.toNumber())
+        .to.be.approximately(defaultPlanetData.range.toNumber() * 2, 5)
+        .to.be.approximately(nerfedPlanetData.range.toNumber() * 4, 5);
 
-      expect(buffedPlanetData.speed)
-        .to.be.equal(defaultPlanetData.speed.toNumber() * 2)
-        .to.be.equal(nerfedPlanetData.speed.toNumber() * 4);
+      expect(buffedPlanetData.speed.toNumber())
+        .to.be.approximately(defaultPlanetData.speed.toNumber() * 2, 5)
+        .to.be.approximately(nerfedPlanetData.speed.toNumber() * 4, 5);
     });
   });
 });

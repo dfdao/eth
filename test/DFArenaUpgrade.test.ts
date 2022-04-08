@@ -78,29 +78,17 @@ describe('Arena Upgrade', function () {
       const LibLazyUpdate = (await deployFacet('LibLazyUpdate', {}, hre)).address;
       const LibArtifactUtils = (await deployFacet('LibArtifactUtils', {LibGameUtils}, hre)).address;
       const LibPlanet = (await deployFacet('LibPlanet', {LibGameUtils, LibLazyUpdate, Verifier}, hre)).address;
-      const LibPlanetInit = (await deployFacet('LibPlanetInit', {LibGameUtils, LibPlanet, Verifier}, hre)).address;
 
       const diamondInit = await deployFacet('DFArenaUpgradeInitialize', { LibGameUtils }, hre);
     
-      const moveCapFacet = await deployFacet(
-        'DFMoveCapFacet',
-        { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet, LibPlanetInit },
-        hre
-      );
+      const moveCapFacet = await deployFacet('DFMoveCapFacet',{ Verifier, LibGameUtils, LibArtifactUtils, LibPlanet },hre);
     
       const arenaGetterFacet2 = await deployFacet('DFArenaGetterFacet2', {}, hre);
-    
-      const multipliersFacet = await deployFacet(
-        'DFMultipliersFacet',
-        { LibGameUtils, LibPlanetInit, LibPlanet },
-        hre
-      );
     
       const arenaDiamondCuts = [
         // Note: The `diamondCut` is omitted because it is cut upon deployment
         ...changes.getFacetCuts('DFMoveCapFacet', moveCapFacet),
         ...changes.getFacetCuts('DFArenaGetterFacet2', arenaGetterFacet2),
-        ...changes.getFacetCuts('DFMultipliersFacet', multipliersFacet),
       ];
 
       const toCut = [...arenaDiamondCuts];

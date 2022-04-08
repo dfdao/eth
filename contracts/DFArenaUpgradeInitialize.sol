@@ -215,16 +215,6 @@ contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
         gs().paused = initArgs.START_PAUSED;
         gs().TOKEN_MINT_END_TIMESTAMP = initArgs.TOKEN_MINT_END_TIMESTAMP;
 
-        initializeDefaults();
-        initializeUpgrades();
-
-        gs().initializedPlanetCountByLevel = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        for (uint256 i = 0; i < gs().planetLevelThresholds.length; i += 1) {
-            gs().cumulativeRarities.push(
-                (2**24 / gs().planetLevelThresholds[i]) * initArgs.PLANET_RARITY
-            );
-        }
-
         //arenaMode initialization
         arenaStorage().gameover = false;
         arenaStorage().moveCap = initArgs.MOVE_CAP;
@@ -235,25 +225,33 @@ contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
         arenaConstants().MOVE_CAP_ENABLED = initArgs.MOVE_CAP_ENABLED;
 
         arenaConstants().MULTIPLIERS = initArgs.MULTIPLIERS;
-        // enum WorldConstants {POP_CAP, POP_GROWTH, SILVER_CAP, SILVER_GROWTH, RANGE, SPEED, DEFENSE}
 
         arenaConstants().CONFIG_HASH = keccak256(abi.encode(initArgs));
+        initializeDefaults();
+        initializeUpgrades();
+
+        gs().initializedPlanetCountByLevel = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        for (uint256 i = 0; i < gs().planetLevelThresholds.length; i += 1) {
+            gs().cumulativeRarities.push(
+                (2**24 / gs().planetLevelThresholds[i]) * initArgs.PLANET_RARITY
+            );
+        }
         LibGameUtils.updateWorldRadius();
     }
 
     function initializeDefaults() public {
         PlanetDefaultStats[] storage planetDefaultStats = planetDefaultStats();
-
+        
         planetDefaultStats.push(
             PlanetDefaultStats({
                 label: "Asteroid",
-                populationCap: 100000,
-                populationGrowth: 417,
-                range: 99,
-                speed: 75,
-                defense: 400,
-                silverGrowth: 0,
-                silverCap: 0,
+                populationCap: (100000 * arenaConstants().MULTIPLIERS.popCap) / 100,
+                populationGrowth: (417 * arenaConstants().MULTIPLIERS.popGrowth) / 100,
+                range: (99* arenaConstants().MULTIPLIERS.range) / 100,
+                speed: (75* arenaConstants().MULTIPLIERS.speed) / 100,
+                defense: (400* arenaConstants().MULTIPLIERS.defense) / 100,
+                silverGrowth: (0* arenaConstants().MULTIPLIERS.silverGrowth) / 100,
+                silverCap: (0* arenaConstants().MULTIPLIERS.silverCap) / 100,
                 barbarianPercentage: 0
             })
         );
@@ -261,13 +259,13 @@ contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
         planetDefaultStats.push(
             PlanetDefaultStats({
                 label: "Brown Dwarf",
-                populationCap: 400000,
-                populationGrowth: 833,
-                range: 177,
-                speed: 75,
-                defense: 400,
-                silverGrowth: 56,
-                silverCap: 100000,
+                populationCap: (400000 * arenaConstants().MULTIPLIERS.popCap) / 100,
+                populationGrowth: (833 * arenaConstants().MULTIPLIERS.popGrowth) / 100,
+                range: (177* arenaConstants().MULTIPLIERS.range) / 100,
+                speed: (75* arenaConstants().MULTIPLIERS.speed) / 100,
+                defense: (400* arenaConstants().MULTIPLIERS.defense) / 100,
+                silverGrowth: (56* arenaConstants().MULTIPLIERS.silverGrowth) / 100,
+                silverCap: (100000* arenaConstants().MULTIPLIERS.silverCap) / 100,
                 barbarianPercentage: 1
             })
         );
@@ -275,13 +273,13 @@ contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
         planetDefaultStats.push(
             PlanetDefaultStats({
                 label: "Red Dwarf",
-                populationCap: 1600000,
-                populationGrowth: 1250,
-                range: 315,
-                speed: 75,
-                defense: 300,
-                silverGrowth: 167,
-                silverCap: 500000,
+                populationCap: (1600000 * arenaConstants().MULTIPLIERS.popCap) / 100,
+                populationGrowth: (1250 * arenaConstants().MULTIPLIERS.popGrowth) / 100,
+                range: (315* arenaConstants().MULTIPLIERS.range) / 100,
+                speed: (75* arenaConstants().MULTIPLIERS.speed) / 100,
+                defense: (300* arenaConstants().MULTIPLIERS.defense) / 100,
+                silverGrowth: (167* arenaConstants().MULTIPLIERS.silverGrowth) / 100,
+                silverCap: (500000* arenaConstants().MULTIPLIERS.silverCap) / 100,
                 barbarianPercentage: 2
             })
         );
@@ -289,13 +287,13 @@ contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
         planetDefaultStats.push(
             PlanetDefaultStats({
                 label: "White Dwarf",
-                populationCap: 6000000,
-                populationGrowth: 1667,
-                range: 591,
-                speed: 75,
-                defense: 300,
-                silverGrowth: 417,
-                silverCap: 2500000,
+                populationCap: (6000000 * arenaConstants().MULTIPLIERS.popCap) / 100,
+                populationGrowth: (1667 * arenaConstants().MULTIPLIERS.popGrowth) / 100,
+                range: (591* arenaConstants().MULTIPLIERS.range) / 100,
+                speed: (75* arenaConstants().MULTIPLIERS.speed) / 100,
+                defense: (300* arenaConstants().MULTIPLIERS.defense) / 100,
+                silverGrowth: (417* arenaConstants().MULTIPLIERS.silverGrowth) / 100,
+                silverCap: (2500000* arenaConstants().MULTIPLIERS.silverCap) / 100,
                 barbarianPercentage: 3
             })
         );
@@ -303,13 +301,13 @@ contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
         planetDefaultStats.push(
             PlanetDefaultStats({
                 label: "Yellow Star",
-                populationCap: 25000000,
-                populationGrowth: 2083,
-                range: 1025,
-                speed: 75,
-                defense: 300,
-                silverGrowth: 833,
-                silverCap: 12000000,
+                populationCap: (25000000 * arenaConstants().MULTIPLIERS.popCap) / 100,
+                populationGrowth: (2083 * arenaConstants().MULTIPLIERS.popGrowth) / 100,
+                range: (1025* arenaConstants().MULTIPLIERS.range) / 100,
+                speed: (75* arenaConstants().MULTIPLIERS.speed) / 100,
+                defense: (300* arenaConstants().MULTIPLIERS.defense) / 100,
+                silverGrowth: (833* arenaConstants().MULTIPLIERS.silverGrowth) / 100,
+                silverCap: (12000000* arenaConstants().MULTIPLIERS.silverCap) / 100,
                 barbarianPercentage: 4
             })
         );
@@ -317,13 +315,13 @@ contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
         planetDefaultStats.push(
             PlanetDefaultStats({
                 label: "Blue Star",
-                populationCap: 100000000,
-                populationGrowth: 2500,
-                range: 1734,
-                speed: 75,
-                defense: 200,
-                silverGrowth: 1667,
-                silverCap: 50000000,
+                populationCap: (100000000 * arenaConstants().MULTIPLIERS.popCap) / 100,
+                populationGrowth: (2500 * arenaConstants().MULTIPLIERS.popGrowth) / 100,
+                range: (1734* arenaConstants().MULTIPLIERS.range) / 100,
+                speed: (75* arenaConstants().MULTIPLIERS.speed) / 100,
+                defense: (200* arenaConstants().MULTIPLIERS.defense) / 100,
+                silverGrowth: (1667* arenaConstants().MULTIPLIERS.silverGrowth) / 100,
+                silverCap: (50000000* arenaConstants().MULTIPLIERS.silverCap) / 100,
                 barbarianPercentage: 5
             })
         );
@@ -331,13 +329,13 @@ contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
         planetDefaultStats.push(
             PlanetDefaultStats({
                 label: "Giant",
-                populationCap: 300000000,
-                populationGrowth: 2917,
-                range: 2838,
-                speed: 75,
-                defense: 200,
-                silverGrowth: 2778,
-                silverCap: 100000000,
+                populationCap: (300000000 * arenaConstants().MULTIPLIERS.popCap) / 100,
+                populationGrowth: (2917 * arenaConstants().MULTIPLIERS.popGrowth) / 100,
+                range: (2838* arenaConstants().MULTIPLIERS.range) / 100,
+                speed: (75* arenaConstants().MULTIPLIERS.speed) / 100,
+                defense: (200* arenaConstants().MULTIPLIERS.defense) / 100,
+                silverGrowth: (2778* arenaConstants().MULTIPLIERS.silverGrowth) / 100,
+                silverCap: (100000000* arenaConstants().MULTIPLIERS.silverCap) / 100,
                 barbarianPercentage: 7
             })
         );
@@ -345,13 +343,13 @@ contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
         planetDefaultStats.push(
             PlanetDefaultStats({
                 label: "Supergiant",
-                populationCap: 500000000,
-                populationGrowth: 3333,
-                range: 4414,
-                speed: 75,
-                defense: 200,
-                silverGrowth: 2778,
-                silverCap: 200000000,
+                populationCap: (500000000 * arenaConstants().MULTIPLIERS.popCap) / 100,
+                populationGrowth: (3333 * arenaConstants().MULTIPLIERS.popGrowth) / 100,
+                range: (4414* arenaConstants().MULTIPLIERS.range) / 100,
+                speed: (75* arenaConstants().MULTIPLIERS.speed) / 100,
+                defense: (200* arenaConstants().MULTIPLIERS.defense) / 100,
+                silverGrowth: (2778* arenaConstants().MULTIPLIERS.silverGrowth) / 100,
+                silverCap: (200000000* arenaConstants().MULTIPLIERS.silverCap) / 100,
                 barbarianPercentage: 10
             })
         );
@@ -359,13 +357,13 @@ contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
         planetDefaultStats.push(
             PlanetDefaultStats({
                 label: "Unlabeled1",
-                populationCap: 700000000,
-                populationGrowth: 3750,
-                range: 6306,
-                speed: 75,
-                defense: 200,
-                silverGrowth: 2778,
-                silverCap: 300000000,
+                populationCap: (700000000 * arenaConstants().MULTIPLIERS.popCap) / 100,
+                populationGrowth: (3750 * arenaConstants().MULTIPLIERS.popGrowth) / 100,
+                range: (6306* arenaConstants().MULTIPLIERS.range) / 100,
+                speed: (75* arenaConstants().MULTIPLIERS.speed) / 100,
+                defense: (200* arenaConstants().MULTIPLIERS.defense) / 100,
+                silverGrowth: (2778* arenaConstants().MULTIPLIERS.silverGrowth) / 100,
+                silverCap: (300000000* arenaConstants().MULTIPLIERS.silverCap) / 100,
                 barbarianPercentage: 20
             })
         );
@@ -373,13 +371,13 @@ contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
         planetDefaultStats.push(
             PlanetDefaultStats({
                 label: "Unlabeled2",
-                populationCap: 800000000,
-                populationGrowth: 4167,
-                range: 8829,
-                speed: 75,
-                defense: 200,
-                silverGrowth: 2778,
-                silverCap: 400000000,
+                populationCap: (800000000 * arenaConstants().MULTIPLIERS.popCap) / 100,
+                populationGrowth: (4167 * arenaConstants().MULTIPLIERS.popGrowth) / 100,
+                range: (8829* arenaConstants().MULTIPLIERS.range) / 100,
+                speed: (75* arenaConstants().MULTIPLIERS.speed) / 100,
+                defense: (200* arenaConstants().MULTIPLIERS.defense) / 100,
+                silverGrowth: (2778* arenaConstants().MULTIPLIERS.silverGrowth) / 100,
+                silverCap: (400000000* arenaConstants().MULTIPLIERS.silverCap) / 100,
                 barbarianPercentage: 25
             })
         );
