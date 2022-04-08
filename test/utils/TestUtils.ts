@@ -5,6 +5,7 @@ import { ethers, waffle } from 'hardhat';
 import { TestLocation } from './TestLocation';
 import { World } from './TestWorld';
 import { ARTIFACT_PLANET_1, initializers, LARGE_INTERVAL } from './WorldConstants';
+import hre from 'hardhat'
 
 const { constants } = ethers;
 
@@ -21,6 +22,17 @@ export const ZERO_ADDRESS = constants.AddressZero;
 export const BN_ZERO = constants.Zero;
 
 export const fixtureLoader = waffle.createFixtureLoader();
+
+export async function logRevertReason(revertedTxHash: string) {
+  const errTx = await hre.ethers.provider.getTransaction(revertedTxHash);
+  try {
+    //@ts-expect-error
+    await ethers.provider.call(errTx)
+  } catch (err) {
+    // @ts-expect-error
+    console.log(err.error.message)
+  }
+}
 
 export function hexToBigNumber(hex: string): BigNumber {
   return BigNumber.from(`0x${hex}`);
@@ -191,8 +203,17 @@ export function makeFindArtifactArgs(
  * interval is measured in seconds
  */
 export async function increaseBlockchainTime(interval = LARGE_INTERVAL) {
-  await ethers.provider.send('evm_increaseTime', [interval]);
-  await ethers.provider.send('evm_mine', []);
+  if(hre.network.name === "local_optimism") {
+    console.log("pausing for optimism test");
+    // Need to pause for 5 seconds so block.timestamp increase gets applied
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    console.log("finished pause for optimism test");
+
+  }
+  else {
+    await ethers.provider.send('evm_increaseTime', [interval]);
+    await ethers.provider.send('evm_mine', []);
+  }
 }
 
 export async function getCurrentTime() {
