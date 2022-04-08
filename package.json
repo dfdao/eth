@@ -67,6 +67,8 @@
     "format": "prettier --write .",
     "hardhat:node": "hardhat node --hostname 0.0.0.0",
     "hardhat:dev": "hardhat --network localhost",
+    "hardhat:optimism:dev": "hardhat --network local_optimism",
+    "hardhat:optimism:prod": "hardhat --network gnosis_optimism",
     "hardhat:prod": "hardhat --network xdai",
     "hardhat:mainnet": "hardhat --network mainnet",
     "compile": "hardhat compile",

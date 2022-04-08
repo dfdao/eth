@@ -31,6 +31,8 @@ import './tasks/upgrades';
 import './tasks/utils';
 import './tasks/wallet';
 import './tasks/whitelist';
+import './tasks/simple';
+import './tasks/metrics';
 
 require('dotenv').config();
 
@@ -85,6 +87,16 @@ const mainnet = {
   chainId: 1,
 };
 
+const gnosis_optimism = {
+  url: 'https://optimism.gnosischain.com',
+  accounts: {
+    mnemonic: DEPLOYER_MNEMONIC,
+  },
+  chainId: 300,
+  gasLimit: 15000000,
+  gasMultiplier: 5,
+};
+
 const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
   networks: {
@@ -93,6 +105,18 @@ const config: HardhatUserConfig = {
     // > Error HH100: Network xdai doesn't exist
     ...(DEPLOYER_MNEMONIC ? { xdai } : undefined),
     ...(DEPLOYER_MNEMONIC ? { mainnet } : undefined),
+    ...(DEPLOYER_MNEMONIC ? { gnosis_optimism } : undefined),
+
+    // To make a local Optimism node, follow the steps here: https://community.optimism.io/docs/developers/build/dev-node/#
+    // cha0sg0d used a Digital Ocean instance with 16GB RAM / 50 GB disk (recommended). $80/month
+    local_optimism: {
+      url: 'http://164.92.84.78:8545',
+      // Error manually instantiating accounts for local Optimism (got HTTP RPC error), use the following accounts (same as Hardhat):
+      // https://community.optimism.io/docs/developers/build/dev-node/#accessing-the-environment
+      accounts: { mnemonic: 'test test test test test test test test test test test junk' },
+      chainId: 17, // chainId is for some reason from hardhat error message
+      gas:15000000, // Optimism gas Limit is 15000000 (from Optimism Discord https://discord.com/channels/667044843901681675/887914409207414785/946585894436106351)
+    },
     localhost: {
       url: 'http://localhost:8545/',
       accounts: {
