@@ -1,0 +1,40 @@
+Metrics for Dark Forest
+
+Localhost
+
+yarn run v1.22.17
+$ /Users/0x/darkforest/gnosis/darkforest-local/node_modules/.bin/hardhat --network localhost metrics:pause_unpause 0x500cf53555c09948f4345594F9523E7B444cD67E
+timing pause/unpause on localhost with deployer 0x3097403B64fe672467345bf159F4C9C5464bD89e
+is game paused? true
+Call to pause took 4025.035750389099 milliseconds
+confirmed with 4 blocks, 34644 gas used and 8 price (wei)
+Done in 7.52s.
+
+Local Optimism
+
+yarn run v1.22.17
+$ /Users/0x/darkforest/gnosis/darkforest-local/node_modules/.bin/hardhat --network optimism metrics:pause_unpause 0x59c7D03d2E9893FB7bAa89dA50a9452e1e9B8b90
+timing pause/unpause on optimism with deployer 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+is game paused? false
+Call to pause took 212.50441646575928 milliseconds
+confirmed with 1 blocks, 34670 gas used and 1 price (wei)
+Done in 4.56s.
+
+xDai
+
+yarn run v1.22.17
+$ /Users/0x/darkforest/gnosis/darkforest-local/node_modules/.bin/hardhat --network xdai metrics:pause_unpause 0x688c78df6b8b64be16a7702df10ad64100079a68
+timing pause/unpause on xdai with deployer 0xBB768aF10D9Ec805F5CF3491218056e342b98005
+is game paused? false
+Call to pause took 948.9722080230713 milliseconds
+confirmed with 1 blocks, 34670 gas used and 4000000001 price (wei)
+Done in 7.37s.
+
+Gnosis Optimisim
+yarn run v1.22.17
+$ /Users/0x/darkforest/gnosis/darkforest-local/node_modules/.bin/hardhat --network gnosis_optimism metrics:pause_unpause 0x16d136627E2C3D930d3ae492816e09a359953f9a
+timing pause/unpause on gnosis_optimism with deployer 0xBB768aF10D9Ec805F5CF3491218056e342b98005
+is game paused? true
+Call to pause took 422.10883235931396 milliseconds
+confirmed with 1 blocks, 34644 gas used and 1 price (wei)
+Done in 7.17s.
