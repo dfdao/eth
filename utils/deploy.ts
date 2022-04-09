@@ -68,7 +68,7 @@ export async function deployDiamond(
      * When using this in a plugin, you might want to load it with [skypack](https://www.skypack.dev)
      *
      * \`\`\`js
-     * import * as contracts from 'http://cdn.skypack.dev/@darkforest_eth/contracts'
+     * import * as contracts from 'http://cdn.skypack.dev/@dfdao/contracts'
      * \`\`\`
      *
      * ## Typechain
