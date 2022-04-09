@@ -80,6 +80,9 @@
     "wait:node": "wait-on tcp:8545",
     "deploy:contracts": "hardhat --network localhost deploy",
     "hardhat:deploy": "run-s wait:node \"deploy:contracts {@}\" --",
-    "start": "run-p hardhat:node \"hardhat:deploy {@}\" --"
+    "start": "run-p hardhat:node \"hardhat:deploy {@}\" --",
+    "deploy:arena": "hardhat --network localhost arena:deploy",
+    "hardhat:deploy:arena": "run-s wait:node \"deploy:arena {@}\" --",
+    "start:arena": "run-p hardhat:node \"arena:deploy {@}\" --"
   }
 }
