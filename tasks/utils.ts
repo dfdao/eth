@@ -72,7 +72,7 @@ export async function saveDeploy(
    * [\`yarn\`](https://classic.yarnpkg.com/lang/en/) by running:
    *
    * \`\`\`bash
-   * npm install --save @darkforest_eth/contracts
+   * npm install --save @dfdao/contracts
    * \`\`\`
    * \`\`\`bash
    * yarn add @darkforest_eth/contracts
