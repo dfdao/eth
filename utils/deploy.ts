@@ -62,7 +62,7 @@ export async function deployDiamond(
      * npm install --save @dfdao/contracts
      * \`\`\`
      * \`\`\`bash
-     * yarn add @darkforest_eth/contracts
+     * yarn add @dfdao/contracts
      * \`\`\`
      *
      * When using this in a plugin, you might want to load it with [skypack](https://www.skypack.dev)
