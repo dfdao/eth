@@ -3,8 +3,17 @@ import type { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signe
 import { BigNumber, utils } from 'ethers';
 import hre from 'hardhat';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { deployAndCut } from '../../tasks/deploy';
-import { initializers, noPlanetTransferInitializers, target4Initializers } from './WorldConstants';
+import { deployAndCut } from '../../tasks/arena-deploy';
+import { cutUpgradesFromLobby } from '../../tasks/arena-upgrade';
+
+import {
+  arenaWorldInitializers,
+  initializers,
+  manualSpawnInitializers,
+  noPlanetTransferInitializers,
+  target4Initializers,
+  targetPlanetInitializers,
+} from './WorldConstants';
 
 export interface World {
   contract: DarkForest;
@@ -27,12 +36,21 @@ export interface Player {
 export interface InitializeWorldArgs {
   initializers: HardhatRuntimeEnvironment['initializers'];
   whitelistEnabled: boolean;
+  upgrade?: boolean;
 }
 
 export function defaultWorldFixture(): Promise<World> {
   return initializeWorld({
     initializers,
     whitelistEnabled: false,
+  });
+}
+
+export function baseWorldFixture(): Promise<World> {
+  return initializeWorld({
+    initializers,
+    whitelistEnabled: false,
+    upgrade: false
   });
 }
 
@@ -57,9 +75,31 @@ export function noPlanetTransferFixture(): Promise<World> {
   });
 }
 
+export function arenaWorldFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: arenaWorldInitializers,
+    whitelistEnabled: false,
+  });
+}
+
+export function manualSpawnFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: manualSpawnInitializers,
+    whitelistEnabled: false,
+  });
+}
+
+export function targetPlanetFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: targetPlanetInitializers,
+    whitelistEnabled: false,
+  });
+}
+
 export async function initializeWorld({
   initializers,
   whitelistEnabled,
+  upgrade = true,
 }: InitializeWorldArgs): Promise<World> {
   const [deployer, user1, user2] = await hre.ethers.getSigners();
 
@@ -73,8 +113,11 @@ export async function initializeWorld({
     hre
   );
 
-  const contract = await hre.ethers.getContractAt('DarkForest', diamond.address);
+  let contract = await hre.ethers.getContractAt('DarkForest', diamond.address);
 
+  if (upgrade) {
+    [contract] = await cutUpgradesFromLobby(hre, contract, initializers, whitelistEnabled);
+  }
   await deployer.sendTransaction({
     to: contract.address,
     value: utils.parseEther('0.5'), // good for about (100eth / 0.5eth/test) = 200 tests
