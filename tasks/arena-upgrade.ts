@@ -48,7 +48,7 @@ export async function cutUpgradesFromLobby(
   const rc = await tx.wait();
   if (!rc.events) throw Error('No event occurred');
 
-  //@ts-expect-error because event is type unknown
+  // @ts-expect-error because event is type unknown
   const event = rc.events.find((event) => event.event === 'LobbyCreated');
 
   const lobbyAddress = event.args.lobbyAddress;
