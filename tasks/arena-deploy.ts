@@ -149,7 +149,7 @@ export async function deployAndCut(
     hre
   );
 
-  const diamondInit = await deployContract('DFInitialize', { LibGameUtils }, hre);
+  const diamondInit = await deployContract('DFArenaInitialize', { LibGameUtils }, hre);
 
   // Dark Forest facets
   const coreFacet = await deployContract(
@@ -173,6 +173,9 @@ export async function deployAndCut(
   );
   const lobbyFacet = await deployContract('DFLobbyFacet', {}, hre);
 
+  const arenaCoreFacet = await deployContract('DFArenaCoreFacet', { LibGameUtils, LibPlanet }, hre);
+  const arenaGetterFacet = await deployContract('DFArenaGetterFacet', {}, hre);
+
   // The `cuts` to perform for Dark Forest facets
   const darkForestFacetCuts = [
     ...changes.getFacetCuts('DFCoreFacet', coreFacet),
@@ -183,6 +186,8 @@ export async function deployAndCut(
     ...changes.getFacetCuts('DFWhitelistFacet', whitelistFacet),
     ...changes.getFacetCuts('DFAdminFacet', adminFacet),
     ...changes.getFacetCuts('DFLobbyFacet', lobbyFacet),
+    ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
+    ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
   ];
 
   const toCut = [...diamondSpecFacetCuts, ...darkForestFacetCuts];

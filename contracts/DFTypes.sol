@@ -238,3 +238,18 @@ enum Biome {
     Lava,
     Corrupted
 }
+
+struct ArenaPlanetInfo {
+    bool spawnPlanet;
+    bool targetPlanet;
+}
+
+struct ArenaAdminCreatePlanetArgs {
+    uint256 location;
+    uint256 perlin;
+    uint256 level;
+    PlanetType planetType;
+    bool requireValidLocationId;
+    bool isTargetPlanet;
+    bool isSpawnPlanet;
+}

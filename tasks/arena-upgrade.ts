@@ -66,20 +66,20 @@ export async function cutUpgradesFromLobby(
   const LibArtifactUtils = hre.contracts.LIB_ARTIFACT_UTILS_ADDRESS;
   const LibPlanet = hre.contracts.LIB_PLANET_ADDRESS;
 
-  const diamondInit = await deployContract('DFArenaInitialize', { LibGameUtils }, hre);
+  const diamondInit = await deployContract('DFArenaUpgradeInitialize', { LibGameUtils }, hre);
 
-  const arenaCoreFacet = await deployContract(
-    'DFArenaCoreFacet',
-    { LibGameUtils, LibPlanet },
+  const moveCapFacet = await deployContract(
+    'DFMoveCapFacet',
+    { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet },
     hre
   );
 
-  const arenaGetterFacet = await deployContract('DFArenaGetterFacet', {}, hre);
+  const arenaGetterFacet2 = await deployContract('DFArenaGetterFacet2', {}, hre);
 
   const arenaDiamondCuts = [
     // Note: The `diamondCut` is omitted because it is cut upon deployment
-    ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
-    ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
+    ...changes.getFacetCuts('DFMoveCapFacet', moveCapFacet),
+    ...changes.getFacetCuts('DFArenaGetterFacet2', arenaGetterFacet2),
   ];
 
   const toCut = [...arenaDiamondCuts];

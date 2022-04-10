@@ -2,25 +2,42 @@
 pragma solidity ^0.8.0;
 
 // Type imports
-import {Planet, PlanetExtendedInfo, PlanetExtendedInfo2, PlanetEventMetadata, PlanetDefaultStats, Upgrade, RevealedCoords, Player, ArrivalData, Artifact} from "../DFTypes.sol";
+import {
+    Planet, 
+    PlanetExtendedInfo, 
+    PlanetExtendedInfo2, 
+    PlanetEventMetadata, 
+    PlanetDefaultStats, 
+    Upgrade, 
+    RevealedCoords, 
+    Player, 
+    ArrivalData, 
+    Artifact,
+    ArenaPlanetInfo
+} from "../DFTypes.sol";
 
-struct ArenaPlanetInfo {
-    bool spawnPlanet;
-    bool targetPlanet;
+struct ArenaPlayerInfo {
+    uint256 moves;
 }
-
 struct ArenaStorage {
     address[] winners;
     bool gameover;
     mapping(uint256 => ArenaPlanetInfo) arenaPlanetInfo;
     uint256[] spawnPlanetIds;
     uint256[] targetPlanetIds;
+
+    uint256 moveCap;
+    mapping(address => ArenaPlayerInfo) arenaPlayerInfo;
 }
 
 struct ArenaConstants {
     bool TARGET_PLANETS;
     uint256 TARGET_PLANET_HOLD_BLOCKS_REQUIRED;
     bool MANUAL_SPAWN;
+
+    bool MOVE_CAP_ENABLED;
+
+    bytes32 CONFIG_HASH;
 }
 
 /**

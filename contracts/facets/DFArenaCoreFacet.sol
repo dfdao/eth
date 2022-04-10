@@ -18,22 +18,22 @@ import {IERC173} from "../vendor/interfaces/IERC173.sol";
 
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
-import {WithArenaStorage, ArenaStorage, ArenaPlanetInfo, ArenaConstants} from "./LibArenaStorage.sol";
+import {WithArenaStorage, ArenaStorage, ArenaPlanetInfo, ArenaConstants} from "../libraries/LibArenaStorage.sol";
 
 import {SpaceType, DFPInitPlanetArgs, Artifact, ArtifactType, Player, Planet, PlanetType, PlanetExtendedInfo, PlanetExtendedInfo2} from "../DFTypes.sol";
 
-// SHOULD WE SPLIT THESE DATA STRUCTURES UP? THEY ARE COMING FROM ALL OVER
-
-// Updated types
-struct ArenaAdminCreatePlanetArgs {
-    uint256 location;
-    uint256 perlin;
-    uint256 level;
-    PlanetType planetType;
-    bool requireValidLocationId;
-    bool isTargetPlanet;
-    bool isSpawnPlanet;
-}
+import {
+    Planet, 
+    PlanetExtendedInfo, 
+    PlanetExtendedInfo2, 
+    PlanetEventMetadata, 
+    PlanetDefaultStats, 
+    Player, 
+    Artifact,
+    ArtifactType,
+    ArenaPlanetInfo,
+    ArenaAdminCreatePlanetArgs
+} from "../DFTypes.sol";
 
 contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     event AdminPlanetCreated(uint256 loc);

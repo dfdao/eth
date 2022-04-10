@@ -40,14 +40,31 @@ const { DEPLOYER_MNEMONIC, ADMIN_PUBLIC_ADDRESS } = process.env;
 
 const AbiItemsToIgnore = [
   {
-    facet: 'DFCoreFacet',
-    functions: ['initializePlayer'],
-    events: ['PlayerInitialized'],
+    facet: 'DFMoveFacet',
+    events: ['ArrivalQueued'],
+    functions: [
+      'move',
+      '_executeMove',
+      '_checkMoveValidity',
+      'applySpaceshipDepart',
+      '_removeSpaceshipEffectsFromOriginPlanet',
+      '_checkWormhole',
+      '_checkPhotoid',
+      'abandonPlanet',
+      '_transferPlanetSpaceJunkToPlayer',
+      '_isSpaceshipMove',
+      '_createArrival',
+      '_getDelayedPop'
+    ],
   },
   {
     facet: 'DFAdminFacet',
     events: ['AdminPlanetCreated'],
   },
+  {
+    facet: 'DFArenaGetterFacet',
+    functions: ['getArenaConstants']
+  }
 ];
 
 // Warning: If the facet is not in the `facets` directory, getFullyQualifiedFacetName will not work.
@@ -223,7 +240,7 @@ const config: HardhatUserConfig = {
     // We don't want additional directories created, so we explicitly set the `flat` option to `true`
     flat: true,
     // We **only** want to copy the DarkForest ABI (which is the Diamond ABI we generate) and the initializer ABI to this folder, so we limit the matched files with the `only` option
-    only: [':DarkForest$', ':DFInitialize$'],
+    only: [':DarkForest$', ':DFArenaInitialize$', ':DFArenaUpgradeInitialize$'],
   },
 };
 

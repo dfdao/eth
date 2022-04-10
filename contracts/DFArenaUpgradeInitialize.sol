@@ -25,19 +25,15 @@ import {IERC173} from "./vendor/interfaces/IERC173.sol";
 import {IERC165} from "@solidstate/contracts/introspection/IERC165.sol";
 import {IERC721} from "@solidstate/contracts/token/ERC721/IERC721.sol";
 import {IERC721Metadata} from "@solidstate/contracts/token/ERC721/metadata/IERC721Metadata.sol";
-import {
-    IERC721Enumerable
-} from "@solidstate/contracts/token/ERC721/enumerable/IERC721Enumerable.sol";
+import {IERC721Enumerable} from "@solidstate/contracts/token/ERC721/enumerable/IERC721Enumerable.sol";
 
 // Inherited storage
-import {
-    ERC721MetadataStorage
-} from "@solidstate/contracts/token/ERC721/metadata/ERC721MetadataStorage.sol";
+import {ERC721MetadataStorage} from "@solidstate/contracts/token/ERC721/metadata/ERC721MetadataStorage.sol";
 
 // Library imports
 import {LibDiamond} from "./vendor/libraries/LibDiamond.sol";
 import {WithStorage} from "./libraries/LibStorage.sol";
-import {WithArenaStorage} from "./libraries/LibArenaStorage.sol";
+import {WithArenaStorage} from "./upgrades/LibArenaUpgradeStorage.sol";
 import {LibGameUtils} from "./libraries/LibGameUtils.sol";
 
 // Type imports
@@ -113,9 +109,12 @@ struct InitArgs {
     uint256 TARGET_PLANET_HOLD_BLOCKS_REQUIRED;
     // Manual Spawn
     bool MANUAL_SPAWN;
+    // Move Cap
+    bool MOVE_CAP_ENABLED;
+    uint256 MOVE_CAP;
 }
 
-contract DFArenaInitialize is WithStorage, WithArenaStorage {
+contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
     using ERC721MetadataStorage for ERC721MetadataStorage.Layout;
 
     // You can add parameters to this function in order to pass in
@@ -219,6 +218,9 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
         arenaConstants().TARGET_PLANET_HOLD_BLOCKS_REQUIRED = initArgs
             .TARGET_PLANET_HOLD_BLOCKS_REQUIRED;
         arenaConstants().MANUAL_SPAWN = initArgs.MANUAL_SPAWN;
+
+        arenaStorage().moveCap = initArgs.MOVE_CAP;
+        arenaConstants().MOVE_CAP_ENABLED = initArgs.MOVE_CAP_ENABLED;
 
         LibGameUtils.updateWorldRadius();
     }
