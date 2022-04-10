@@ -46,6 +46,9 @@ export function defaultWorldFixture(): Promise<World> {
   });
 }
 
+/*
+Idential to defaultWorldFixture but without upgrade facets cut in
+*/
 export function baseWorldFixture(): Promise<World> {
   return initializeWorld({
     initializers,
