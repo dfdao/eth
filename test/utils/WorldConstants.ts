@@ -47,7 +47,11 @@ export const targetPlanetInitializers = settings.parse(decodeInitializers, {
 });
 
 export const arenaWorldInitializers = settings.parse(decodeInitializers, {
-  ...manualSpawnInitializers,
+  ...defaultInitializerValues,
+  ...defaultInitializerValues,
+  MANUAL_SPAWN: true,
+  INIT_PERLIN_MIN : 0,
+  INIT_PERLIN_MAX: 31,
   TARGET_PLANETS: true,
   TARGET_PLANET_HOLD_BLOCKS_REQUIRED: 10,
 });

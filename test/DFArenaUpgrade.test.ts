@@ -1,7 +1,14 @@
 import { expect } from 'chai';
 import { fixtureLoader, makeInitArgs, makeMoveArgs, makeRevealArgs } from './utils/TestUtils';
 import { baseWorldFixture, World } from './utils/TestWorld';
-import { ADMIN_PLANET_CLOAKED, arenaWorldInitializers, initializers, LVL2_PLANET_SPACE, SPAWN_PLANET_1, VALID_INIT_PERLIN } from './utils/WorldConstants';
+import {
+  ADMIN_PLANET_CLOAKED,
+  arenaWorldInitializers,
+  initializers,
+  LVL2_PLANET_SPACE,
+  SPAWN_PLANET_1,
+  VALID_INIT_PERLIN,
+} from './utils/WorldConstants';
 import hre from 'hardhat';
 import { DarkForest, LobbyCreatedEvent } from '@darkforest_eth/contracts/typechain/DarkForest';
 // Note: The deployed addresses are written to the contracts package on any deploy, including for testing
@@ -27,17 +34,9 @@ describe('Arena Upgrade', function () {
       const perlin = VALID_INIT_PERLIN;
       const level = 0;
       const planetType = 0; // planet
-      await expect(
-        world.contract.createArenaPlanet({
-          location: ADMIN_PLANET_CLOAKED.id,
-          perlin,
-          level,
-          planetType,
-          requireValidLocationId: false,
-          isTargetPlanet: true,
-          isSpawnPlanet: false,
-        })
-        ).to.be.revertedWith('Diamond: Function does not exist');
+      await expect(world.contract.getPlayerMove(world.user1.address)).to.be.revertedWith(
+        'Diamond: Function does not exist'
+      );
     });
 
     it('Creates a new lobby with msg.sender as owner', async function () {
@@ -75,8 +74,11 @@ describe('Arena Upgrade', function () {
       const Verifier = (await deployContract('Verifier', {}, hre)).address;
       const LibGameUtils = (await deployContract('LibGameUtils', {}, hre)).address;
       const LibLazyUpdate = (await deployContract('LibLazyUpdate', {}, hre)).address;
-      const LibArtifactUtils = (await deployContract('LibArtifactUtils', {LibGameUtils}, hre)).address;
-      const LibPlanet = (await deployContract('LibPlanet', {LibGameUtils, LibLazyUpdate, Verifier}, hre)).address;
+      const LibArtifactUtils = (await deployContract('LibArtifactUtils', { LibGameUtils }, hre))
+        .address;
+      const LibPlanet = (
+        await deployContract('LibPlanet', { LibGameUtils, LibLazyUpdate, Verifier }, hre)
+      ).address;
 
       const diamondInit = await deployContract('DFArenaInitialize', { LibGameUtils }, hre);
 
@@ -85,9 +87,9 @@ describe('Arena Upgrade', function () {
         { LibGameUtils, LibPlanet },
         hre
       );
-    
+
       const arenaGetterFacet = await deployContract('DFArenaGetterFacet', {}, hre);
-    
+
       const arenaDiamondCuts = [
         // Note: The `diamondCut` is omitted because it is cut upon deployment
         ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),

@@ -3,7 +3,7 @@ import type { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signe
 import { BigNumber, utils } from 'ethers';
 import hre from 'hardhat';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { deployAndCut } from '../../tasks/deploy';
+import { deployAndCut } from '../../tasks/arena-deploy';
 import { cutUpgradesFromLobby } from '../../tasks/arena-upgrade';
 
 import {
@@ -126,9 +126,10 @@ export async function initializeWorld({
 
   let contract = await hre.ethers.getContractAt('DarkForest', diamond.address);
 
-  // if (upgrade) {
-  //   [contract] = await cutUpgradesFromLobby(hre, contract, initializers, whitelistEnabled);
-  // }
+  if (upgrade) {
+    [contract] = await cutUpgradesFromLobby(hre, contract, initializers, whitelistEnabled);
+  }
+
   await deployer.sendTransaction({
     to: contract.address,
     value: utils.parseEther('0.5'), // good for about (100eth / 0.5eth/test) = 200 tests
