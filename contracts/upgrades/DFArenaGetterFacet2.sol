@@ -16,9 +16,21 @@ import {IERC173} from "../vendor/interfaces/IERC173.sol";
 
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
-import {ArenaPlayerInfo, ArenaStorage, ArenaConstants, WithArenaStorage} from "./LibArenaUpgradeStorage.sol";
+import {ArenaStorage, ArenaConstants, WithArenaStorage} from "./LibArenaUpgradeStorage.sol";
 
-import {SpaceType, DFPInitPlanetArgs, AdminCreatePlanetArgs, Artifact, ArtifactType, Player, Planet, PlanetType, PlanetExtendedInfo, PlanetExtendedInfo2} from "../DFTypes.sol";
+import {
+    SpaceType, 
+    DFPInitPlanetArgs, 
+    AdminCreatePlanetArgs, 
+    Artifact, 
+    ArtifactType, 
+    Player, 
+    Planet, 
+    PlanetType, 
+    PlanetExtendedInfo, 
+    PlanetExtendedInfo2,
+    ArenaPlayerInfo    
+} from "../DFTypes.sol";
 
 contract DFArenaGetterFacet2 is WithStorage, WithArenaStorage {
     function getPlayerMove(address playerAddress) public view returns (uint256) {

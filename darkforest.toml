@@ -144,7 +144,8 @@ MANUAL_SPAWN = true
 TARGET_PLANETS = true
 TARGET_PLANET_HOLD_BLOCKS_REQUIRED = 100
 
-MOVE_CAP: 1000
+MOVE_CAP_ENABLED = false
+MOVE_CAP= 1000
 
 ##########################
 # Planets to add to game #

@@ -13,12 +13,10 @@ import {
     Player, 
     ArrivalData, 
     Artifact,
-    ArenaPlanetInfo
+    ArenaPlanetInfo,
+    ArenaPlayerInfo
 } from "../DFTypes.sol";
 
-struct ArenaPlayerInfo {
-    uint256 moves;
-}
 struct ArenaStorage {
     address[] winners;
     bool gameover;

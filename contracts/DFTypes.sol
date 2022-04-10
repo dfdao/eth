@@ -244,6 +244,10 @@ struct ArenaPlanetInfo {
     bool targetPlanet;
 }
 
+struct ArenaPlayerInfo {
+    uint256 moves;
+}
+
 struct ArenaAdminCreatePlanetArgs {
     uint256 location;
     uint256 perlin;
