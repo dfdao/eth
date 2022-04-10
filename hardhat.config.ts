@@ -20,6 +20,7 @@ import * as path from 'path';
 import * as settings from './settings';
 import { decodeContracts, decodeInitializers, decodeAdminPlanets } from '@darkforest_eth/settings';
 import './tasks/arena-deploy';
+import './tasks/arena-upgrade';
 import './tasks/artifact';
 import './tasks/circom';
 import './tasks/compile';
@@ -38,10 +39,15 @@ require('dotenv').config();
 const { DEPLOYER_MNEMONIC, ADMIN_PUBLIC_ADDRESS } = process.env;
 
 const AbiItemsToIgnore = [
-  {facet: 'DFCoreFacet',
-   functions: [],
-   events: []
-}
+  {
+    facet: 'DFCoreFacet',
+    functions: ['initializePlayer'],
+    events: ['PlayerInitialized'],
+  },
+  {
+    facet: 'DFAdminFacet',
+    events: ['AdminPlanetCreated'],
+  },
 ];
 
 // Warning: If the facet is not in the `facets` directory, getFullyQualifiedFacetName will not work.
