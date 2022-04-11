@@ -355,7 +355,7 @@ describe('Arena Functions', function () {
         beforeEach(async function () {
           await increaseBlocks();
         });
-        it('cant claim victory with a non-target planet', async function () {
+        it('cannot claim victory with a non-target planet', async function () {
           await expect(
             world.user1Core.claimTargetPlanetVictory(SPAWN_PLANET_1.id)
           ).to.be.revertedWith('you can only claim victory with a target planet');
@@ -365,7 +365,7 @@ describe('Arena Functions', function () {
             world.user2Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id)
           ).to.be.revertedWith('you can only claim victory with planets you own');
         });
-        it('should emit event', async function () {
+        it('gameover event emitted after claim victory', async function () {
           const planet = await world.contract.planetsExtendedInfo2(LVL0_PLANET_DEEP_SPACE.id);
           await expect(world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id))
             .to.emit(world.contract, 'Gameover')
