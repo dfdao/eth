@@ -714,8 +714,8 @@ library LibGameUtils {
         }
 
         // apply time factor
-        _planet.speed *= TIME_FACTOR_HUNDREDTHS / 100;
-        _planet.populationGrowth *= TIME_FACTOR_HUNDREDTHS / 100;
-        _planet.silverGrowth *= TIME_FACTOR_HUNDREDTHS / 100;
+        _planet.speed = (_planet.speed * TIME_FACTOR_HUNDREDTHS) / 100;
+        _planet.populationGrowth = (_planet.populationGrowth * TIME_FACTOR_HUNDREDTHS) / 100;
+        _planet.silverGrowth = (_planet.silverGrowth * TIME_FACTOR_HUNDREDTHS) / 100;
     }
 }

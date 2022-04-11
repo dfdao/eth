@@ -20,6 +20,7 @@ import * as path from 'path';
 import * as settings from './settings';
 import { decodeContracts, decodeInitializers, decodeAdminPlanets } from '@darkforest_eth/settings';
 import './tasks/arena-deploy';
+import './tasks/arena-upgrade';
 import './tasks/artifact';
 import './tasks/circom';
 import './tasks/compile';
@@ -38,10 +39,15 @@ require('dotenv').config();
 const { DEPLOYER_MNEMONIC, ADMIN_PUBLIC_ADDRESS } = process.env;
 
 const AbiItemsToIgnore = [
-  {facet: 'DFCoreFacet',
-   functions: [],
-   events: []
-}
+  {
+    facet: 'DFCoreFacet',
+    functions: ['initializePlayer'],
+    events: ['PlayerInitialized'],
+  },
+  {
+    facet: 'DFAdminFacet',
+    events: ['AdminPlanetCreated'],
+  },
 ];
 
 // Warning: If the facet is not in the `facets` directory, getFullyQualifiedFacetName will not work.
@@ -201,9 +207,9 @@ const config: HardhatUserConfig = {
       const facetToIgnore = AbiItemsToIgnore.find(
         (value) => getFullyQualifiedFacetName(value.facet) === fullyQualifiedName
       );
-      //@ts-expect-error because abiElement is type unknown
+      // @ts-expect-error because abiElement is type unknown
       if (facetToIgnore?.functions?.includes(abiElement.name)) return false;
-      //@ts-expect-error because abiElement is type unknown
+      // @ts-expect-error because abiElement is type unknown
       if (facetToIgnore?.events?.includes(abiElement.name)) return false;
 
       const signature = diamondUtils.toSignature(abiElement);
@@ -217,7 +223,7 @@ const config: HardhatUserConfig = {
     // We don't want additional directories created, so we explicitly set the `flat` option to `true`
     flat: true,
     // We **only** want to copy the DarkForest ABI (which is the Diamond ABI we generate) and the initializer ABI to this folder, so we limit the matched files with the `only` option
-    only: [':DarkForest$', ':DFInitialize$'],
+    only: [':DarkForest$', ':DFInitialize$', ':DFArenaInitialize$'],
   },
 };
 

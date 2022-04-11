@@ -33,6 +33,27 @@ export const target4Initializers = settings.parse(decodeInitializers, {
   WORLD_RADIUS_MIN: 1,
   SPAWN_RIM_AREA: 7234560000,
 });
+export const manualSpawnInitializers = settings.parse(decodeInitializers, {
+  ...defaultInitializerValues,
+  MANUAL_SPAWN: true,
+  INIT_PERLIN_MIN : 0,
+  INIT_PERLIN_MAX: 31,
+});
+
+export const targetPlanetInitializers = settings.parse(decodeInitializers, {
+  ...defaultInitializerValues,
+  TARGET_PLANETS: true,
+  TARGET_PLANET_HOLD_BLOCKS_REQUIRED: 10,
+});
+
+export const arenaWorldInitializers = settings.parse(decodeInitializers, {
+  ...defaultInitializerValues,
+  MANUAL_SPAWN: true,
+  INIT_PERLIN_MIN : 0,
+  INIT_PERLIN_MAX: 31,
+  TARGET_PLANETS: true,
+  TARGET_PLANET_HOLD_BLOCKS_REQUIRED: 10,
+});
 
 export const VALID_INIT_PERLIN = initializers.INIT_PERLIN_MIN;
 export const NEBULA_PERLIN = initializers.PERLIN_THRESHOLD_1 - 1;
@@ -318,3 +339,4 @@ export const INVALID_PLANET = new TestLocation({
 export const SMALL_INTERVAL = 5; // seconds
 export const TOLERANCE = 2; // seconds
 export const LARGE_INTERVAL = 3 * 86400; // seconds
+export const NUM_BLOCKS = 50;

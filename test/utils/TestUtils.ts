@@ -4,7 +4,7 @@ import { BigNumber, BigNumberish } from 'ethers';
 import { ethers, waffle } from 'hardhat';
 import { TestLocation } from './TestLocation';
 import { World } from './TestWorld';
-import { ARTIFACT_PLANET_1, initializers, LARGE_INTERVAL } from './WorldConstants';
+import { ARTIFACT_PLANET_1, initializers, LARGE_INTERVAL, NUM_BLOCKS } from './WorldConstants';
 
 const { constants } = ethers;
 
@@ -193,6 +193,13 @@ export function makeFindArtifactArgs(
 export async function increaseBlockchainTime(interval = LARGE_INTERVAL) {
   await ethers.provider.send('evm_increaseTime', [interval]);
   await ethers.provider.send('evm_mine', []);
+}
+
+export async function increaseBlocks(blocks = NUM_BLOCKS) {
+  // await ethers.provider.send('evm_increaseTime', [LARGE_INTERVAL]);
+  for (let i = 0; i < blocks; i++) {
+    await ethers.provider.send('evm_mine', []);
+  }
 }
 
 export async function getCurrentTime() {
