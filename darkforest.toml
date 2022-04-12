@@ -140,6 +140,8 @@ PLANET_TYPE_WEIGHTS = [
   ],
 ]
 
+MULTIPLIERS = [100, 100, 100, 100, 100, 100, 100, 100]
+
 
 ##########################
 # Planets to add to game #

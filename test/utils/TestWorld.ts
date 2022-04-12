@@ -99,6 +99,13 @@ export function targetPlanetFixture(): Promise<World> {
   });
 }
 
+export function modifiedWorldFixture(mod: number): Promise<World> {
+  return initializeWorld({
+    initializers: { ...initializers, MULTIPLIERS: [mod, mod, mod, mod, mod, mod, mod, mod] },
+    whitelistEnabled: false,
+  });
+}
+
 export async function initializeWorld({
   initializers,
   whitelistEnabled,
