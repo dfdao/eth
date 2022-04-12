@@ -215,6 +215,14 @@ export async function deployAndCut(
   }
   console.log('Completed diamond cut');
 
+  const [upgradedDiamond, upgradedDiamondInit, upgradedInitReceipt] = await cutUpgrades(
+    diamond.address,
+    hre,
+    { LibGameUtils, LibPlanet, LibArtifactUtils, Verifier },
+    whitelistEnabled,
+    tokenBaseUri,
+    initializers
+  );
   await saveDeploy(
     {
       coreBlockNumber: initReceipt.blockNumber,
@@ -224,6 +232,47 @@ export async function deployAndCut(
     },
     hre
   );
+
+  return [upgradedDiamond, upgradedDiamondInit, upgradedInitReceipt] as const;
+}
+
+async function cutUpgrades(
+  diamondAddress : string,
+  hre: HardhatRuntimeEnvironment,
+  { LibGameUtils, LibPlanet, LibArtifactUtils, Verifier }: Libraries,
+  whitelistEnabled: boolean,
+  tokenBaseUri: string,
+  initializers: HardhatRuntimeEnvironment['initializers']
+) {
+  const diamond = await hre.ethers.getContractAt('DarkForest', diamondAddress);
+
+  const prevFacets = await diamond.facets();
+
+  const changes = new DiamondChanges(prevFacets);
+  const diamondInit = await deployContract('DFArenaInitialize', { LibGameUtils }, hre);
+  const arenaCoreFacet = await deployContract('DFArenaCoreFacet', { LibGameUtils, LibPlanet }, hre);
+  const arenaGetterFacet = await deployContract('DFArenaGetterFacet', {}, hre);
+
+  const darkForestFacetCuts = [
+    ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
+    ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
+  ];
+
+  const diamondCut = await hre.ethers.getContractAt('DarkForest', diamond.address);
+
+  const initAddress = diamondInit.address;
+  const initFunctionCall = diamondInit.interface.encodeFunctionData('init', [
+    whitelistEnabled,
+    tokenBaseUri,
+    initializers,
+  ]);
+
+  const initTx = await diamondCut.diamondCut(darkForestFacetCuts, initAddress, initFunctionCall);
+  const initReceipt = await initTx.wait();
+  if (!initReceipt.status) {
+    throw Error(`Diamond cut failed: ${initTx.hash}`);
+  }
+  console.log('Completed diamond cut');
 
   return [diamond, diamondInit, initReceipt] as const;
 }
