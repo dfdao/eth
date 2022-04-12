@@ -1,10 +1,13 @@
 import { task, types } from 'hardhat/config';
-import type { HardhatRuntimeEnvironment } from 'hardhat/types';
+import type { HardhatRuntimeEnvironment, Libraries } from 'hardhat/types';
 
 import * as settings from '../settings';
 import { DiamondChanges } from '../utils/diamond';
 
 import { deployDiamond, deployContract, saveDeploy } from '../utils/deploy';
+import { cutUpgradesFromLobby } from './arena-upgrade';
+import { DarkForest } from '@darkforest_eth/contracts/typechain';
+import { EthAddress } from '@darkforest_eth/types';
 
 task('arena:deploy', 'deploy all arena contracts')
   .addOptionalParam('whitelist', 'override the whitelist', undefined, types.boolean)
@@ -120,9 +123,11 @@ export async function deployAndCut(
   const Verifier = (await deployContract('Verifier', {}, hre)).address;
   const LibGameUtils = (await deployContract('LibGameUtils', {}, hre)).address;
   const LibLazyUpdate = (await deployContract('LibLazyUpdate', {}, hre)).address;
-  const LibArtifactUtils = (await deployContract('LibArtifactUtils', { LibGameUtils }, hre)).address;
-  const LibPlanet = (await deployContract('LibPlanet', { LibGameUtils, LibLazyUpdate, Verifier }, hre))
+  const LibArtifactUtils = (await deployContract('LibArtifactUtils', { LibGameUtils }, hre))
     .address;
+  const LibPlanet = (
+    await deployContract('LibPlanet', { LibGameUtils, LibLazyUpdate, Verifier }, hre)
+  ).address;
 
   // const { LibGameUtils, LibArtifactUtils, LibPlanet } = await deployLibraries({}, hre);
 
