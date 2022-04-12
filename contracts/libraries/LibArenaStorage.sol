@@ -2,12 +2,19 @@
 pragma solidity ^0.8.0;
 
 // Type imports
-import {Planet, PlanetExtendedInfo, PlanetExtendedInfo2, PlanetEventMetadata, PlanetDefaultStats, Upgrade, RevealedCoords, Player, ArrivalData, Artifact} from "../DFTypes.sol";
-
-struct ArenaPlanetInfo {
-    bool spawnPlanet;
-    bool targetPlanet;
-}
+import {
+    Planet, 
+    PlanetExtendedInfo, 
+    PlanetExtendedInfo2, 
+    PlanetEventMetadata, 
+    PlanetDefaultStats, 
+    Upgrade, 
+    RevealedCoords, 
+    Player, 
+    ArrivalData, 
+    Artifact,
+    ArenaPlanetInfo
+} from "../DFTypes.sol";
 
 struct ArenaStorage {
     address[] winners;
