@@ -37,7 +37,7 @@ import {WithArenaStorage} from "./upgrades/LibArenaUpgradeStorage.sol";
 import {LibGameUtils} from "./libraries/LibGameUtils.sol";
 
 // Type imports
-import {PlanetDefaultStats, Upgrade, UpgradeBranch, Modifiers} from "./DFTypes.sol";
+import {PlanetDefaultStats, Upgrade, UpgradeBranch, Modifiers, Spaceships} from "./DFTypes.sol";
 
 struct InitArgs {
     bool START_PAUSED;
@@ -111,6 +111,7 @@ struct InitArgs {
     bool MANUAL_SPAWN;
 
     Modifiers MODIFIERS;
+    bool[5] SPACESHIPS;
 }
 
 contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
@@ -216,6 +217,14 @@ contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
         arenaConstants().MANUAL_SPAWN = initArgs.MANUAL_SPAWN;
 
         arenaConstants().MODIFIERS = initArgs.MODIFIERS;
+
+        arenaConstants().SPACESHIPS = Spaceships(
+            initArgs.SPACESHIPS[0],
+            initArgs.SPACESHIPS[1],
+            initArgs.SPACESHIPS[2],
+            initArgs.SPACESHIPS[3],
+            initArgs.SPACESHIPS[4]
+        );
         
         initializeDefaults();
         initializeUpgrades();

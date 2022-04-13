@@ -268,3 +268,12 @@ struct Modifiers {
     uint256 defense;
     uint256 barbarianPercentage;
 }
+
+// # Mothership, Whale, Crescent, Gear, Titan
+struct Spaceships{
+    bool mothership;
+    bool whale;
+    bool crescent;
+    bool gear;
+    bool titan;
+}

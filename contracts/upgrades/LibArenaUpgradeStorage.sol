@@ -3,19 +3,10 @@ pragma solidity ^0.8.0;
 
 // Type imports
 import {
-    Planet, 
-    PlanetExtendedInfo, 
-    PlanetExtendedInfo2, 
-    PlanetEventMetadata, 
-    PlanetDefaultStats, 
-    Upgrade, 
-    RevealedCoords, 
-    Player, 
-    ArrivalData, 
-    Artifact,
     ArenaPlanetInfo,
     ArenaPlayerInfo,
-    Modifiers
+    Modifiers,
+    Spaceships
 } from "../DFTypes.sol";
 
 struct ArenaStorage {
@@ -37,6 +28,8 @@ struct ArenaConstants {
     bytes32 CONFIG_HASH;
 
     Modifiers MODIFIERS;
+
+    Spaceships SPACESHIPS;
 }
 
 library LibArenaStorage {

@@ -1,3 +1,4 @@
+import { ArtifactType } from '@darkforest_eth/types';
 import { expect } from 'chai';
 import {
   fixtureLoader,
@@ -5,6 +6,7 @@ import {
   makeMoveArgs,
   makeRevealArgs,
   increaseBlocks,
+  increaseBlockchainTime,
 } from './utils/TestUtils';
 import {
   manualSpawnFixture,
@@ -13,6 +15,7 @@ import {
   World,
   modifiedWorldFixture,
   defaultWorldFixture,
+  spaceshipWorldFixture,
 } from './utils/TestWorld';
 import {
   ADMIN_PLANET,
@@ -386,7 +389,7 @@ describe('Arena Functions', function () {
     });
   });
 
-  
+
   describe('Planet Constants Modifiers', function () {
     let defaultWorld: World;
     let nerfedWorld: World;
@@ -436,11 +439,6 @@ describe('Arena Functions', function () {
       const buffedPlanetData = await buffedWorld.contract.planets(LVL1_ASTEROID_1.id);
       const nerfedPlanetData = await nerfedWorld.contract.planets(LVL1_ASTEROID_1.id);
 
-      console.log(`
-        default: ${defaultPlanetData.populationCap.toNumber()}, 
-        buffed: ${buffedPlanetData.populationCap.toNumber()},
-        nerfed: ${nerfedPlanetData.populationCap.toNumber()}
-      `)
       expect(buffedPlanetData.populationCap.toNumber())
         .to.be.approximately(defaultPlanetData.populationCap.toNumber() * 2, 5)
         .to.be.approximately(nerfedPlanetData.populationCap.toNumber() * 4, 5);
@@ -468,6 +466,64 @@ describe('Arena Functions', function () {
       expect(buffedPlanetData.speed.toNumber())
         .to.be.approximately(defaultPlanetData.speed.toNumber() * 2, 5)
         .to.be.approximately(nerfedPlanetData.speed.toNumber() * 4, 5);
+    });
+  });
+
+  describe.only('Planet Constants Modifiers', function () {
+    let world: World;
+
+    async function worldFixture() {
+      const world = await fixtureLoader(() =>
+        spaceshipWorldFixture([true, true, true, false, false])
+      );
+      let initArgs = makeInitArgs(SPAWN_PLANET_1);
+      await world.user1Core.initializePlayer(...initArgs);
+      await world.user1Core.giveSpaceShips(SPAWN_PLANET_1.id);
+      await increaseBlockchainTime();
+
+      return world;
+    }
+    beforeEach('load fixture', async function () {
+      world = await fixtureLoader(worldFixture);
+    });
+
+    it('gives you 3 space ships', async function () {
+      expect((await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).length).to.be.equal(3);
+    });
+
+    it('gives you mothership', async function () {
+      const mothership = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
+        (a) => a.artifact.artifactType === ArtifactType.ShipMothership
+      )?.artifact;
+      expect(mothership).to.not.equal(undefined);
+    });
+
+    it('gives you whale', async function () {
+      const whale = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
+        (a) => a.artifact.artifactType === ArtifactType.ShipWhale
+      )?.artifact;
+      expect(whale).to.not.equal(undefined);
+    });
+
+    it('gives you crescent', async function () {
+      const crescent = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
+        (a) => a.artifact.artifactType === ArtifactType.ShipCrescent
+      )?.artifact;
+      expect(crescent).to.not.equal(undefined);
+    });
+
+    it('does not give you gear', async function () {
+      const gear = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
+        (a) => a.artifact.artifactType === ArtifactType.ShipGear
+      )?.artifact;
+      expect(gear).to.equal(undefined);
+    });
+
+    it('does not give you titan', async function () {
+      const titan = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
+        (a) => a.artifact.artifactType === ArtifactType.ShipTitan
+      )?.artifact;
+      expect(titan).to.equal(undefined);
     });
   });
 });
