@@ -258,7 +258,7 @@ struct ArenaAdminCreatePlanetArgs {
     bool isSpawnPlanet;
 }
 
-struct Multipliers {
+struct Modifiers {
     uint256 popCap;
     uint256 popGrowth;
     uint256 silverCap;

@@ -37,7 +37,7 @@ import {WithArenaStorage} from "./upgrades/LibArenaUpgradeStorage.sol";
 import {LibGameUtils} from "./libraries/LibGameUtils.sol";
 
 // Type imports
-import {PlanetDefaultStats, Upgrade, UpgradeBranch, Multipliers} from "./DFTypes.sol";
+import {PlanetDefaultStats, Upgrade, UpgradeBranch, Modifiers} from "./DFTypes.sol";
 
 struct InitArgs {
     bool START_PAUSED;
@@ -110,7 +110,7 @@ struct InitArgs {
     // Manual Spawn
     bool MANUAL_SPAWN;
 
-    Multipliers MULTIPLIERS;
+    Modifiers MODIFIERS;
 }
 
 contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
@@ -215,7 +215,7 @@ contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
             .TARGET_PLANET_HOLD_BLOCKS_REQUIRED;
         arenaConstants().MANUAL_SPAWN = initArgs.MANUAL_SPAWN;
 
-        arenaConstants().MULTIPLIERS = initArgs.MULTIPLIERS;
+        arenaConstants().MODIFIERS = initArgs.MODIFIERS;
         
         initializeDefaults();
         initializeUpgrades();
@@ -224,18 +224,18 @@ contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
 
     function initializeDefaults() public {
         PlanetDefaultStats[] storage planetDefaultStats = planetDefaultStats();
-        require ((75* arenaConstants().MULTIPLIERS.speed / 100) > 0, "cannot initialize planets with 0 speed");
+        require ((75* arenaConstants().MODIFIERS.speed / 100) > 0, "cannot initialize planets with 0 speed");
 
         planetDefaultStats.push(
             PlanetDefaultStats({
                 label: "Asteroid",
-                populationCap: (100000 * arenaConstants().MULTIPLIERS.popCap) / 100,
-                populationGrowth: (417 * arenaConstants().MULTIPLIERS.popGrowth) / 100,
-                range: (99* arenaConstants().MULTIPLIERS.range) / 100,
-                speed: (75* arenaConstants().MULTIPLIERS.speed) / 100,
-                defense: (400* arenaConstants().MULTIPLIERS.defense) / 100,
-                silverGrowth: (0* arenaConstants().MULTIPLIERS.silverGrowth) / 100,
-                silverCap: (0* arenaConstants().MULTIPLIERS.silverCap) / 100,
+                populationCap: (100000 * arenaConstants().MODIFIERS.popCap) / 100,
+                populationGrowth: (417 * arenaConstants().MODIFIERS.popGrowth) / 100,
+                range: (99* arenaConstants().MODIFIERS.range) / 100,
+                speed: (75* arenaConstants().MODIFIERS.speed) / 100,
+                defense: (400* arenaConstants().MODIFIERS.defense) / 100,
+                silverGrowth: (0* arenaConstants().MODIFIERS.silverGrowth) / 100,
+                silverCap: (0* arenaConstants().MODIFIERS.silverCap) / 100,
                 barbarianPercentage: 0
             })
         );
@@ -243,126 +243,126 @@ contract DFArenaUpgradeInitialize is WithStorage, WithArenaStorage {
         planetDefaultStats.push(
             PlanetDefaultStats({
                 label: "Brown Dwarf",
-                populationCap: (400000 * arenaConstants().MULTIPLIERS.popCap) / 100,
-                populationGrowth: (833 * arenaConstants().MULTIPLIERS.popGrowth) / 100,
-                range: (177* arenaConstants().MULTIPLIERS.range) / 100,
-                speed: (75* arenaConstants().MULTIPLIERS.speed) / 100,
-                defense: (400* arenaConstants().MULTIPLIERS.defense) / 100,
-                silverGrowth: (56* arenaConstants().MULTIPLIERS.silverGrowth) / 100,
-                silverCap: (100000* arenaConstants().MULTIPLIERS.silverCap) / 100,
-                barbarianPercentage: (1  * arenaConstants().MULTIPLIERS.barbarianPercentage) / 100
+                populationCap: (400000 * arenaConstants().MODIFIERS.popCap) / 100,
+                populationGrowth: (833 * arenaConstants().MODIFIERS.popGrowth) / 100,
+                range: (177* arenaConstants().MODIFIERS.range) / 100,
+                speed: (75* arenaConstants().MODIFIERS.speed) / 100,
+                defense: (400* arenaConstants().MODIFIERS.defense) / 100,
+                silverGrowth: (56* arenaConstants().MODIFIERS.silverGrowth) / 100,
+                silverCap: (100000* arenaConstants().MODIFIERS.silverCap) / 100,
+                barbarianPercentage: (1  * arenaConstants().MODIFIERS.barbarianPercentage) / 100
             })
         );
 
         planetDefaultStats.push(
             PlanetDefaultStats({
                 label: "Red Dwarf",
-                populationCap: (1600000 * arenaConstants().MULTIPLIERS.popCap) / 100,
-                populationGrowth: (1250 * arenaConstants().MULTIPLIERS.popGrowth) / 100,
-                range: (315* arenaConstants().MULTIPLIERS.range) / 100,
-                speed: (75* arenaConstants().MULTIPLIERS.speed) / 100,
-                defense: (300* arenaConstants().MULTIPLIERS.defense) / 100,
-                silverGrowth: (167* arenaConstants().MULTIPLIERS.silverGrowth) / 100,
-                silverCap: (500000* arenaConstants().MULTIPLIERS.silverCap) / 100,
-                barbarianPercentage: (2 * arenaConstants().MULTIPLIERS.barbarianPercentage) / 100
+                populationCap: (1600000 * arenaConstants().MODIFIERS.popCap) / 100,
+                populationGrowth: (1250 * arenaConstants().MODIFIERS.popGrowth) / 100,
+                range: (315* arenaConstants().MODIFIERS.range) / 100,
+                speed: (75* arenaConstants().MODIFIERS.speed) / 100,
+                defense: (300* arenaConstants().MODIFIERS.defense) / 100,
+                silverGrowth: (167* arenaConstants().MODIFIERS.silverGrowth) / 100,
+                silverCap: (500000* arenaConstants().MODIFIERS.silverCap) / 100,
+                barbarianPercentage: (2 * arenaConstants().MODIFIERS.barbarianPercentage) / 100
             })
         );
 
         planetDefaultStats.push(
             PlanetDefaultStats({
                 label: "White Dwarf",
-                populationCap: (6000000 * arenaConstants().MULTIPLIERS.popCap) / 100,
-                populationGrowth: (1667 * arenaConstants().MULTIPLIERS.popGrowth) / 100,
-                range: (591* arenaConstants().MULTIPLIERS.range) / 100,
-                speed: (75* arenaConstants().MULTIPLIERS.speed) / 100,
-                defense: (300* arenaConstants().MULTIPLIERS.defense) / 100,
-                silverGrowth: (417* arenaConstants().MULTIPLIERS.silverGrowth) / 100,
-                silverCap: (2500000* arenaConstants().MULTIPLIERS.silverCap) / 100,
-                barbarianPercentage: (3 * arenaConstants().MULTIPLIERS.barbarianPercentage) / 100
+                populationCap: (6000000 * arenaConstants().MODIFIERS.popCap) / 100,
+                populationGrowth: (1667 * arenaConstants().MODIFIERS.popGrowth) / 100,
+                range: (591* arenaConstants().MODIFIERS.range) / 100,
+                speed: (75* arenaConstants().MODIFIERS.speed) / 100,
+                defense: (300* arenaConstants().MODIFIERS.defense) / 100,
+                silverGrowth: (417* arenaConstants().MODIFIERS.silverGrowth) / 100,
+                silverCap: (2500000* arenaConstants().MODIFIERS.silverCap) / 100,
+                barbarianPercentage: (3 * arenaConstants().MODIFIERS.barbarianPercentage) / 100
             })
         );
 
         planetDefaultStats.push(
             PlanetDefaultStats({
                 label: "Yellow Star",
-                populationCap: (25000000 * arenaConstants().MULTIPLIERS.popCap) / 100,
-                populationGrowth: (2083 * arenaConstants().MULTIPLIERS.popGrowth) / 100,
-                range: (1025* arenaConstants().MULTIPLIERS.range) / 100,
-                speed: (75* arenaConstants().MULTIPLIERS.speed) / 100,
-                defense: (300* arenaConstants().MULTIPLIERS.defense) / 100,
-                silverGrowth: (833* arenaConstants().MULTIPLIERS.silverGrowth) / 100,
-                silverCap: (12000000* arenaConstants().MULTIPLIERS.silverCap) / 100,
-                barbarianPercentage: (4 * arenaConstants().MULTIPLIERS.barbarianPercentage) / 100
+                populationCap: (25000000 * arenaConstants().MODIFIERS.popCap) / 100,
+                populationGrowth: (2083 * arenaConstants().MODIFIERS.popGrowth) / 100,
+                range: (1025* arenaConstants().MODIFIERS.range) / 100,
+                speed: (75* arenaConstants().MODIFIERS.speed) / 100,
+                defense: (300* arenaConstants().MODIFIERS.defense) / 100,
+                silverGrowth: (833* arenaConstants().MODIFIERS.silverGrowth) / 100,
+                silverCap: (12000000* arenaConstants().MODIFIERS.silverCap) / 100,
+                barbarianPercentage: (4 * arenaConstants().MODIFIERS.barbarianPercentage) / 100
             })
         );
 
         planetDefaultStats.push(
             PlanetDefaultStats({
                 label: "Blue Star",
-                populationCap: (100000000 * arenaConstants().MULTIPLIERS.popCap) / 100,
-                populationGrowth: (2500 * arenaConstants().MULTIPLIERS.popGrowth) / 100,
-                range: (1734* arenaConstants().MULTIPLIERS.range) / 100,
-                speed: (75* arenaConstants().MULTIPLIERS.speed) / 100,
-                defense: (200* arenaConstants().MULTIPLIERS.defense) / 100,
-                silverGrowth: (1667* arenaConstants().MULTIPLIERS.silverGrowth) / 100,
-                silverCap: (50000000* arenaConstants().MULTIPLIERS.silverCap) / 100,
-                barbarianPercentage: (5 * arenaConstants().MULTIPLIERS.barbarianPercentage) / 100
+                populationCap: (100000000 * arenaConstants().MODIFIERS.popCap) / 100,
+                populationGrowth: (2500 * arenaConstants().MODIFIERS.popGrowth) / 100,
+                range: (1734* arenaConstants().MODIFIERS.range) / 100,
+                speed: (75* arenaConstants().MODIFIERS.speed) / 100,
+                defense: (200* arenaConstants().MODIFIERS.defense) / 100,
+                silverGrowth: (1667* arenaConstants().MODIFIERS.silverGrowth) / 100,
+                silverCap: (50000000* arenaConstants().MODIFIERS.silverCap) / 100,
+                barbarianPercentage: (5 * arenaConstants().MODIFIERS.barbarianPercentage) / 100
             })
         );
 
         planetDefaultStats.push(
             PlanetDefaultStats({
                 label: "Giant",
-                populationCap: (300000000 * arenaConstants().MULTIPLIERS.popCap) / 100,
-                populationGrowth: (2917 * arenaConstants().MULTIPLIERS.popGrowth) / 100,
-                range: (2838* arenaConstants().MULTIPLIERS.range) / 100,
-                speed: (75* arenaConstants().MULTIPLIERS.speed) / 100,
-                defense: (200* arenaConstants().MULTIPLIERS.defense) / 100,
-                silverGrowth: (2778* arenaConstants().MULTIPLIERS.silverGrowth) / 100,
-                silverCap: (100000000* arenaConstants().MULTIPLIERS.silverCap) / 100,
-                barbarianPercentage: (7 * arenaConstants().MULTIPLIERS.barbarianPercentage) / 100
+                populationCap: (300000000 * arenaConstants().MODIFIERS.popCap) / 100,
+                populationGrowth: (2917 * arenaConstants().MODIFIERS.popGrowth) / 100,
+                range: (2838* arenaConstants().MODIFIERS.range) / 100,
+                speed: (75* arenaConstants().MODIFIERS.speed) / 100,
+                defense: (200* arenaConstants().MODIFIERS.defense) / 100,
+                silverGrowth: (2778* arenaConstants().MODIFIERS.silverGrowth) / 100,
+                silverCap: (100000000* arenaConstants().MODIFIERS.silverCap) / 100,
+                barbarianPercentage: (7 * arenaConstants().MODIFIERS.barbarianPercentage) / 100
             })
         );
 
         planetDefaultStats.push(
             PlanetDefaultStats({
                 label: "Supergiant",
-                populationCap: (500000000 * arenaConstants().MULTIPLIERS.popCap) / 100,
-                populationGrowth: (3333 * arenaConstants().MULTIPLIERS.popGrowth) / 100,
-                range: (4414* arenaConstants().MULTIPLIERS.range) / 100,
-                speed: (75* arenaConstants().MULTIPLIERS.speed) / 100,
-                defense: (200* arenaConstants().MULTIPLIERS.defense) / 100,
-                silverGrowth: (2778* arenaConstants().MULTIPLIERS.silverGrowth) / 100,
-                silverCap: (200000000* arenaConstants().MULTIPLIERS.silverCap) / 100,
-                barbarianPercentage: (10 * arenaConstants().MULTIPLIERS.barbarianPercentage) / 100
+                populationCap: (500000000 * arenaConstants().MODIFIERS.popCap) / 100,
+                populationGrowth: (3333 * arenaConstants().MODIFIERS.popGrowth) / 100,
+                range: (4414* arenaConstants().MODIFIERS.range) / 100,
+                speed: (75* arenaConstants().MODIFIERS.speed) / 100,
+                defense: (200* arenaConstants().MODIFIERS.defense) / 100,
+                silverGrowth: (2778* arenaConstants().MODIFIERS.silverGrowth) / 100,
+                silverCap: (200000000* arenaConstants().MODIFIERS.silverCap) / 100,
+                barbarianPercentage: (10 * arenaConstants().MODIFIERS.barbarianPercentage) / 100
             })
         );
 
         planetDefaultStats.push(
             PlanetDefaultStats({
                 label: "Unlabeled1",
-                populationCap: (700000000 * arenaConstants().MULTIPLIERS.popCap) / 100,
-                populationGrowth: (3750 * arenaConstants().MULTIPLIERS.popGrowth) / 100,
-                range: (6306* arenaConstants().MULTIPLIERS.range) / 100,
-                speed: (75* arenaConstants().MULTIPLIERS.speed) / 100,
-                defense: (200* arenaConstants().MULTIPLIERS.defense) / 100,
-                silverGrowth: (2778* arenaConstants().MULTIPLIERS.silverGrowth) / 100,
-                silverCap: (300000000* arenaConstants().MULTIPLIERS.silverCap) / 100,
-                barbarianPercentage: (20 * arenaConstants().MULTIPLIERS.barbarianPercentage) / 100
+                populationCap: (700000000 * arenaConstants().MODIFIERS.popCap) / 100,
+                populationGrowth: (3750 * arenaConstants().MODIFIERS.popGrowth) / 100,
+                range: (6306* arenaConstants().MODIFIERS.range) / 100,
+                speed: (75* arenaConstants().MODIFIERS.speed) / 100,
+                defense: (200* arenaConstants().MODIFIERS.defense) / 100,
+                silverGrowth: (2778* arenaConstants().MODIFIERS.silverGrowth) / 100,
+                silverCap: (300000000* arenaConstants().MODIFIERS.silverCap) / 100,
+                barbarianPercentage: (20 * arenaConstants().MODIFIERS.barbarianPercentage) / 100
             })
         );
 
         planetDefaultStats.push(
             PlanetDefaultStats({
                 label: "Unlabeled2",
-                populationCap: (800000000 * arenaConstants().MULTIPLIERS.popCap) / 100,
-                populationGrowth: (4167 * arenaConstants().MULTIPLIERS.popGrowth) / 100,
-                range: (8829* arenaConstants().MULTIPLIERS.range) / 100,
-                speed: (75* arenaConstants().MULTIPLIERS.speed) / 100,
-                defense: (200* arenaConstants().MULTIPLIERS.defense) / 100,
-                silverGrowth: (2778* arenaConstants().MULTIPLIERS.silverGrowth) / 100,
-                silverCap: (400000000* arenaConstants().MULTIPLIERS.silverCap) / 100,
-                barbarianPercentage: (25 * arenaConstants().MULTIPLIERS.barbarianPercentage) / 100
+                populationCap: (800000000 * arenaConstants().MODIFIERS.popCap) / 100,
+                populationGrowth: (4167 * arenaConstants().MODIFIERS.popGrowth) / 100,
+                range: (8829* arenaConstants().MODIFIERS.range) / 100,
+                speed: (75* arenaConstants().MODIFIERS.speed) / 100,
+                defense: (200* arenaConstants().MODIFIERS.defense) / 100,
+                silverGrowth: (2778* arenaConstants().MODIFIERS.silverGrowth) / 100,
+                silverCap: (400000000* arenaConstants().MODIFIERS.silverCap) / 100,
+                barbarianPercentage: (25 * arenaConstants().MODIFIERS.barbarianPercentage) / 100
             })
         );
     }

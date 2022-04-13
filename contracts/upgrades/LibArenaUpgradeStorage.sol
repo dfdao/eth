@@ -15,7 +15,7 @@ import {
     Artifact,
     ArenaPlanetInfo,
     ArenaPlayerInfo,
-    Multipliers
+    Modifiers
 } from "../DFTypes.sol";
 
 struct ArenaStorage {
@@ -36,7 +36,7 @@ struct ArenaConstants {
 
     bytes32 CONFIG_HASH;
 
-    Multipliers MULTIPLIERS;
+    Modifiers MODIFIERS;
 }
 
 library LibArenaStorage {

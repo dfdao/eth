@@ -5,9 +5,6 @@ import * as settings from '../settings';
 import { DiamondChanges } from '../utils/diamond';
 
 import { deployDiamond, deployContract, saveDeploy } from '../utils/deploy';
-import { cutUpgradesFromLobby } from './arena-upgrade';
-import { DarkForest } from '@darkforest_eth/contracts/typechain';
-import { EthAddress } from '@darkforest_eth/types';
 
 task('arena:deploy', 'deploy all arena contracts')
   .addOptionalParam('whitelist', 'override the whitelist', undefined, types.boolean)
