@@ -8,7 +8,7 @@ import { deployDiamond, deployContract, saveDeploy } from '../utils/deploy';
 
 task('arena:deploy', 'deploy all arena contracts')
   .addOptionalParam('whitelist', 'override the whitelist', undefined, types.boolean)
-  .addOptionalParam('fund', 'amount of eth to fund whitelist contract for fund', 0.5, types.float)
+  .addOptionalParam('fund', 'amount of eth to fund whitelist contract for fund', 0, types.float)
   .addOptionalParam(
     'subgraph',
     'bring up subgraph with name (requires docker)',
@@ -54,39 +54,41 @@ async function deploy(
     );
   }
 
-  const [diamond, diamondInit, initReceipt] = await deployAndCut(
+  const [diamond, diamondInit, initReceipt] = await deployAndCutArena(
     { ownerAddress: deployer.address, whitelistEnabled, initializers: hre.initializers },
     hre
   );
 
-  // Note Ive seen `ProviderError: Internal error` when not enough money...
-  console.log(`funding whitelist with ${args.fund}`);
+  if (args.fund > 0) {
+    // Note Ive seen `ProviderError: Internal error` when not enough money...
+    console.log(`funding whitelist with ${args.fund}`);
 
-  const tx = await deployer.sendTransaction({
-    to: diamond.address,
-    value: hre.ethers.utils.parseEther(args.fund.toString()),
-  });
-  await tx.wait();
-
-  console.log(
-    `Sent ${args.fund} to diamond contract (${diamond.address}) to fund drips in whitelist facet`
-  );
-
-  // give all contract administration over to an admin adress if was provided
-  if (hre.ADMIN_PUBLIC_ADDRESS) {
-    const ownership = await hre.ethers.getContractAt('DarkForest', diamond.address);
-    const tx = await ownership.transferOwnership(hre.ADMIN_PUBLIC_ADDRESS);
+    const tx = await deployer.sendTransaction({
+      to: diamond.address,
+      value: hre.ethers.utils.parseEther(args.fund.toString()),
+    });
     await tx.wait();
-    console.log(`transfered diamond ownership to ${hre.ADMIN_PUBLIC_ADDRESS}`);
-  }
 
-  if (args.subgraph) {
-    await hre.run('subgraph:deploy', { name: args.subgraph });
-    console.log('deployed subgraph');
-  }
+    console.log(
+      `Sent ${args.fund} to diamond contract (${diamond.address}) to fund drips in whitelist facet`
+    );
 
-  const whitelistBalance = await hre.ethers.provider.getBalance(diamond.address);
-  console.log(`Whitelist balance ${whitelistBalance}`);
+    // give all contract administration over to an admin adress if was provided
+    if (hre.ADMIN_PUBLIC_ADDRESS) {
+      const ownership = await hre.ethers.getContractAt('DarkForest', diamond.address);
+      const tx = await ownership.transferOwnership(hre.ADMIN_PUBLIC_ADDRESS);
+      await tx.wait();
+      console.log(`transfered diamond ownership to ${hre.ADMIN_PUBLIC_ADDRESS}`);
+    }
+
+    if (args.subgraph) {
+      await hre.run('subgraph:deploy', { name: args.subgraph });
+      console.log('deployed subgraph');
+    }
+
+    const whitelistBalance = await hre.ethers.provider.getBalance(diamond.address);
+    console.log(`Whitelist balance ${whitelistBalance}`);
+  }
 
   // TODO: Upstream change to update task name from `hardhat-4byte-uploader`
   if (!isDev) {
@@ -101,7 +103,7 @@ async function deploy(
   console.log('Deployed successfully. Godspeed cadet.');
 }
 
-export async function deployAndCut(
+export async function deployAndCutArena(
   {
     ownerAddress,
     whitelistEnabled,
@@ -217,7 +219,7 @@ export async function deployAndCut(
   }
   console.log('Completed diamond cut');
 
-  const [upgradedDiamond, upgradedDiamondInit, upgradedInitReceipt] = await cutUpgrades(
+  const [arenaDiamond, arenaDiamondInit, arenaDiamondInitReceipt] = await cutArena(
     diamond.address,
     hre,
     { LibGameUtils, LibPlanet, LibArtifactUtils, Verifier },
@@ -228,18 +230,18 @@ export async function deployAndCut(
   await saveDeploy(
     {
       coreBlockNumber: initReceipt.blockNumber,
-      diamondAddress: diamond.address,
-      initAddress: diamondInit.address,
+      diamondAddress: arenaDiamond.address,
+      initAddress: arenaDiamondInit.address,
       libraries: { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet },
     },
     hre
   );
 
-  return [upgradedDiamond, upgradedDiamondInit, upgradedInitReceipt] as const;
+  return [arenaDiamond, arenaDiamondInit, arenaDiamondInitReceipt] as const;
 }
 
-async function cutUpgrades(
-  diamondAddress : string,
+export async function cutArena(
+  diamondAddress: string,
   hre: HardhatRuntimeEnvironment,
   { LibGameUtils, LibPlanet, LibArtifactUtils, Verifier }: Libraries,
   whitelistEnabled: boolean,
@@ -255,7 +257,7 @@ async function cutUpgrades(
   const arenaCoreFacet = await deployContract('DFArenaCoreFacet', { LibGameUtils, LibPlanet }, hre);
   const arenaGetterFacet = await deployContract('DFArenaGetterFacet', {}, hre);
 
-  const darkForestFacetCuts = [
+  const arenaFacetCuts = [
     ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
     ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
   ];
@@ -269,12 +271,12 @@ async function cutUpgrades(
     initializers,
   ]);
 
-  const initTx = await diamondCut.diamondCut(darkForestFacetCuts, initAddress, initFunctionCall);
+  const initTx = await diamondCut.diamondCut(arenaFacetCuts, initAddress, initFunctionCall);
   const initReceipt = await initTx.wait();
   if (!initReceipt.status) {
     throw Error(`Diamond cut failed: ${initTx.hash}`);
   }
-  console.log('Completed diamond cut');
+  console.log('Completed diamond cut of Arena facets');
 
   return [diamond, diamondInit, initReceipt] as const;
 }

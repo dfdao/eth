@@ -298,7 +298,7 @@ export async function deployAndCut(
   }
   console.log('Completed diamond cut');
 
-  return [diamond, diamondInit, initReceipt] as const;
+  return [diamondCut, diamondInit, initReceipt] as const;
 }
 
 export async function deployGetterFacet(

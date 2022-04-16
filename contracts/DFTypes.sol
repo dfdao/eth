@@ -268,3 +268,14 @@ struct Modifiers {
     uint256 defense;
     uint256 barbarianPercentage;
 }
+
+enum Mod {
+    popCap,
+    popGrowth,
+    silverCap,
+    silverGrowth,
+    range,
+    speed,
+    defense,
+    barbarianPercentage
+}

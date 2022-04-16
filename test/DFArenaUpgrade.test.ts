@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { fixtureLoader, makeInitArgs, makeMoveArgs, makeRevealArgs } from './utils/TestUtils';
-import { baseWorldFixture, World } from './utils/TestWorld';
+import { defaultWorldFixture, World } from './utils/TestWorld';
 import { ADMIN_PLANET_CLOAKED, arenaWorldInitializers, initializers, LVL2_PLANET_SPACE, SPAWN_PLANET_1, VALID_INIT_PERLIN } from './utils/WorldConstants';
 import hre from 'hardhat';
 import { DarkForest, LobbyCreatedEvent } from '@darkforest_eth/contracts/typechain/DarkForest';
@@ -20,7 +20,7 @@ describe('Arena Upgrade', function () {
     let lobby: DarkForest;
 
     before('load fixture', async function () {
-      world = await fixtureLoader(baseWorldFixture);
+      world = await fixtureLoader(defaultWorldFixture);
     });
 
     it.skip('Arena function on Diamond does not exist', async function () {
@@ -144,7 +144,7 @@ describe('Arena Upgrade', function () {
     let lobby: DarkForest;
 
     before('load fixture', async function () {
-      world = await fixtureLoader(baseWorldFixture);
+      world = await fixtureLoader(defaultWorldFixture);
     });
 
     it('creates a new lobby with msg.sender as owner', async function () {

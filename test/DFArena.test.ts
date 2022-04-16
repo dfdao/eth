@@ -386,8 +386,7 @@ describe('Arena Functions', function () {
     });
   });
 
-  
-  describe('Planet Constants Modifiers', function () {
+  describe.only('Planet Constants Modifiers', function () {
     let defaultWorld: World;
     let nerfedWorld: World;
     let buffedWorld: World;
@@ -396,13 +395,15 @@ describe('Arena Functions', function () {
       nerfedWorld = await fixtureLoader(() => modifiedWorldFixture(50));
     });
     it('initializes planets with modifiers', async function () {
-      defaultWorld = await fixtureLoader(defaultWorldFixture);
+      defaultWorld = await fixtureLoader(arenaWorldFixture);
+
+      console.log(`buffed constants`, (await buffedWorld.contract.getArenaConstants()).MODIFIERS);
 
       const perlin = 20;
       const level = 5;
       const planetType = 1; // asteroid field
 
-      await defaultWorld.contract.createArenaPlanet({
+      const defaultPlanet = await defaultWorld.contract.createArenaPlanet({
         location: LVL1_ASTEROID_1.id,
         perlin,
         level,
@@ -412,7 +413,9 @@ describe('Arena Functions', function () {
         isSpawnPlanet: false,
       });
 
-      await buffedWorld.contract.createArenaPlanet({
+      await defaultPlanet.wait();
+
+      const buffedPlanet = await buffedWorld.contract.createArenaPlanet({
         location: LVL1_ASTEROID_1.id,
         perlin,
         level,
@@ -422,7 +425,9 @@ describe('Arena Functions', function () {
         isSpawnPlanet: false,
       });
 
-      await nerfedWorld.contract.createArenaPlanet({
+      await buffedPlanet.wait();
+
+      const nerfedPlanet = await nerfedWorld.contract.createArenaPlanet({
         location: LVL1_ASTEROID_1.id,
         perlin,
         level,
@@ -431,16 +436,21 @@ describe('Arena Functions', function () {
         isTargetPlanet: false,
         isSpawnPlanet: false,
       });
+
+      await nerfedPlanet.wait();
 
       const defaultPlanetData = await defaultWorld.contract.planets(LVL1_ASTEROID_1.id);
+      console.log('here')
       const buffedPlanetData = await buffedWorld.contract.planets(LVL1_ASTEROID_1.id);
+      console.log('here1')
       const nerfedPlanetData = await nerfedWorld.contract.planets(LVL1_ASTEROID_1.id);
+      console.log('here2')
 
       console.log(`
         default: ${defaultPlanetData.populationCap.toNumber()}, 
         buffed: ${buffedPlanetData.populationCap.toNumber()},
         nerfed: ${nerfedPlanetData.populationCap.toNumber()}
-      `)
+      `);
       expect(buffedPlanetData.populationCap.toNumber())
         .to.be.approximately(defaultPlanetData.populationCap.toNumber() * 2, 5)
         .to.be.approximately(nerfedPlanetData.populationCap.toNumber() * 4, 5);

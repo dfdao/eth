@@ -161,7 +161,7 @@ export async function createLobby(
   const rc = await arenaTx.wait();
   // @ts-expect-error
   const event = rc.events.find((event) => event.event === 'LobbyCreated');
-  // @ts-expect-errorq
+  // @ts-expect-error
   const lobbyAddress = event.args.lobbyAddress as string;
   return hre.ethers.getContractAt('DarkForest', lobbyAddress);
 }
