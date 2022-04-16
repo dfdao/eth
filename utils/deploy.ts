@@ -5,50 +5,50 @@ import { tscompile } from '../utils/tscompile';
 import { HardhatRuntimeEnvironment, Libraries } from 'hardhat/types';
 
 export async function deployDiamond(
-    {
-      ownerAddress,
-      diamondCutAddress,
-    }: {
-      ownerAddress: string;
-      diamondCutAddress: string;
-    },
-    {}: Libraries,
-    hre: HardhatRuntimeEnvironment
-  ) {
-    const factory = await hre.ethers.getContractFactory('Diamond');
-    const contract = await factory.deploy(ownerAddress, diamondCutAddress);
-    await contract.deployTransaction.wait();
-    console.log(`Diamond deployed to: ${contract.address}`);
-    return contract;
-  }
-  
-  export async function deployContract(
-    facetName: string,
-    libraries: Libraries,
-    hre: HardhatRuntimeEnvironment
-  ) {
-    const factory = await hre.ethers.getContractFactory(facetName, {
-      libraries,
-    });
-    const contract = await factory.deploy();
-    await contract.deployTransaction.wait();
-    console.log(`${facetName} deployed to: ${contract.address}`);
-    return contract;
-  }
-  
-  export async function saveDeploy(
-    args: {
-      coreBlockNumber: number;
-      diamondAddress: string;
-      initAddress: string;
-      libraries: Libraries;
-    },
-    hre: HardhatRuntimeEnvironment
-  ) {
-    const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
-  
-    // Save the addresses of the deployed contracts to the `@darkforest_eth/contracts` package
-    const tsContents = `
+  {
+    ownerAddress,
+    diamondCutAddress,
+  }: {
+    ownerAddress: string;
+    diamondCutAddress: string;
+  },
+  {}: Libraries,
+  hre: HardhatRuntimeEnvironment
+) {
+  const factory = await hre.ethers.getContractFactory('Diamond');
+  const contract = await factory.deploy(ownerAddress, diamondCutAddress);
+  await contract.deployTransaction.wait();
+  console.log(`Diamond deployed to: ${contract.address}`);
+  return contract;
+}
+
+export async function deployContract(
+  facetName: string,
+  libraries: Libraries,
+  hre: HardhatRuntimeEnvironment
+) {
+  const factory = await hre.ethers.getContractFactory(facetName, {
+    libraries,
+  });
+  const contract = await factory.deploy();
+  await contract.deployTransaction.wait();
+  console.log(`${facetName} deployed to: ${contract.address}`);
+  return contract;
+}
+
+export async function saveDeploy(
+  args: {
+    coreBlockNumber: number;
+    diamondAddress: string;
+    initAddress: string;
+    libraries: Libraries;
+  },
+  hre: HardhatRuntimeEnvironment
+) {
+  const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
+
+  // Save the addresses of the deployed contracts to the `@darkforest_eth/contracts` package
+  const tsContents = `
     /**
      * This package contains deployed contract addresses, ABIs, and Typechain types
      * for the Dark Forest game.
@@ -119,26 +119,49 @@ export async function deployDiamond(
      */
     export const LIB_ARTIFACT_UTILS_ADDRESS = '${args.libraries.LibArtifactUtils}';
     `;
-  
-    const { jsContents, dtsContents } = tscompile(tsContents);
-  
-    const contractsFileTS = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'index.ts');
-    const contractsFileJS = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'index.js');
-    const contractsFileDTS = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'index.d.ts');
-  
-    const options = prettier.resolveConfig.sync(contractsFileTS);
-  
-    fs.writeFileSync(
-      contractsFileTS,
-      prettier.format(tsContents, { ...options, parser: 'babel-ts' })
-    );
-    fs.writeFileSync(
-      contractsFileJS,
-      prettier.format(jsContents, { ...options, parser: 'babel-ts' })
-    );
-    fs.writeFileSync(
-      contractsFileDTS,
-      prettier.format(dtsContents, { ...options, parser: 'babel-ts' })
-    );
-  }
-  
+
+  const { jsContents, dtsContents } = tscompile(tsContents);
+
+  const contractsFileTS = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'index.ts');
+  const contractsFileJS = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'index.js');
+  const contractsFileDTS = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'index.d.ts');
+
+  const options = prettier.resolveConfig.sync(contractsFileTS);
+
+  fs.writeFileSync(
+    contractsFileTS,
+    prettier.format(tsContents, { ...options, parser: 'babel-ts' })
+  );
+  fs.writeFileSync(
+    contractsFileJS,
+    prettier.format(jsContents, { ...options, parser: 'babel-ts' })
+  );
+  fs.writeFileSync(
+    contractsFileDTS,
+    prettier.format(dtsContents, { ...options, parser: 'babel-ts' })
+  );
+}
+
+export async function createLobby(
+  diamondAddress: string,
+  diamondInitAddress: string,
+  initializers: HardhatRuntimeEnvironment['initializers'],
+  whitelistEnabled: boolean,
+  hre: HardhatRuntimeEnvironment
+): Promise<any> {
+  const diamond = await hre.ethers.getContractAt('DarkForest', diamondAddress);
+  const diamondInit = await hre.ethers.getContractAt('DFArenaInitialize', diamondInitAddress);
+  const diamondInitFunctionCall = diamondInit.interface.encodeFunctionData('init', [
+    whitelistEnabled,
+    '',
+    initializers,
+  ]);
+
+  const arenaTx = await diamond.createLobby(diamondInit.address, diamondInitFunctionCall);
+  const rc = await arenaTx.wait();
+  // @ts-expect-error
+  const event = rc.events.find((event) => event.event === 'LobbyCreated');
+  // @ts-expect-errorq
+  const lobbyAddress = event.args.lobbyAddress as string;
+  return hre.ethers.getContractAt('DarkForest', lobbyAddress);
+}
