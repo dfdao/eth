@@ -248,7 +248,28 @@ export async function cutArena(
   tokenBaseUri: string,
   initializers: HardhatRuntimeEnvironment['initializers']
 ) {
-  const diamond = await hre.ethers.getContractAt('DarkForest', diamondAddress);
+
+  const origDiamond = await hre.ethers.getContractAt('DarkForest', diamondAddress);
+
+  const lobbyInitAddress = hre.ethers.constants.AddressZero;
+  const lobbyInitFunctionCall = '0x';
+
+  // Make Lobby
+  const tx = await origDiamond.createLobby(lobbyInitAddress, lobbyInitFunctionCall);
+  const rc = await tx.wait();
+  if (!rc.events) throw Error('No event occurred');
+
+  const event = rc.events.find((event) => event.event === 'LobbyCreated');
+  if (!event) throw Error('No event found');
+  // @ts-expect-error because event is type unknown
+
+  const lobbyAddress = event.args.lobbyAddress;
+
+  if (!lobbyAddress) throw Error('No lobby address found');
+
+  console.log(`lobby Diamond created at ${lobbyAddress}`);
+
+  const diamond = await hre.ethers.getContractAt('DarkForest', lobbyAddress);
 
   const prevFacets = await diamond.facets();
 

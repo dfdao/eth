@@ -118,21 +118,13 @@ export async function initializeWorld({
 
   let contract: DarkForest;
 
-  if (arena) {
-    console.log(`deploying arena`);
-    const [diamond, diamondInit] = await deployAndCutArena(
-      { ownerAddress: deployer.address, whitelistEnabled, initializers },
-      hre
-    );
-    contract = await createLobby(diamond.address, diamondInit.address, initializers, whitelistEnabled, hre);
+  let deploy = arena ? deployAndCutArena : deployAndCut;
 
-  } else {
-    const [diamond, diamondInit] = await deployAndCut(
-      { ownerAddress: deployer.address, whitelistEnabled, initializers },
-      hre
-    );
-    contract = diamond;
-  }
+  const [diamond, diamondInit] = await deploy(
+    { ownerAddress: deployer.address, whitelistEnabled, initializers },
+    hre
+  );
+  contract = diamond;
 
   await deployer.sendTransaction({
     to: contract.address,
