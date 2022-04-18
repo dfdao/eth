@@ -38,7 +38,7 @@ import {LibGameUtils} from "./libraries/LibGameUtils.sol";
 
 
 // Type imports
-import {PlanetDefaultStats, Upgrade, UpgradeBranch, Modifiers, Mod} from "./DFTypes.sol";
+import {PlanetDefaultStats, Upgrade, UpgradeBranch, Modifiers, Mod, Spaceships} from "./DFTypes.sol";
 
 struct InitArgs {
     bool START_PAUSED;

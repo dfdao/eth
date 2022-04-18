@@ -1,20 +1,19 @@
-import type { DarkForest, DFArenaInitialize, DFInitialize } from '@darkforest_eth/contracts/typechain';
+import type { DarkForest } from '@darkforest_eth/contracts/typechain';
 import type { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 import { BigNumber, utils } from 'ethers';
 import hre from 'hardhat';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { deployAndCut } from '../../tasks/deploy';
 import { deployAndCutArena } from '../../tasks/arena-deploy';
-import { createLobby } from '../../utils/deploy'
-
+import { deployAndCut } from '../../tasks/deploy';
 import {
   arenaWorldInitializers,
   initializers,
   manualSpawnInitializers,
   noPlanetTransferInitializers,
   target4Initializers,
-  targetPlanetInitializers,
+  targetPlanetInitializers
 } from './WorldConstants';
+
 
 export interface World {
   contract: DarkForest;
@@ -104,17 +103,11 @@ export function modifiedWorldFixture(mod: number): Promise<World> {
   });
 }
 
-export function modifiedWorldFixture(mod: number): Promise<World> {
-  return initializeWorld({
-    initializers: { ...initializers, MODIFIERS: [mod, mod, mod, mod, mod, mod, mod, mod] },
-    whitelistEnabled: false,
-  });
-}
-
 export function spaceshipWorldFixture(spaceships: [boolean, boolean, boolean, boolean, boolean]): Promise<World> {
   return initializeWorld({
     initializers: { ...initializers, SPACESHIPS: spaceships },
     whitelistEnabled: false,
+    arena: true
   });
 }
 

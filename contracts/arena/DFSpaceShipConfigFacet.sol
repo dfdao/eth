@@ -4,16 +4,16 @@ pragma solidity ^0.8.0;
 // External contract imports
 import {DFWhitelistFacet} from "../facets/DFWhitelistFacet.sol";
 import {DFArtifactFacet} from "../facets/DFArtifactFacet.sol";
-import {LibDiamond} from "../vendor/libraries/LibDiamond.sol";
 
 // Library imports
 import {ArenaConstants, WithArenaStorage} from "../libraries/LibArenaStorage.sol";
 import {WithStorage} from "../libraries/LibStorage.sol";
 import {LibGameUtils} from "../libraries/LibGameUtils.sol";
+import {LibDiamond} from "../vendor/libraries/LibDiamond.sol";
 // Type imports
 import { ArtifactType, DFTCreateArtifactArgs, ArtifactRarity, Artifact, Biome, Spaceships} from "../DFTypes.sol";
 
-contract DFSpaceShipConfigFacet is WithStorage, WithArenaStorage {
+contract DFSpaceshipConfigFacet is WithStorage, WithArenaStorage {
     event ArtifactFound(address player, uint256 artifactId, uint256 loc);
 
     modifier onlyWhitelisted() {
