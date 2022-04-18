@@ -1,10 +1,10 @@
 import { task, types } from 'hardhat/config';
 import type { HardhatRuntimeEnvironment, Libraries } from 'hardhat/types';
-
 import * as settings from '../settings';
+import { deployContract, deployDiamond, saveDeploy } from '../utils/deploy';
 import { DiamondChanges } from '../utils/diamond';
 
-import { deployDiamond, deployContract, saveDeploy } from '../utils/deploy';
+
 
 task('arena:deploy', 'deploy all arena contracts')
   .addOptionalParam('whitelist', 'override the whitelist', undefined, types.boolean)

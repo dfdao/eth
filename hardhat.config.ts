@@ -41,8 +41,8 @@ const { DEPLOYER_MNEMONIC, ADMIN_PUBLIC_ADDRESS } = process.env;
 const AbiItemsToIgnore = [
   {
     facet: 'DFCoreFacet',
-    functions: ['initializePlayer'],
-    events: ['PlayerInitialized'],
+    functions: ['initializePlayer', 'giveSpaceShips'],
+    events: ['PlayerInitialized', 'ArtifactFound'],
   },
   {
     facet: 'DFAdminFacet',

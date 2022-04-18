@@ -15,7 +15,8 @@ import {
     Artifact,
     ArenaPlanetInfo,
     ArenaPlayerInfo,
-    Modifiers
+    Modifiers,
+    Spaceships
 } from "../DFTypes.sol";
 
 struct ArenaStorage {
@@ -37,6 +38,7 @@ struct ArenaConstants {
     bytes32 CONFIG_HASH;
 
     Modifiers MODIFIERS;
+    Spaceships SPACESHIPS;
 }
 
 library LibArenaStorage {

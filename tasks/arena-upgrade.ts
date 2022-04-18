@@ -1,9 +1,9 @@
+import { Contract } from 'ethers';
 import { task } from 'hardhat/config';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { deployContract, saveDeploy } from '../utils/deploy';
 import { DiamondChanges } from '../utils/diamond';
 
-import { deployContract, saveDeploy } from '../utils/deploy';
-import { Contract } from 'ethers';
 
 task('arena:upgrade', 'upgrade a lobby from the command line').setAction(deployUpgrades);
 

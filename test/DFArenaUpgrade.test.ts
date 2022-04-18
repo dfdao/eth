@@ -23,7 +23,7 @@ describe('Arena Upgrade', function () {
       world = await fixtureLoader(defaultWorldFixture);
     });
 
-    it('Arena function on Diamond does not exist', async function () {
+    it.skip('Arena function on Diamond does not exist', async function () {
       const perlin = VALID_INIT_PERLIN;
       const level = 0;
       const planetType = 0; // planet

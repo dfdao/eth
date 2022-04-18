@@ -104,6 +104,20 @@ export function modifiedWorldFixture(mod: number): Promise<World> {
   });
 }
 
+export function modifiedWorldFixture(mod: number): Promise<World> {
+  return initializeWorld({
+    initializers: { ...initializers, MODIFIERS: [mod, mod, mod, mod, mod, mod, mod, mod] },
+    whitelistEnabled: false,
+  });
+}
+
+export function spaceshipWorldFixture(spaceships: [boolean, boolean, boolean, boolean, boolean]): Promise<World> {
+  return initializeWorld({
+    initializers: { ...initializers, SPACESHIPS: spaceships },
+    whitelistEnabled: false,
+  });
+}
+
 export async function initializeWorld({
   initializers,
   whitelistEnabled,
