@@ -8,6 +8,7 @@ import { Contract } from 'ethers';
 task('arena:upgrade', 'upgrade a lobby from the command line').setAction(deployUpgrades);
 
 export async function deployUpgrades({}, hre: HardhatRuntimeEnvironment) {
+  await hre.run('utils:assertChainId');
   console.log('creating lobby and cutting arena facets');
   const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
 
@@ -64,16 +65,25 @@ export async function cutUpgradesFromLobby(
 
   const changes = new DiamondChanges(prevFacets);
 
-  const Verifier = hre.contracts.VERIFIER_ADDRESS;
-  const LibGameUtils = hre.contracts.LIB_GAME_UTILS_ADDRESS;
-  const LibArtifactUtils = hre.contracts.LIB_ARTIFACT_UTILS_ADDRESS;
-  const LibPlanet = hre.contracts.LIB_PLANET_ADDRESS;
+  const Verifier =
+    hre.contracts.VERIFIER_ADDRESS || (await deployContract('Verifier', {}, hre)).address;
+  const LibGameUtils =
+    hre.contracts.LIB_GAME_UTILS_ADDRESS || (await deployContract('LibGameUtils', {}, hre)).address;
+  const LibArtifactUtils =
+    hre.contracts.LIB_ARTIFACT_UTILS_ADDRESS ||
+    (await deployContract('LibArtifactUtils', {}, hre)).address;
+  const LibPlanet =
+    hre.contracts.LIB_PLANET_ADDRESS || (await deployContract('LibPlanet', {}, hre)).address;
 
   const diamondInit = await deployContract('DFArenaInitialize', { LibGameUtils }, hre);
 
-  const arenaGetterFacet2 = await deployContract('DFArenaGetterFacet2', {}, hre);
+  const arenaGetterFacet = await deployContract('DFArenaGetterFacet', {}, hre);
+  const arenaCoreFacet = await deployContract('DFArenaCoreFacet', {}, hre);
 
-  const arenaDiamondCuts = [...changes.getFacetCuts('DFArenaGetterFacet2', arenaGetterFacet2)];
+  const arenaDiamondCuts = [
+    ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
+    ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
+  ];
 
   const toCut = [...arenaDiamondCuts];
 
