@@ -238,3 +238,44 @@ enum Biome {
     Lava,
     Corrupted
 }
+
+struct ArenaPlanetInfo {
+    bool spawnPlanet;
+    bool targetPlanet;
+}
+
+struct ArenaPlayerInfo {
+    uint256 moves;
+}
+
+struct ArenaAdminCreatePlanetArgs {
+    uint256 location;
+    uint256 perlin;
+    uint256 level;
+    PlanetType planetType;
+    bool requireValidLocationId;
+    bool isTargetPlanet;
+    bool isSpawnPlanet;
+}
+
+struct Modifiers {
+    uint256 popCap;
+    uint256 popGrowth;
+    uint256 silverCap;
+    uint256 silverGrowth;
+    uint256 range;
+    uint256 speed;
+    uint256 defense;
+    uint256 barbarianPercentage;
+}
+
+enum Mod {
+    popCap,
+    popGrowth,
+    silverCap,
+    silverGrowth,
+    range,
+    speed,
+    defense,
+    barbarianPercentage
+}

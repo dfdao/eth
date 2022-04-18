@@ -140,6 +140,9 @@ PLANET_TYPE_WEIGHTS = [
   ],
 ]
 
+#energy cap, energy growth, silver cap, silver growth, range, speed, defense, 
+MODIFIERS = [100, 100, 100, 100, 100, 100, 100, 100]
+
 
 ##########################
 # Planets to add to game #

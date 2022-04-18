@@ -1,10 +1,11 @@
-import type { DarkForest } from '@darkforest_eth/contracts/typechain';
+import type { DarkForest, DFArenaInitialize, DFInitialize } from '@darkforest_eth/contracts/typechain';
 import type { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 import { BigNumber, utils } from 'ethers';
 import hre from 'hardhat';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { deployAndCut } from '../../tasks/arena-deploy';
-import { cutUpgradesFromLobby } from '../../tasks/arena-upgrade';
+import { deployAndCut } from '../../tasks/deploy';
+import { deployAndCutArena } from '../../tasks/arena-deploy';
+import { createLobby } from '../../utils/deploy'
 
 import {
   arenaWorldInitializers,
@@ -36,7 +37,7 @@ export interface Player {
 export interface InitializeWorldArgs {
   initializers: HardhatRuntimeEnvironment['initializers'];
   whitelistEnabled: boolean;
-  upgrade?: boolean;
+  arena?: boolean;
 }
 
 export function defaultWorldFixture(): Promise<World> {
@@ -46,16 +47,6 @@ export function defaultWorldFixture(): Promise<World> {
   });
 }
 
-/*
-Idential to defaultWorldFixture but without upgrade facets cut in
-*/
-export function baseWorldFixture(): Promise<World> {
-  return initializeWorld({
-    initializers,
-    whitelistEnabled: false,
-    upgrade: false
-  });
-}
 
 export function growingWorldFixture(): Promise<World> {
   return initializeWorld({
@@ -78,10 +69,14 @@ export function noPlanetTransferFixture(): Promise<World> {
   });
 }
 
+/*
+Identical to defaultWorldFixture but with arena facets cut in
+*/
 export function arenaWorldFixture(): Promise<World> {
   return initializeWorld({
     initializers: arenaWorldInitializers,
     whitelistEnabled: false,
+    arena: true,
   });
 }
 
@@ -89,6 +84,7 @@ export function manualSpawnFixture(): Promise<World> {
   return initializeWorld({
     initializers: manualSpawnInitializers,
     whitelistEnabled: false,
+    arena: true
   });
 }
 
@@ -96,13 +92,22 @@ export function targetPlanetFixture(): Promise<World> {
   return initializeWorld({
     initializers: targetPlanetInitializers,
     whitelistEnabled: false,
+    arena: true
+  });
+}
+
+export function modifiedWorldFixture(mod: number): Promise<World> {
+  return initializeWorld({
+    initializers: { ...initializers, MODIFIERS: [mod, mod, mod, mod, mod, mod, mod, mod] },
+    whitelistEnabled: false,
+    arena: true
   });
 }
 
 export async function initializeWorld({
   initializers,
   whitelistEnabled,
-  upgrade = true,
+  arena = false,
 }: InitializeWorldArgs): Promise<World> {
   const [deployer, user1, user2] = await hre.ethers.getSigners();
 
@@ -111,16 +116,16 @@ export async function initializeWorld({
   await hre.network.provider.send('evm_setAutomine', [true]);
   await hre.network.provider.send('evm_setIntervalMining', [0]);
 
-  const [diamond, _initReceipt] = await deployAndCut(
+  let contract: DarkForest;
+
+  let deploy = arena ? deployAndCutArena : deployAndCut;
+
+  const [diamond, diamondInit] = await deploy(
     { ownerAddress: deployer.address, whitelistEnabled, initializers },
     hre
   );
+  contract = diamond;
 
-  let contract = await hre.ethers.getContractAt('DarkForest', diamond.address);
-
-  if (upgrade) {
-    [contract] = await cutUpgradesFromLobby(hre, contract, initializers, whitelistEnabled);
-  }
   await deployer.sendTransaction({
     to: contract.address,
     value: utils.parseEther('0.5'), // good for about (100eth / 0.5eth/test) = 200 tests
