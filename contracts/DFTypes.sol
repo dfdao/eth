@@ -279,3 +279,11 @@ enum Mod {
     defense,
     barbarianPercentage
 }
+// # Mothership, Whale, Crescent, Gear, Titan
+struct Spaceships{
+    bool mothership;
+    bool whale;
+    bool crescent;
+    bool gear;
+    bool titan;
+}

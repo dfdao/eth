@@ -1,8 +1,8 @@
+import * as fs from 'fs';
+import { HardhatRuntimeEnvironment, Libraries } from 'hardhat/types';
 import * as path from 'path';
 import * as prettier from 'prettier';
-import * as fs from 'fs';
 import { tscompile } from '../utils/tscompile';
-import { HardhatRuntimeEnvironment, Libraries } from 'hardhat/types';
 
 export async function deployDiamond(
   {
@@ -161,7 +161,8 @@ export async function createLobby(
   const rc = await arenaTx.wait();
   // @ts-expect-error
   const event = rc.events.find((event) => event.event === 'LobbyCreated');
-  // @ts-expect-error 
+    // @ts-expect-error
+
   const lobbyAddress = event.args.lobbyAddress as string;
   return hre.ethers.getContractAt('DarkForest', lobbyAddress);
 }

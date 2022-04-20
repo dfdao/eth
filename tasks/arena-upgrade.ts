@@ -1,9 +1,9 @@
+import { Contract } from 'ethers';
 import { task } from 'hardhat/config';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { deployContract, saveDeploy } from '../utils/deploy';
 import { DiamondChanges } from '../utils/diamond';
 
-import { deployContract, saveDeploy } from '../utils/deploy';
-import { Contract } from 'ethers';
 
 task('arena:upgrade', 'upgrade a lobby from the command line').setAction(deployUpgrades);
 
@@ -78,11 +78,14 @@ export async function cutUpgradesFromLobby(
   const diamondInit = await deployContract('DFArenaInitialize', { LibGameUtils }, hre);
 
   const arenaGetterFacet = await deployContract('DFArenaGetterFacet', {}, hre);
-  const arenaCoreFacet = await deployContract('DFArenaCoreFacet', {}, hre);
+  const arenaCoreFacet = await deployContract('DFArenaCoreFacet', {LibGameUtils, LibPlanet}, hre);
+  const spaceshipConfigFacet = await deployContract('DFSpaceshipConfigFacet', {LibGameUtils}, hre);
 
   const arenaDiamondCuts = [
     ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
     ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
+    ...changes.getFacetCuts('DFSpaceshipConfigFacet', spaceshipConfigFacet),
+
   ];
 
   const toCut = [...arenaDiamondCuts];

@@ -16,7 +16,7 @@ import {IERC173} from "../vendor/interfaces/IERC173.sol";
 
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
-import {WithArenaStorage, ArenaStorage, ArenaPlanetInfo, ArenaConstants} from "../libraries/LibArenaStorage.sol";
+import {WithArenaStorage, ArenaStorage, ArenaConstants} from "../libraries/LibArenaStorage.sol";
 
 import {
     SpaceType, 
@@ -28,7 +28,8 @@ import {
     Planet, 
     PlanetType, 
     PlanetExtendedInfo, 
-    PlanetExtendedInfo2
+    PlanetExtendedInfo2,
+    ArenaPlanetInfo
 } from "../DFTypes.sol";
 
 contract DFArenaGetterFacet is WithStorage, WithArenaStorage {

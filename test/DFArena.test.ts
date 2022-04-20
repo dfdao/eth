@@ -1,18 +1,12 @@
+import { ArtifactType } from '@darkforest_eth/types';
 import { expect } from 'chai';
 import {
-  fixtureLoader,
-  makeInitArgs,
+  fixtureLoader, increaseBlockchainTime, increaseBlocks, makeInitArgs,
   makeMoveArgs,
-  makeRevealArgs,
-  increaseBlocks,
+  makeRevealArgs
 } from './utils/TestUtils';
 import {
-  manualSpawnFixture,
-  targetPlanetFixture,
-  arenaWorldFixture,
-  World,
-  modifiedWorldFixture,
-  defaultWorldFixture,
+  arenaWorldFixture, manualSpawnFixture, modifiedWorldFixture, spaceshipWorldFixture, targetPlanetFixture, World
 } from './utils/TestWorld';
 import {
   ADMIN_PLANET,
@@ -23,7 +17,7 @@ import {
   LVL2_PLANET_DEEP_SPACE,
   SPAWN_PLANET_1,
   SPAWN_PLANET_2,
-  VALID_INIT_PERLIN,
+  VALID_INIT_PERLIN
 } from './utils/WorldConstants';
 
 describe('Arena Functions', function () {
@@ -392,7 +386,6 @@ describe('Arena Functions', function () {
     let buffedWorld: World;
     beforeEach('load fixture', async function () {
       defaultWorld = await fixtureLoader(arenaWorldFixture);
-
       buffedWorld = await fixtureLoader(() => modifiedWorldFixture(200));
       nerfedWorld = await fixtureLoader(() => modifiedWorldFixture(50));
     });
@@ -444,6 +437,64 @@ describe('Arena Functions', function () {
       expect(buffedPlanetData.speed.toNumber())
         .to.be.approximately(defaultPlanetData.speed.toNumber() * 2, 5)
         .to.be.approximately(nerfedPlanetData.speed.toNumber() * 4, 5);
+    });
+  });
+
+  describe.only('Spaceships', function () {
+    let world: World;
+
+    async function worldFixture() {
+      const world = await fixtureLoader(() =>
+        spaceshipWorldFixture([true, true, true, false, false])
+      );
+      let initArgs = makeInitArgs(SPAWN_PLANET_1);
+      await world.user1Core.initializePlayer(...initArgs);
+      await world.user1Core.giveSpaceShips(SPAWN_PLANET_1.id);
+      await increaseBlockchainTime();
+
+      return world;
+    }
+    beforeEach('load fixture', async function () {
+      world = await fixtureLoader(worldFixture);
+    });
+
+    it('gives you 3 space ships', async function () {
+      expect((await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).length).to.be.equal(3);
+    });
+
+    it('gives you mothership', async function () {
+      const mothership = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
+        (a) => a.artifact.artifactType === ArtifactType.ShipMothership
+      )?.artifact;
+      expect(mothership).to.not.equal(undefined);
+    });
+
+    it('gives you whale', async function () {
+      const whale = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
+        (a) => a.artifact.artifactType === ArtifactType.ShipWhale
+      )?.artifact;
+      expect(whale).to.not.equal(undefined);
+    });
+
+    it('gives you crescent', async function () {
+      const crescent = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
+        (a) => a.artifact.artifactType === ArtifactType.ShipCrescent
+      )?.artifact;
+      expect(crescent).to.not.equal(undefined);
+    });
+
+    it('does not give you gear', async function () {
+      const gear = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
+        (a) => a.artifact.artifactType === ArtifactType.ShipGear
+      )?.artifact;
+      expect(gear).to.equal(undefined);
+    });
+
+    it('does not give you titan', async function () {
+      const titan = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
+        (a) => a.artifact.artifactType === ArtifactType.ShipTitan
+      )?.artifact;
+      expect(titan).to.equal(undefined);
     });
   });
 });

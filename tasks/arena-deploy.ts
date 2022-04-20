@@ -1,10 +1,10 @@
 import { task, types } from 'hardhat/config';
 import type { HardhatRuntimeEnvironment, Libraries } from 'hardhat/types';
-
 import * as settings from '../settings';
+import { deployContract, deployDiamond, saveDeploy } from '../utils/deploy';
 import { DiamondChanges } from '../utils/diamond';
 
-import { deployDiamond, deployContract, saveDeploy } from '../utils/deploy';
+
 
 task('arena:deploy', 'deploy all arena contracts')
   .addOptionalParam('whitelist', 'override the whitelist', undefined, types.boolean)
@@ -261,6 +261,7 @@ export async function cutArena(
 
   const event = rc.events.find((event) => event.event === 'LobbyCreated');
   if (!event) throw Error('No event found');
+
   // @ts-expect-error because event is type unknown
 
   const lobbyAddress = event.args.lobbyAddress;
@@ -277,10 +278,13 @@ export async function cutArena(
   const diamondInit = await deployContract('DFArenaInitialize', { LibGameUtils }, hre);
   const arenaCoreFacet = await deployContract('DFArenaCoreFacet', { LibGameUtils, LibPlanet }, hre);
   const arenaGetterFacet = await deployContract('DFArenaGetterFacet', {}, hre);
+  const spaceshipConfigFacet = await deployContract('DFSpaceshipConfigFacet', {LibGameUtils}, hre);
 
   const arenaFacetCuts = [
     ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
     ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
+    ...changes.getFacetCuts('DFSpaceshipConfigFacet', spaceshipConfigFacet),
+
   ];
 
   const diamondCut = await hre.ethers.getContractAt('DarkForest', diamond.address);
