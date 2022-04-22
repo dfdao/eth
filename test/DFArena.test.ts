@@ -440,7 +440,7 @@ describe('Arena Functions', function () {
     });
   });
 
-  describe.only('Spaceships', function () {
+  describe('Spaceships', function () {
     let world: World;
 
     async function worldFixture() {
