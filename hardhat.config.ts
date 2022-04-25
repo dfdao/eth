@@ -41,13 +41,17 @@ const { DEPLOYER_MNEMONIC, ADMIN_PUBLIC_ADDRESS } = process.env;
 const AbiItemsToIgnore = [
   {
     facet: 'DFCoreFacet',
-    functions: ['initializePlayer'],
-    events: ['PlayerInitialized'],
+    functions: ['initializePlayer', 'giveSpaceShips'],
+    events: ['PlayerInitialized', 'ArtifactFound'],
   },
   {
     facet: 'DFAdminFacet',
     events: ['AdminPlanetCreated'],
   },
+  {
+    facet: 'DFArenaGetterFacet',
+    functions: ['getArenaConstants']
+  }
 ];
 
 // Warning: If the facet is not in the `facets` directory, getFullyQualifiedFacetName will not work.
@@ -103,6 +107,25 @@ const mainnet = {
   },
   chainId: 1,
 };
+const kovan_optimism = {
+  url: 'https://kovan.optimism.io',
+  accounts: {
+    mnemonic: DEPLOYER_MNEMONIC,
+  },
+  chainId: 69,
+  gasLimit: 15000000,
+  gasMultiplier: 5,
+};
+
+const gnosis_optimism = {
+  url: 'https://optimism.gnosischain.com',
+  accounts: {
+    mnemonic: DEPLOYER_MNEMONIC,
+  },
+  chainId: 69,
+  gasLimit: 15000000,
+  gasMultiplier: 5,
+};
 
 const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
@@ -110,6 +133,8 @@ const config: HardhatUserConfig = {
     // Check for a DEPLOYER_MNEMONIC before we add xdai/mainnet network to the list of networks
     // Ex: If you try to deploy to xdai without DEPLOYER_MNEMONIC, you'll see this error:
     // > Error HH100: Network xdai doesn't exist
+    ...(DEPLOYER_MNEMONIC ? { gnosis_optimism } : undefined),
+    ...(DEPLOYER_MNEMONIC ? { kovan_optimism } : undefined),
     ...(DEPLOYER_MNEMONIC ? { xdai } : undefined),
     ...(DEPLOYER_MNEMONIC ? { mainnet } : undefined),
     localhost: {
@@ -223,7 +248,7 @@ const config: HardhatUserConfig = {
     // We don't want additional directories created, so we explicitly set the `flat` option to `true`
     flat: true,
     // We **only** want to copy the DarkForest ABI (which is the Diamond ABI we generate) and the initializer ABI to this folder, so we limit the matched files with the `only` option
-    only: [':DarkForest$', ':DFInitialize$', ':DFArenaInitialize$'],
+    only: [':DarkForest$', ':DFArenaInitialize$', ':DFArenaUpgradeInitialize$'],
   },
 };
 

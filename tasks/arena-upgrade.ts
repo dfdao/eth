@@ -1,15 +1,14 @@
+import { Contract } from 'ethers';
 import { task } from 'hardhat/config';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { deployContract, saveDeploy } from '../utils/deploy';
 import { DiamondChanges } from '../utils/diamond';
 
-import { deployContract, saveDeploy } from '../utils/deploy';
-import { Contract } from 'ethers';
-
-const TEMP_DIAMOND_ADDRESS = '0x688c78df6b8b64be16a7702df10ad64100079a68'
 
 task('arena:upgrade', 'upgrade a lobby from the command line').setAction(deployUpgrades);
 
 export async function deployUpgrades({}, hre: HardhatRuntimeEnvironment) {
+  await hre.run('utils:assertChainId');
   console.log('creating lobby and cutting arena facets');
   const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
 
@@ -30,7 +29,7 @@ export async function deployUpgrades({}, hre: HardhatRuntimeEnvironment) {
 
   const whitelistEnabled = false;
 
-  const contract = await hre.ethers.getContractAt('DarkForest', TEMP_DIAMOND_ADDRESS);
+  const contract = await hre.ethers.getContractAt('DarkForest', hre.contracts.CONTRACT_ADDRESS);
 
   return await cutUpgradesFromLobby(hre, contract, hre.initializers, whitelistEnabled);
 }
@@ -66,32 +65,27 @@ export async function cutUpgradesFromLobby(
 
   const changes = new DiamondChanges(prevFacets);
 
-  // const Verifier = hre.contracts.VERIFIER_ADDRESS;
-  // const LibGameUtils = hre.contracts.LIB_GAME_UTILS_ADDRESS;
-  // const LibArtifactUtils = hre.contracts.LIB_ARTIFACT_UTILS_ADDRESS;
-  // const LibPlanet = hre.contracts.LIB_PLANET_ADDRESS;
-
-  const Verifier = (await deployContract('Verifier', {}, hre)).address;
-  const LibGameUtils = (await deployContract('LibGameUtils', {}, hre)).address;
-  const LibLazyUpdate = (await deployContract('LibLazyUpdate', {}, hre)).address;
-  const LibArtifactUtils = (await deployContract('LibArtifactUtils', { LibGameUtils }, hre)).address;
-  const LibPlanet = (await deployContract('LibPlanet', { LibGameUtils, LibLazyUpdate, Verifier }, hre))
-    .address;
+  const Verifier =
+    hre.contracts.VERIFIER_ADDRESS || (await deployContract('Verifier', {}, hre)).address;
+  const LibGameUtils =
+    hre.contracts.LIB_GAME_UTILS_ADDRESS || (await deployContract('LibGameUtils', {}, hre)).address;
+  const LibArtifactUtils =
+    hre.contracts.LIB_ARTIFACT_UTILS_ADDRESS ||
+    (await deployContract('LibArtifactUtils', {}, hre)).address;
+  const LibPlanet =
+    hre.contracts.LIB_PLANET_ADDRESS || (await deployContract('LibPlanet', {}, hre)).address;
 
   const diamondInit = await deployContract('DFArenaInitialize', { LibGameUtils }, hre);
 
-  const arenaCoreFacet = await deployContract(
-    'DFArenaCoreFacet',
-    { LibGameUtils, LibPlanet },
-    hre
-  );
-
   const arenaGetterFacet = await deployContract('DFArenaGetterFacet', {}, hre);
+  const arenaCoreFacet = await deployContract('DFArenaCoreFacet', {LibGameUtils, LibPlanet}, hre);
+  const spaceshipConfigFacet = await deployContract('DFSpaceshipConfigFacet', {LibGameUtils}, hre);
 
   const arenaDiamondCuts = [
-    // Note: The `diamondCut` is omitted because it is cut upon deployment
-    ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
     ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
+    ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
+    ...changes.getFacetCuts('DFSpaceshipConfigFacet', spaceshipConfigFacet),
+
   ];
 
   const toCut = [...arenaDiamondCuts];

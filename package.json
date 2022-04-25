@@ -69,6 +69,8 @@
     "hardhat:dev": "hardhat --network localhost",
     "hardhat:prod": "hardhat --network xdai",
     "hardhat:mainnet": "hardhat --network mainnet",
+    "hardhat:ko": "hardhat --network kovan_optimism",
+    "hardhat:go": "hardhat --network gnosis_optimism",
     "compile": "hardhat compile",
     "circom:prod": "hardhat circom --verbose",
     "circom:dev": "hardhat circom --deterministic --verbose",
