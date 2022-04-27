@@ -10,6 +10,7 @@ import {
   initializers,
   manualSpawnInitializers,
   noPlanetTransferInitializers,
+  planetLevelThresholdInitializer,
   target4Initializers,
   targetPlanetInitializers
 } from './WorldConstants';
@@ -65,6 +66,14 @@ export function noPlanetTransferFixture(): Promise<World> {
   return initializeWorld({
     initializers: noPlanetTransferInitializers,
     whitelistEnabled: false,
+  });
+}
+
+export function planetLevelThresholdFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: planetLevelThresholdInitializer,
+    whitelistEnabled: false,
+    arena: false,
   });
 }
 

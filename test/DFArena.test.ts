@@ -1,12 +1,14 @@
 import { ArtifactType } from '@darkforest_eth/types';
 import { expect } from 'chai';
+import { BigNumber } from 'ethers';
+import { initializers } from 'hardhat';
 import {
   fixtureLoader, increaseBlockchainTime, increaseBlocks, makeInitArgs,
   makeMoveArgs,
   makeRevealArgs
 } from './utils/TestUtils';
 import {
-  arenaWorldFixture, manualSpawnFixture, modifiedWorldFixture, spaceshipWorldFixture, targetPlanetFixture, World
+  arenaWorldFixture, manualSpawnFixture, modifiedWorldFixture, planetLevelThresholdFixture, spaceshipWorldFixture, targetPlanetFixture, World
 } from './utils/TestWorld';
 import {
   ADMIN_PLANET,
@@ -15,6 +17,7 @@ import {
   LVL1_ASTEROID_1,
   LVL1_PLANET_SPACE,
   LVL2_PLANET_DEEP_SPACE,
+  planetLevelThresholdInitializer,
   SPAWN_PLANET_1,
   SPAWN_PLANET_2,
   VALID_INIT_PERLIN
@@ -440,7 +443,7 @@ describe('Arena Functions', function () {
     });
   });
 
-  describe('Spaceships', function () {
+  describe('Spaceship Toggles', function () {
     let world: World;
 
     async function worldFixture() {
@@ -496,5 +499,22 @@ describe('Arena Functions', function () {
       )?.artifact;
       expect(titan).to.equal(undefined);
     });
+  });
+
+  describe('Include threshold for Planet Location Id validity', function () {
+    let world: World;
+
+    beforeEach('load fixture', async function () {
+      world = await fixtureLoader(planetLevelThresholdFixture);
+    });
+  
+    it('Planet that has id below difficulty but above L0 threshold is not valid', async function () {
+      expect((await world.contract.getPlanetLevelThresholds())[0]).to.equal(BigNumber.from(planetLevelThresholdInitializer.PLANET_LEVEL_THRESHOLDS[0]))
+      await expect(world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1)))
+      .to.be.revertedWith("Not a valid planet location");
+      
+      
+    });
+
   });
 });
