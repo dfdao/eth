@@ -48,9 +48,20 @@ library LibGameUtils {
     }
 
     function _locationIdValid(uint256 _loc) public view returns (bool) {
-        return (_loc <
+        return (
+            (_loc <
             (21888242871839275222246405745257275088548364400416034343698204186575808495617 /
-                gameConstants().PLANET_RARITY));
+                gameConstants().PLANET_RARITY))
+            && _planetLevelBelowLevel0Threshold(_loc)
+        );
+    }
+
+    function _planetLevelBelowLevel0Threshold(uint256 _loc) public view returns (bool) {
+        bytes memory _b = abi.encodePacked(_loc);
+
+        // get the uint value of byte 4 - 6
+        uint256 _planetLevelUInt = _calculateByteUInt(_b, 4, 6);
+        return _planetLevelUInt < gs().planetLevelThresholds[0];
     }
 
     // if you don't check the public input snark perlin config values, then a player could specify a planet with for example the wrong PLANETHASH_KEY and the SNARK would verify but they'd have created an invalid planet.
