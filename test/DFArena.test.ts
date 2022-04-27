@@ -501,7 +501,7 @@ describe('Arena Functions', function () {
     });
   });
 
-  describe.only('Include threshold for Planet Location Id validity', function () {
+  describe('Include threshold for Planet Location Id validity', function () {
     let world: World;
 
     beforeEach('load fixture', async function () {
