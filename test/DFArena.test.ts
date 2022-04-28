@@ -3,12 +3,21 @@ import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import { initializers } from 'hardhat';
 import {
-  fixtureLoader, increaseBlockchainTime, increaseBlocks, makeInitArgs,
+  fixtureLoader,
+  increaseBlockchainTime,
+  increaseBlocks,
+  makeInitArgs,
   makeMoveArgs,
-  makeRevealArgs
+  makeRevealArgs,
 } from './utils/TestUtils';
 import {
-  arenaWorldFixture, manualSpawnFixture, modifiedWorldFixture, planetLevelThresholdFixture, spaceshipWorldFixture, targetPlanetFixture, World
+  arenaWorldFixture,
+  manualSpawnFixture,
+  modifiedWorldFixture,
+  planetLevelThresholdFixture,
+  spaceshipWorldFixture,
+  targetPlanetFixture,
+  World,
 } from './utils/TestWorld';
 import {
   ADMIN_PLANET,
@@ -20,7 +29,7 @@ import {
   planetLevelThresholdInitializer,
   SPAWN_PLANET_1,
   SPAWN_PLANET_2,
-  VALID_INIT_PERLIN
+  VALID_INIT_PERLIN,
 } from './utils/WorldConstants';
 
 describe('Arena Functions', function () {
@@ -369,7 +378,7 @@ describe('Arena Functions', function () {
           const planet = await world.contract.planetsExtendedInfo2(LVL0_PLANET_DEEP_SPACE.id);
           await expect(world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id))
             .to.emit(world.contract, 'Gameover')
-            .withArgs(LVL0_PLANET_DEEP_SPACE.id);
+            .withArgs(LVL0_PLANET_DEEP_SPACE.id, world.user1.address);
         });
         it('sets gameover to true and winner to msg sender', async function () {
           await world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id);
@@ -379,6 +388,78 @@ describe('Arena Functions', function () {
           expect(winners[0]).to.equal(world.user1.address);
           expect(gameover).to.equal(true);
         });
+      });
+    });
+  });
+
+  describe.only('Claim Victory (no Invade)', function () {
+    let world: World;
+
+    async function worldFixture() {
+      world = await fixtureLoader(targetPlanetFixture);
+      let initArgs = makeInitArgs(SPAWN_PLANET_1);
+      await world.user1Core.initializePlayer(...initArgs);
+      // await increaseBlockchainTime();
+
+      initArgs = makeInitArgs(SPAWN_PLANET_2);
+      await world.user2Core.initializePlayer(...initArgs);
+
+      const perlin = 20;
+      const level = 0;
+      const planetType = 1; // asteroid field
+      await world.contract.createArenaPlanet({
+        location: LVL0_PLANET_DEEP_SPACE.id,
+        perlin,
+        level,
+        planetType,
+        requireValidLocationId: true,
+        isTargetPlanet: true,
+        isSpawnPlanet: false,
+      });
+      return world;
+    }
+
+    beforeEach(async function () {
+      world = await fixtureLoader(worldFixture);
+    });
+
+    describe('claiming victory on target planet', function () {
+      beforeEach(async function () {
+        const dist = 1;
+        const shipsSent = 30000;
+        const silverSent = 0;
+        await world.user1Core.move(
+          ...makeMoveArgs(SPAWN_PLANET_1, LVL0_PLANET_DEEP_SPACE, dist, shipsSent, silverSent)
+        );
+      });
+
+      it('claim victory fails if target below energy threshold', async function () {
+        await world.user1Core.refreshPlanet(LVL0_PLANET_DEEP_SPACE.id);
+        var planet = await world.contract.planets(LVL0_PLANET_DEEP_SPACE.id);
+        var popCap = planet.populationCap.toNumber();
+        var pop = planet.population.toNumber();
+        console.log(
+          `Planet is ${(pop / popCap) * 100}% full, but needs ${
+            (await world.contract.getArenaConstants()).CLAIM_VICTORY_ENERGY_PERCENTAGE
+          }%`
+        );
+
+        await expect(world.user1Core.claimVictory(LVL0_PLANET_DEEP_SPACE.id)).to.be.revertedWith(
+          'planet must have CLAIM_VICTORY_ENERGY_PERCENTAGE (default 50) % of the max energy'
+        );
+      });
+
+      it('get round duration fails if round not over', async function () {
+        await expect(world.user1Core.getRoundDuration()).to.be.revertedWith('game is not yet over');
+      });
+
+      it('claim victory succeeds and emits Gameover if target is above energy threshold ', async function () {
+        await increaseBlockchainTime(600);
+        await expect(world.user1Core.claimVictory(LVL0_PLANET_DEEP_SPACE.id))
+          .to.emit(world.contract, 'Gameover')
+          .withArgs(LVL0_PLANET_DEEP_SPACE.id, world.user1.address);
+
+        expect((await world.contract.getRoundDuration()).toNumber()).to.be.greaterThan(600);
       });
     });
   });
@@ -393,16 +474,15 @@ describe('Arena Functions', function () {
       nerfedWorld = await fixtureLoader(() => modifiedWorldFixture(50));
     });
     it('initializes planets with modifiers', async function () {
-
       const planet = {
         location: LVL1_ASTEROID_1.id,
         perlin: 20,
         level: 5,
-        planetType : 1, //asteroid
+        planetType: 1, //asteroid
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: false,
-      }
+      };
       await defaultWorld.contract.createArenaPlanet(planet);
 
       await buffedWorld.contract.createArenaPlanet(planet);
@@ -507,14 +587,14 @@ describe('Arena Functions', function () {
     beforeEach('load fixture', async function () {
       world = await fixtureLoader(planetLevelThresholdFixture);
     });
-  
-    it('Planet that has id below difficulty but above L0 threshold is not valid', async function () {
-      expect((await world.contract.getPlanetLevelThresholds())[0]).to.equal(BigNumber.from(planetLevelThresholdInitializer.PLANET_LEVEL_THRESHOLDS[0]))
-      await expect(world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1)))
-      .to.be.revertedWith("Not a valid planet location");
-      
-      
-    });
 
+    it('Planet that has id below difficulty but above L0 threshold is not valid', async function () {
+      expect((await world.contract.getPlanetLevelThresholds())[0]).to.equal(
+        BigNumber.from(planetLevelThresholdInitializer.PLANET_LEVEL_THRESHOLDS[0])
+      );
+      await expect(
+        world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1))
+      ).to.be.revertedWith('Not a valid planet location');
+    });
   });
 });

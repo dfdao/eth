@@ -28,6 +28,8 @@ struct ArenaStorage {
 
     uint256 moveCap;
     mapping(address => ArenaPlayerInfo) arenaPlayerInfo;
+    uint256 START_TIME;
+    uint256 END_TIME;
 }
 
 struct ArenaConstants {
@@ -39,6 +41,8 @@ struct ArenaConstants {
 
     Modifiers MODIFIERS;
     Spaceships SPACESHIPS;
+    uint8 CLAIM_VICTORY_ENERGY_PERCENTAGE;
+
 }
 
 library LibArenaStorage {

@@ -38,7 +38,7 @@ import {
 contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     event AdminPlanetCreated(uint256 loc);
     event TargetPlanetInvaded(address player, uint256 loc);
-    event Gameover(uint256 loc);
+    event Gameover(uint256 loc, address winner);
     event PlayerInitialized(address player, uint256 loc);
 
     modifier onlyAdmin() {
@@ -220,9 +220,35 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         planetExtendedInfo2.capturer = msg.sender;
         arenaStorage().gameover = true;
         arenaStorage().winners.push(msg.sender);
-        emit Gameover(locationId);
+        arenaStorage().END_TIME = block.timestamp;
+        emit Gameover(locationId, msg.sender);
     }
 
+    function claimVictory(uint256 locationId) public {
+        require(!arenaStorage().gameover, "cannot claim victory when game is over");
+
+        LibPlanet.refreshPlanet(locationId);
+        Planet memory planet = gs().planets[locationId];
+        PlanetExtendedInfo memory planetExtendedInfo = gs().planetsExtendedInfo[locationId];
+
+        require(planet.owner == msg.sender, "you can only claim victory with planets you own");
+        require(!planetExtendedInfo.destroyed, "planet is destroyed");
+
+        require(
+            arenaStorage().arenaPlanetInfo[locationId].targetPlanet,
+            "you can only claim victory on a target planet"
+        );
+
+        require(
+            (planet.population * 100) / planet.populationCap > arenaConstants().CLAIM_VICTORY_ENERGY_PERCENTAGE,
+            "planet must have CLAIM_VICTORY_ENERGY_PERCENTAGE (default 50) % of the max energy"
+        );
+
+        arenaStorage().gameover = true;
+        arenaStorage().winners.push(msg.sender);
+        arenaStorage().END_TIME = block.timestamp;
+        emit Gameover(locationId, msg.sender);
+    }
     function bulkCreatePlanet(ArenaAdminCreatePlanetArgs[] memory planets) public onlyAdmin {
         for(uint i = 0; i < planets.length; i++) {
             createArenaPlanet(planets[i]);

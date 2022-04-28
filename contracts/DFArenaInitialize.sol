@@ -113,7 +113,7 @@ struct InitArgs {
 
     uint256[8] MODIFIERS;
     bool[5] SPACESHIPS;
-
+    uint8 CLAIM_VICTORY_ENERGY_PERCENTAGE;
 }
 
 contract DFArenaInitialize is WithStorage, WithArenaStorage {
@@ -213,6 +213,8 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
 
         //arenaMode initialization
         arenaStorage().gameover = false;
+        arenaStorage().START_TIME = block.timestamp;
+        arenaConstants().CLAIM_VICTORY_ENERGY_PERCENTAGE = initArgs.CLAIM_VICTORY_ENERGY_PERCENTAGE;
         arenaConstants().TARGET_PLANETS = initArgs.TARGET_PLANETS;
         arenaConstants().TARGET_PLANET_HOLD_BLOCKS_REQUIRED = initArgs
             .TARGET_PLANET_HOLD_BLOCKS_REQUIRED;
