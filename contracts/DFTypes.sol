@@ -287,3 +287,10 @@ struct Spaceships{
     bool gear;
     bool titan;
 }
+
+struct RevealProofArgs {
+    uint256[2]  _a;
+    uint256[2][2] _b;
+    uint256[2] _c;
+    uint256[9] _input;
+}

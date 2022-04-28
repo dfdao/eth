@@ -1,14 +1,24 @@
+import { p } from '@darkforest_eth/hashing/dist/mimc';
 import { ArtifactType } from '@darkforest_eth/types';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import { initializers } from 'hardhat';
 import {
-  fixtureLoader, increaseBlockchainTime, increaseBlocks, makeInitArgs,
+  fixtureLoader,
+  increaseBlockchainTime,
+  increaseBlocks,
+  makeInitArgs,
   makeMoveArgs,
-  makeRevealArgs
+  makeRevealArgs,
 } from './utils/TestUtils';
 import {
-  arenaWorldFixture, manualSpawnFixture, modifiedWorldFixture, planetLevelThresholdFixture, spaceshipWorldFixture, targetPlanetFixture, World
+  arenaWorldFixture,
+  manualSpawnFixture,
+  modifiedWorldFixture,
+  planetLevelThresholdFixture,
+  spaceshipWorldFixture,
+  targetPlanetFixture,
+  World,
 } from './utils/TestWorld';
 import {
   ADMIN_PLANET,
@@ -20,7 +30,7 @@ import {
   planetLevelThresholdInitializer,
   SPAWN_PLANET_1,
   SPAWN_PLANET_2,
-  VALID_INIT_PERLIN
+  VALID_INIT_PERLIN,
 } from './utils/WorldConstants';
 
 describe('Arena Functions', function () {
@@ -137,6 +147,87 @@ describe('Arena Functions', function () {
       expect((await world.contract.getNRevealedPlanets()).toNumber()).to.equal(2);
       expect(await world.contract.revealedPlanetIds(0)).to.be.equal(ADMIN_PLANET.id);
       expect(await world.contract.revealedPlanetIds(1)).to.be.equal(LVL1_PLANET_SPACE.id);
+    });
+
+    it('creates and reveals one planet', async function () {
+      const perlin = 20;
+      const level = 5;
+      const planetType = 1; // asteroid field
+      const x = 10;
+      const y = 20;
+      const revealArgs = makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y);
+      const createReveal = await world.contract.createAndReveal(
+        {
+          location: ADMIN_PLANET_CLOAKED.id,
+          perlin,
+          level,
+          planetType,
+          requireValidLocationId: false,
+          isTargetPlanet: false,
+          isSpawnPlanet: true,
+        },
+        {
+          _a: revealArgs[0],
+          _b: revealArgs[1],
+          _c: revealArgs[2],
+          _input: revealArgs[3],
+        }
+      );
+
+      const createRevealReceipt = await createReveal.wait();
+
+      console.log(`createAndReveal used ${createRevealReceipt.gasUsed} gas`);
+
+      const testPlanet = await world.contract.getRevealedCoords(ADMIN_PLANET_CLOAKED.id);
+
+      expect(testPlanet.x).to.equal(x);
+      expect(testPlanet.y).to.equal(y);
+    });
+
+    it('bulk creates and reveals multiple planets', async function () {
+      const perlin = 20;
+      const level = 5;
+      const planetType = 1; // asteroid field
+      const planets = [ADMIN_PLANET, ADMIN_PLANET_CLOAKED, LVL1_PLANET_SPACE];
+
+      var planetArgList: any = [];
+      var revealArgList: any = [];
+
+      planets.map((p) => {
+        const planetArgs = {
+          location: p.id,
+          perlin,
+          level,
+          planetType,
+          requireValidLocationId: false,
+          isTargetPlanet: false,
+          isSpawnPlanet: true,
+        };
+        const revealArgs = makeRevealArgs(
+          p,
+          Math.floor(Math.random() * 100),
+          Math.floor(Math.random() * 100)
+        );
+        const structRevealArgs = {
+          _a: revealArgs[0],
+          _b: revealArgs[1],
+          _c: revealArgs[2],
+          _input: revealArgs[3],
+        };
+
+        planetArgList.push(planetArgs);
+        revealArgList.push(structRevealArgs);
+      });
+
+      const tx = await world.contract.bulkCreateAndReveal(planetArgList, revealArgList);
+      const rct = await tx.wait();
+      console.log(`created and revealed ${planets.length} planets with ${rct.gasUsed} gas`);
+
+      const data = await world.contract.bulkGetPlanetsDataByIds(planets.map((p) => p.id));
+
+      for (var i = 0; i < planets.length; i++) {
+        expect(data[i].revealedCoords.locationId).to.equal(planets[i].id);
+      }
     });
   });
 
@@ -393,16 +484,15 @@ describe('Arena Functions', function () {
       nerfedWorld = await fixtureLoader(() => modifiedWorldFixture(50));
     });
     it('initializes planets with modifiers', async function () {
-
       const planet = {
         location: LVL1_ASTEROID_1.id,
         perlin: 20,
         level: 5,
-        planetType : 1, //asteroid
+        planetType: 1, //asteroid
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: false,
-      }
+      };
       await defaultWorld.contract.createArenaPlanet(planet);
 
       await buffedWorld.contract.createArenaPlanet(planet);
@@ -501,20 +591,20 @@ describe('Arena Functions', function () {
     });
   });
 
-  describe('Include threshold for Planet Location Id validity', function () {
+  describe('Threshold for Planet Location Id validity', function () {
     let world: World;
 
     beforeEach('load fixture', async function () {
       world = await fixtureLoader(planetLevelThresholdFixture);
     });
-  
-    it('Planet that has id below difficulty but above L0 threshold is not valid', async function () {
-      expect((await world.contract.getPlanetLevelThresholds())[0]).to.equal(BigNumber.from(planetLevelThresholdInitializer.PLANET_LEVEL_THRESHOLDS[0]))
-      await expect(world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1)))
-      .to.be.revertedWith("Not a valid planet location");
-      
-      
-    });
 
+    it('Planet that has id below difficulty but above L0 threshold is not valid', async function () {
+      expect((await world.contract.getPlanetLevelThresholds())[0]).to.equal(
+        BigNumber.from(planetLevelThresholdInitializer.PLANET_LEVEL_THRESHOLDS[0])
+      );
+      await expect(
+        world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1))
+      ).to.be.revertedWith('Not a valid planet location');
+    });
   });
 });

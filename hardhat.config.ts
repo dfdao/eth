@@ -42,7 +42,7 @@ const AbiItemsToIgnore = [
   {
     facet: 'DFCoreFacet',
     functions: ['initializePlayer', 'giveSpaceShips'],
-    events: ['PlayerInitialized', 'ArtifactFound'],
+    events: ['PlayerInitialized', 'ArtifactFound', 'LocationRevealed'],
   },
   {
     facet: 'DFAdminFacet',
