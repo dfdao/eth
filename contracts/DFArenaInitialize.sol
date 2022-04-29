@@ -107,13 +107,12 @@ struct InitArgs {
     uint256 CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
     // Target Planet
     bool TARGET_PLANETS;
-    uint256 TARGET_PLANET_HOLD_BLOCKS_REQUIRED;
+    uint256 CLAIM_VICTORY_ENERGY_PERCENT;
     // Manual Spawn
     bool MANUAL_SPAWN;
 
     uint256[8] MODIFIERS;
     bool[5] SPACESHIPS;
-    uint8 CLAIM_VICTORY_ENERGY_PERCENTAGE;
 }
 
 contract DFArenaInitialize is WithStorage, WithArenaStorage {
@@ -214,10 +213,8 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
         //arenaMode initialization
         arenaStorage().gameover = false;
         arenaStorage().START_TIME = block.timestamp;
-        arenaConstants().CLAIM_VICTORY_ENERGY_PERCENTAGE = initArgs.CLAIM_VICTORY_ENERGY_PERCENTAGE;
         arenaConstants().TARGET_PLANETS = initArgs.TARGET_PLANETS;
-        arenaConstants().TARGET_PLANET_HOLD_BLOCKS_REQUIRED = initArgs
-            .TARGET_PLANET_HOLD_BLOCKS_REQUIRED;
+        arenaConstants().CLAIM_VICTORY_ENERGY_PERCENT = initArgs.CLAIM_VICTORY_ENERGY_PERCENT;
         arenaConstants().MANUAL_SPAWN = initArgs.MANUAL_SPAWN;
 
         arenaConstants().MODIFIERS.popCap = initArgs.MODIFIERS[uint256(Mod.popCap)];

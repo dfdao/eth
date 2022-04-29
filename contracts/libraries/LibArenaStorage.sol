@@ -34,14 +34,13 @@ struct ArenaStorage {
 
 struct ArenaConstants {
     bool TARGET_PLANETS;
-    uint256 TARGET_PLANET_HOLD_BLOCKS_REQUIRED;
     bool MANUAL_SPAWN;
 
     bytes32 CONFIG_HASH;
 
     Modifiers MODIFIERS;
     Spaceships SPACESHIPS;
-    uint8 CLAIM_VICTORY_ENERGY_PERCENTAGE;
+    uint256 CLAIM_VICTORY_ENERGY_PERCENT;
 
 }
 

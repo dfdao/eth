@@ -319,32 +319,6 @@ describe('Arena Functions', function () {
       world = await fixtureLoader(worldFixture);
     });
 
-    describe('invading target planet', function () {
-      it('player cannot invade target planet without ownership', async function () {
-        await expect(
-          world.user1Core.invadeTargetPlanet(...makeRevealArgs(LVL0_PLANET_DEEP_SPACE, 10, 20))
-        ).to.be.revertedWith('you can only invade planets you own');
-      });
-
-      describe('player owns target planet', async function () {
-        beforeEach(async function () {
-          const dist = 1;
-          const shipsSent = 30000;
-          const silverSent = 0;
-          await world.user1Core.move(
-            ...makeMoveArgs(SPAWN_PLANET_1, LVL0_PLANET_DEEP_SPACE, dist, shipsSent, silverSent)
-          );
-        });
-        it('player can invade target planet', async function () {
-          await expect(
-            world.user1Core.invadeTargetPlanet(...makeRevealArgs(LVL0_PLANET_DEEP_SPACE, 10, 20))
-          )
-            .to.emit(world.contract, 'TargetPlanetInvaded')
-            .withArgs(world.user1.address, LVL0_PLANET_DEEP_SPACE.id);
-        });
-      });
-    });
-
     describe('claiming victory on target planet', function () {
       beforeEach(async function () {
         const dist = 1;
@@ -353,12 +327,11 @@ describe('Arena Functions', function () {
         await world.user1Core.move(
           ...makeMoveArgs(SPAWN_PLANET_1, LVL0_PLANET_DEEP_SPACE, dist, shipsSent, silverSent)
         );
-        await world.user1Core.invadeTargetPlanet(...makeRevealArgs(LVL0_PLANET_DEEP_SPACE, 10, 20));
       });
-      it('needs to hold planet for enough time', async function () {
+      it('needs to have enough energy', async function () {
         await expect(
           world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id)
-        ).to.be.revertedWith('you have not held the planet long enough to claim victory with it');
+        ).to.be.revertedWith("planet energy must be greater than victory threshold");
       });
       describe('time elapsed', async function () {
         beforeEach(async function () {
@@ -367,7 +340,7 @@ describe('Arena Functions', function () {
         it('cannot claim victory with a non-target planet', async function () {
           await expect(
             world.user1Core.claimTargetPlanetVictory(SPAWN_PLANET_1.id)
-          ).to.be.revertedWith('you can only claim victory with a target planet');
+          ).to.be.revertedWith('you can only claim victory on a target planet');
         });
         it('must own planet to claim victory', async function () {
           await expect(
@@ -375,12 +348,14 @@ describe('Arena Functions', function () {
           ).to.be.revertedWith('you can only claim victory with planets you own');
         });
         it('gameover event emitted after claim victory', async function () {
+          await increaseBlockchainTime();
           const planet = await world.contract.planetsExtendedInfo2(LVL0_PLANET_DEEP_SPACE.id);
           await expect(world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id))
             .to.emit(world.contract, 'Gameover')
             .withArgs(LVL0_PLANET_DEEP_SPACE.id, world.user1.address);
         });
         it('sets gameover to true and winner to msg sender', async function () {
+          await increaseBlockchainTime();
           await world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id);
           const winners = await world.contract.getWinners();
           const gameover = await world.contract.getGameover();
@@ -392,7 +367,7 @@ describe('Arena Functions', function () {
     });
   });
 
-  describe.only('Claim Victory (no Invade)', function () {
+  describe('Claim Victory (no Invade)', function () {
     let world: World;
 
     async function worldFixture() {
@@ -440,13 +415,12 @@ describe('Arena Functions', function () {
         var pop = planet.population.toNumber();
         console.log(
           `Planet is ${(pop / popCap) * 100}% full, but needs ${
-            (await world.contract.getArenaConstants()).CLAIM_VICTORY_ENERGY_PERCENTAGE
+            (await world.contract.getArenaConstants()).CLAIM_VICTORY_ENERGY_PERCENT
           }%`
         );
 
-        await expect(world.user1Core.claimVictory(LVL0_PLANET_DEEP_SPACE.id)).to.be.revertedWith(
-          'planet must have CLAIM_VICTORY_ENERGY_PERCENTAGE (default 50) % of the max energy'
-        );
+        await expect(world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id)).to.be.revertedWith(
+          "planet energy must be greater than victory threshold"        );
       });
 
       it('get round duration fails if round not over', async function () {
@@ -455,7 +429,7 @@ describe('Arena Functions', function () {
 
       it('claim victory succeeds and emits Gameover if target is above energy threshold ', async function () {
         await increaseBlockchainTime(600);
-        await expect(world.user1Core.claimVictory(LVL0_PLANET_DEEP_SPACE.id))
+        await expect(world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id))
           .to.emit(world.contract, 'Gameover')
           .withArgs(LVL0_PLANET_DEEP_SPACE.id, world.user1.address);
 
