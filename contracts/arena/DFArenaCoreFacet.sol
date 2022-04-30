@@ -179,7 +179,7 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         );
 
         require(
-            (planet.population * 100) / planet.populationCap >
+            (planet.population * 100) / planet.populationCap >=
                 arenaConstants().CLAIM_VICTORY_ENERGY_PERCENT,
             "planet energy must be greater than victory threshold"
         );
