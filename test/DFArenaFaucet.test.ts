@@ -88,7 +88,7 @@ describe('DFArenaFaucet ', function () {
         This code breaks these tests because the contract data isn't reset when the new fixture is loaded 
         It functions like a before instead of a beforeEach. Any state change persists.
       */
-     
+
       // faucet = await loadFixture(fixture);
       // [owner, nonOwner] = await ethers.getSigners();
       // nonOwnerFaucet = await faucet.connect(nonOwner);
@@ -101,7 +101,7 @@ describe('DFArenaFaucet ', function () {
 
       await hre.network.provider.send('evm_setAutomine', [true]);
       const FaucetFactory = await ethers.getContractFactory('DFArenaFaucet');
-      faucet = await FaucetFactory.deploy() as DFArenaFaucet;
+      faucet = (await FaucetFactory.deploy()) as DFArenaFaucet;
       await faucet.deployed();
       [owner, nonOwner] = await ethers.getSigners();
     });
@@ -151,6 +151,11 @@ describe('DFArenaFaucet ', function () {
 
       expect((await faucet.getNextAccessTime(nonOwner.address)).toNumber()).to.be.greaterThan(0);
     });
-  });
+    it('owner can withdraw all funds ', async function () {
+      await owner.sendTransaction({ to: faucet.address, value: parseEther('20') });
+      const balance = await faucet.getBalance();
 
+      await expect(await faucet.withdraw(owner.address)).to.changeEtherBalance(owner, balance);
+    });
+  });
 });

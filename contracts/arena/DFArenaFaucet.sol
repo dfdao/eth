@@ -66,6 +66,11 @@ contract DFArenaFaucet {
         nextAccessTime[_address] = block.timestamp + waitTime;
     }
 
+    function withdraw(address _address) public onlyOwner {
+        bool success = payable(_address).send(getBalance());
+        require(success, "withdraw failed");
+    }
+
     /***********************************Getters*************************************** */
 
     function getBalance() public view returns (uint256) {

@@ -8,9 +8,9 @@ import { DiamondChanges } from '../utils/diamond';
 
 
 task('arena:deploy', 'deploy all arena contracts')
-  .addOptionalParam('whitelist', 'override the whitelist', undefined, types.boolean)
+  .addOptionalParam('whitelist', 'override the whitelist', false, types.boolean)
   .addOptionalParam('faucet', 'deploy the faucet', false, types.boolean)
-  .addOptionalParam('fund', 'amount of eth to fund whitelist contract for fund', 0, types.float)
+  .addOptionalParam('fund', 'amount of eth to fund faucet contract for fund', 0, types.float)
   .addOptionalParam(
     'subgraph',
     'bring up subgraph with name (requires docker)',
@@ -25,13 +25,13 @@ async function deploy(
 ) {
   const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
 
-  let whitelistEnabled: boolean;
-  if (typeof args.whitelist === 'undefined') {
-    // `whitelistEnabled` defaults to `false` in dev but `true` in prod
-    whitelistEnabled = isDev ? false : true;
-  } else {
-    whitelistEnabled = args.whitelist;
-  }
+  let whitelistEnabled = false;
+  // if (typeof args.whitelist === 'undefined') {
+  //   // `whitelistEnabled` defaults to `false` in dev but `true` in prod
+  //   whitelistEnabled = isDev ? false : true;
+  // } else {
+  //   whitelistEnabled = args.whitelist;
+  // }
 
   // Ensure we have required keys in our initializers
   settings.required(hre.initializers, ['PLANETHASH_KEY', 'SPACETYPE_KEY', 'BIOMEBASE_KEY']);
@@ -61,7 +61,7 @@ async function deploy(
     hre
   );
 
-  if (args.fund > 0) {
+  if (whitelistEnabled && args.fund > 0) {
     // Note Ive seen `ProviderError: Internal error` when not enough money...
     console.log(`funding whitelist with ${args.fund}`);
 
@@ -93,20 +93,10 @@ async function deploy(
   }
 
   if (args.faucet) {
-    const factory = await hre.ethers.getContractFactory('DFArenaFaucet');
-    const contract = await factory.deploy();
-    await contract.deployTransaction.wait();
-    console.log(`Faucet deployed to: ${contract.address}`);
+    console.log('calling faucet')
+    await hre.run('faucet:deploy', {value: args.fund});
+    console.log('deployed faucet');
 
-    const tsContents = `
-      /**
-       * The address for the Faucet contract. Useful for lobbies.
-       */
-      export const FAUCET_ADDRESS = '${contract.address}';
-    `
-    const append = true;
-    writeToContractsPackage(hre,tsContents,append);
-    console.log("appened Faucet to contracts");
   }
 
   // TODO: Upstream change to update task name from `hardhat-4byte-uploader`
