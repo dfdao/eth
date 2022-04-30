@@ -186,7 +186,8 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
 
         arenaStorage().gameover = true;
         arenaStorage().winners.push(msg.sender);
-        arenaStorage().END_TIME = block.timestamp;
+        arenaStorage().endTime = block.timestamp;
+        gs().paused = true;
         emit Gameover(locationId, msg.sender);
     }
     
