@@ -1,13 +1,15 @@
 import { task, types } from 'hardhat/config';
 import type { HardhatRuntimeEnvironment, Libraries } from 'hardhat/types';
+import ts from 'typescript';
 import * as settings from '../settings';
-import { deployContract, deployDiamond, saveDeploy } from '../utils/deploy';
+import { deployContract, deployDiamond, saveDeploy, writeToContractsPackage } from '../utils/deploy';
 import { DiamondChanges } from '../utils/diamond';
 
 
 
 task('arena:deploy', 'deploy all arena contracts')
   .addOptionalParam('whitelist', 'override the whitelist', undefined, types.boolean)
+  .addOptionalParam('faucet', 'deploy the faucet', false, types.boolean)
   .addOptionalParam('fund', 'amount of eth to fund whitelist contract for fund', 0, types.float)
   .addOptionalParam(
     'subgraph',
@@ -18,7 +20,7 @@ task('arena:deploy', 'deploy all arena contracts')
   .setAction(deploy);
 
 async function deploy(
-  args: { whitelist?: boolean; fund: number; subgraph?: string },
+  args: { whitelist?: boolean; fund: number; subgraph?: string, faucet?: boolean },
   hre: HardhatRuntimeEnvironment
 ) {
   const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
@@ -73,21 +75,38 @@ async function deploy(
       `Sent ${args.fund} to diamond contract (${diamond.address}) to fund drips in whitelist facet`
     );
 
-    // give all contract administration over to an admin adress if was provided
-    if (hre.ADMIN_PUBLIC_ADDRESS) {
-      const ownership = await hre.ethers.getContractAt('DarkForest', diamond.address);
-      const tx = await ownership.transferOwnership(hre.ADMIN_PUBLIC_ADDRESS);
-      await tx.wait();
-      console.log(`transfered diamond ownership to ${hre.ADMIN_PUBLIC_ADDRESS}`);
-    }
-
-    if (args.subgraph) {
-      await hre.run('subgraph:deploy', { name: args.subgraph });
-      console.log('deployed subgraph');
-    }
-
     const whitelistBalance = await hre.ethers.provider.getBalance(diamond.address);
     console.log(`Whitelist balance ${whitelistBalance}`);
+  }
+
+  // give all contract administration over to an admin adress if was provided
+  if (hre.ADMIN_PUBLIC_ADDRESS) {
+    const ownership = await hre.ethers.getContractAt('DarkForest', diamond.address);
+    const tx = await ownership.transferOwnership(hre.ADMIN_PUBLIC_ADDRESS);
+    await tx.wait();
+    console.log(`transfered diamond ownership to ${hre.ADMIN_PUBLIC_ADDRESS}`);
+  }
+
+  if (args.subgraph) {
+    await hre.run('subgraph:deploy', { name: args.subgraph });
+    console.log('deployed subgraph');
+  }
+
+  if (args.faucet) {
+    const factory = await hre.ethers.getContractFactory('DFArenaFaucet');
+    const contract = await factory.deploy();
+    await contract.deployTransaction.wait();
+    console.log(`Faucet deployed to: ${contract.address}`);
+
+    const tsContents = `
+      /**
+       * The address for the Faucet contract. Useful for lobbies.
+       */
+      export const FAUCET_ADDRESS = '${contract.address}';
+    `
+    const append = true;
+    writeToContractsPackage(hre,tsContents,append);
+    console.log("appened Faucet to contracts");
   }
 
   // TODO: Upstream change to update task name from `hardhat-4byte-uploader`
@@ -260,9 +279,7 @@ export async function cutArena(
   if (!rc.events) throw Error('No event occurred');
 
   const event = rc.events.find((event) => event.event === 'LobbyCreated');
-  if (!event) throw Error('No event found');
-
-  // @ts-expect-error because event is type unknown
+  if (!event || !event.args) throw Error('No event found');
 
   const lobbyAddress = event.args.lobbyAddress;
 
