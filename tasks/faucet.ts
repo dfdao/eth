@@ -18,6 +18,10 @@ async function deployFaucet(args: { value: number }, hre: HardhatRuntimeEnvironm
   console.log(`Faucet deployed to: ${faucet.address}`);
 
   if (args.value > 0) {
+    const deployerBalance = weiToEth(await deployer.getBalance());
+    console.log(`deployer balance ${deployerBalance}`);
+    if (deployerBalance < args.value) throw new Error('Not enough funds');
+
     console.log(`funding faucet with ${args.value}`);
 
     const tx = await deployer.sendTransaction({
@@ -90,7 +94,7 @@ async function changeWaitTime(args: { seconds: number }, hre: HardhatRuntimeEnvi
   }
 }
 
-task('faucet:withdraw', 'withdraw')
+task('faucet:withdraw', 'withdraw all funds from faucet')
   .addOptionalParam('address', 'withdraw address', undefined, types.string)
   .setAction(withdraw);
 
@@ -111,6 +115,47 @@ async function withdraw(args: { address: string }, hre: HardhatRuntimeEnvironmen
     await txReceipt.wait();
 
     console.log(`faucet  balance is now ${formatEther(await contract.getBalance())}`);
+  } catch (error) {
+    console.log('change drip failed', error);
+  }
+}
+
+task('faucet:fund', 'send more funds to faucet')
+  .addParam('value', 'amount to fund', 0, types.float)
+  .setAction(fund);
+
+async function fund(args: { value: number }, hre: HardhatRuntimeEnvironment) {
+  try {
+    await hre.run('utils:assertChainId');
+
+    const [deployer] = await hre.ethers.getSigners();
+
+    if (!hre.contracts.FAUCET_ADDRESS) throw new Error('Faucet address not found');
+
+    const faucet = await hre.ethers.getContractAt('DFArenaFaucet', hre.contracts.FAUCET_ADDRESS);
+
+    if (args.value > 0) {
+      const deployerBalance = weiToEth(await deployer.getBalance());
+      console.log(`deployer balance ${deployerBalance}`);
+      if (deployerBalance < args.value) throw new Error('Not enough funds');
+
+      console.log(`funding faucet with ${args.value}`);
+
+      const tx = await deployer.sendTransaction({
+        to: faucet.address,
+        value: hre.ethers.utils.parseEther(args.value.toString()),
+      });
+      await tx.wait();
+
+      console.log(
+        `Sent ${args.value} to faucet contract (${faucet.address}) to fund drips in faucet`
+      );
+
+      const whitelistBalance = await hre.ethers.provider.getBalance(faucet.address);
+      console.log(`Faucet balance ${weiToEth(whitelistBalance)}`);
+    }
+
+    console.log(`faucet  balance is now ${formatEther(await faucet.getBalance())}`);
   } catch (error) {
     console.log('change drip failed', error);
   }

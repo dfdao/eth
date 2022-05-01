@@ -123,7 +123,7 @@ const gnosis_optimism = {
   accounts: {
     mnemonic: DEPLOYER_MNEMONIC,
   },
-  chainId: 69,
+  chainId: 300,
   gasLimit: 15000000,
   gasMultiplier: 5,
 };
