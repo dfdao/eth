@@ -43,16 +43,16 @@ export const manualSpawnInitializers = settings.parse(decodeInitializers, {
 export const targetPlanetInitializers = settings.parse(decodeInitializers, {
   ...defaultInitializerValues,
   TARGET_PLANETS: true,
-  TARGET_PLANET_HOLD_BLOCKS_REQUIRED: 10,
+  CLAIM_VICTORY_ENERGY_PERCENT: 50,
 });
 
 export const arenaWorldInitializers = settings.parse(decodeInitializers, {
   ...defaultInitializerValues,
   MANUAL_SPAWN: true,
-  INIT_PERLIN_MIN : 0,
+  INIT_PERLIN_MIN: 0,
   INIT_PERLIN_MAX: 31,
   TARGET_PLANETS: true,
-  TARGET_PLANET_HOLD_BLOCKS_REQUIRED: 10,
+  CLAIM_VICTORY_ENERGY_PERCENT: 50,
 });
 
 export const planetLevelThresholdInitializer = settings.parse(decodeInitializers, {
