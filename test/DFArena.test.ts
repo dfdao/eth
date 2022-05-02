@@ -1,8 +1,7 @@
-import { p } from '@darkforest_eth/hashing/dist/mimc';
+import { LobbyCreatedEvent } from '@darkforest_eth/contracts/typechain/DarkForest';
 import { ArtifactType } from '@darkforest_eth/types';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
-import { initializers } from 'hardhat';
 import {
   fixtureLoader,
   increaseBlockchainTime,
@@ -32,6 +31,7 @@ import {
   SPAWN_PLANET_2,
   VALID_INIT_PERLIN,
 } from './utils/WorldConstants';
+import hre from 'hardhat';
 
 describe('Arena Functions', function () {
   describe('Create Planets', function () {
@@ -652,5 +652,42 @@ describe('Arena Functions', function () {
         world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1))
       ).to.be.revertedWith('Not a valid planet location');
     });
+  });
+
+  describe.only('Tournament Match', function () {
+    let world: World;
+
+    beforeEach('load fixture', async function () {
+      world = await fixtureLoader(arenaWorldFixture);
+    });
+
+    it('Tournament storage exists', async function () {
+      expect((await world.contract.getNumMatches()).toNumber()).to.equal(0);
+    });
+
+    it('New lobby adress is stored on chain', async function () {
+
+      const initAddress = hre.ethers.constants.AddressZero;
+      const initFunctionCall = '0x';
+      // Make Lobby
+      const tx = await world.user1Core.createLobby(initAddress, initFunctionCall);
+      const rc = await tx.wait();
+      if (!rc.events) throw Error('No event occurred');
+
+      const event = rc.events.find((event) => event.event === 'LobbyCreated') as LobbyCreatedEvent;
+      expect(event.args.ownerAddress).to.equal(world.user1.address);
+
+      const lobbyAddress = event.args.lobbyAddress;
+
+      if (!lobbyAddress) throw Error('No lobby address found');
+
+      // Connect to Lobby Diamond and check ownership
+      const lobby = await hre.ethers.getContractAt('DarkForest', lobbyAddress);
+      expect(await lobby.owner()).to.equal(world.user1.address);
+
+      expect((await world.contract.getNumMatches()).toNumber()).to.equal(1);
+      expect((await world.contract.getMatch(0))).to.equal(lobbyAddress);
+    });
+
   });
 });

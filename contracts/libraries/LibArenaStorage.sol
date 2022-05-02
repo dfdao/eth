@@ -19,6 +19,12 @@ import {
     Spaceships
 } from "../DFTypes.sol";
 
+struct TournamentStorage {
+    address[] matches;
+    uint256 numMatches;
+}
+
+
 struct ArenaStorage {
     address[] winners;
     bool gameover;
@@ -49,6 +55,8 @@ library LibArenaStorage {
     // Storage are structs where the data gets updated throughout the lifespan of the game
     bytes32 constant ARENA_STORAGE_POSITION = keccak256("darkforest.storage.arena");
     bytes32 constant ARENA_CONSTANTS_POSITION = keccak256("darkforest.constants.arena");
+    bytes32 constant TOURNAMENT_STORAGE_POSITION = keccak256("darkforest.storage.tournament");
+
 
     function arenaStorage() internal pure returns (ArenaStorage storage gs) {
         bytes32 position = ARENA_STORAGE_POSITION;
@@ -63,6 +71,13 @@ library LibArenaStorage {
             gs.slot := position
         }
     }
+
+     function tournamentStorage() internal pure returns (TournamentStorage storage ts) {
+        bytes32 position = TOURNAMENT_STORAGE_POSITION;
+        assembly {
+            ts.slot := position
+        }
+    }
 }
 
 contract WithArenaStorage {
@@ -73,4 +88,7 @@ contract WithArenaStorage {
         return LibArenaStorage.arenaConstants();
     }
     
+    function tournamentStorage() internal pure returns (TournamentStorage storage) {
+        return LibArenaStorage.tournamentStorage();
+    }
 }

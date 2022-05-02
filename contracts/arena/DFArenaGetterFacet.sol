@@ -16,7 +16,7 @@ import {IERC173} from "../vendor/interfaces/IERC173.sol";
 
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
-import {WithArenaStorage, ArenaStorage, ArenaConstants} from "../libraries/LibArenaStorage.sol";
+import {WithArenaStorage, ArenaStorage, ArenaConstants, TournamentStorage} from "../libraries/LibArenaStorage.sol";
 
 import {
     SpaceType, 
@@ -111,4 +111,15 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
         return arenaConstants();
     }
 
+    function getMatches() public view returns (address[] memory) {
+        return tournamentStorage().matches;
+    }
+
+    function getNumMatches() public view returns (uint256) {
+        return tournamentStorage().numMatches;
+    }
+
+    function getMatch(uint256 id) public view returns (address) {
+        return tournamentStorage().matches[id];
+    }
 }
