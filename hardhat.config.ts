@@ -49,6 +49,11 @@ const AbiItemsToIgnore = [
     events: ['AdminPlanetCreated'],
   },
   {
+    facet: 'DFLobbyFacet',
+    functions: ['createLobby'],
+    events: ['LobbyCreated'],
+  },
+  {
     facet: 'DFArenaGetterFacet',
     functions: ['getArenaConstants']
   }
