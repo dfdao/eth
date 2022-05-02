@@ -33,6 +33,7 @@ import './tasks/upgrades';
 import './tasks/utils';
 import './tasks/wallet';
 import './tasks/whitelist';
+import './tasks/faucet';
 
 require('dotenv').config();
 
@@ -127,7 +128,7 @@ const gnosis_optimism = {
   accounts: {
     mnemonic: DEPLOYER_MNEMONIC,
   },
-  chainId: 69,
+  chainId: 300,
   gasLimit: 15000000,
   gasMultiplier: 5,
 };
@@ -253,7 +254,7 @@ const config: HardhatUserConfig = {
     // We don't want additional directories created, so we explicitly set the `flat` option to `true`
     flat: true,
     // We **only** want to copy the DarkForest ABI (which is the Diamond ABI we generate) and the initializer ABI to this folder, so we limit the matched files with the `only` option
-    only: [':DarkForest$', ':DFArenaInitialize$', ':DFArenaUpgradeInitialize$'],
+    only: [':DarkForest$', ':DFArenaInitialize$', ':DFArenaFaucet$'],
   },
 };
 

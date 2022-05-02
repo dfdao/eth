@@ -654,7 +654,7 @@ describe('Arena Functions', function () {
     });
   });
 
-  describe.only('Tournament Match', function () {
+  describe('Tournament Match', function () {
     let world: World;
 
     beforeEach('load fixture', async function () {

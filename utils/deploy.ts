@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import { HardhatRuntimeEnvironment, Libraries } from 'hardhat/types';
 import * as path from 'path';
 import * as prettier from 'prettier';
+import ts from 'typescript';
 import { tscompile } from '../utils/tscompile';
 
 export async function deployDiamond(
@@ -34,6 +35,45 @@ export async function deployContract(
   await contract.deployTransaction.wait();
   console.log(`${facetName} deployed to: ${contract.address}`);
   return contract;
+}
+
+export function writeToContractsPackage(hre: HardhatRuntimeEnvironment, tsContents: string, append = false) {
+  const { jsContents, dtsContents } = tscompile(tsContents);
+
+  const contractsFileTS = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'index.ts');
+  const contractsFileJS = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'index.js');
+  const contractsFileDTS = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'index.d.ts');
+
+  const options = prettier.resolveConfig.sync(contractsFileTS);
+
+  if(append) {
+    fs.appendFileSync(
+      contractsFileTS,
+      prettier.format(tsContents, { ...options, parser: 'babel-ts' })
+    );
+    fs.appendFileSync(
+      contractsFileJS,
+      prettier.format(jsContents, { ...options, parser: 'babel-ts' })
+    );
+    fs.appendFileSync(
+      contractsFileDTS,
+      prettier.format(dtsContents, { ...options, parser: 'babel-ts' })
+    );  
+  }
+  else {
+    fs.writeFileSync(
+      contractsFileTS,
+      prettier.format(tsContents, { ...options, parser: 'babel-ts' })
+    );
+    fs.writeFileSync(
+      contractsFileJS,
+      prettier.format(jsContents, { ...options, parser: 'babel-ts' })
+    );
+    fs.writeFileSync(
+      contractsFileDTS,
+      prettier.format(dtsContents, { ...options, parser: 'babel-ts' })
+    );  
+  }
 }
 
 export async function saveDeploy(
@@ -120,26 +160,7 @@ export async function saveDeploy(
     export const LIB_ARTIFACT_UTILS_ADDRESS = '${args.libraries.LibArtifactUtils}';
     `;
 
-  const { jsContents, dtsContents } = tscompile(tsContents);
-
-  const contractsFileTS = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'index.ts');
-  const contractsFileJS = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'index.js');
-  const contractsFileDTS = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'index.d.ts');
-
-  const options = prettier.resolveConfig.sync(contractsFileTS);
-
-  fs.writeFileSync(
-    contractsFileTS,
-    prettier.format(tsContents, { ...options, parser: 'babel-ts' })
-  );
-  fs.writeFileSync(
-    contractsFileJS,
-    prettier.format(jsContents, { ...options, parser: 'babel-ts' })
-  );
-  fs.writeFileSync(
-    contractsFileDTS,
-    prettier.format(dtsContents, { ...options, parser: 'babel-ts' })
-  );
+    writeToContractsPackage(hre, tsContents);
 }
 
 export async function createLobby(
@@ -159,9 +180,10 @@ export async function createLobby(
 
   const arenaTx = await diamond.createLobby(diamondInit.address, diamondInitFunctionCall);
   const rc = await arenaTx.wait();
+
   // @ts-expect-error
   const event = rc.events.find((event) => event.event === 'LobbyCreated');
-    // @ts-expect-error
+  if (!event || !event.args) throw Error('No event found');
 
   const lobbyAddress = event.args.lobbyAddress as string;
   return hre.ethers.getContractAt('DarkForest', lobbyAddress);
