@@ -98,6 +98,15 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
         return arenaStorage().gameover;
     }
 
+    function getEndTime() public view returns (uint256) {
+        return arenaStorage().endTime;
+    }
+
+    function getRoundDuration() public view returns (uint256) {
+        require(arenaStorage().gameover && arenaStorage().endTime > 0, "game is not yet over");
+        return arenaStorage().endTime - arenaConstants().START_TIME;
+    }
+
     function getArenaConstants() public pure returns (ArenaConstants memory) {
         return arenaConstants();
     }

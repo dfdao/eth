@@ -38,7 +38,7 @@ import {
 contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     event AdminPlanetCreated(uint256 loc);
     event TargetPlanetInvaded(address player, uint256 loc);
-    event Gameover(uint256 loc);
+    event Gameover(uint256 loc, address winner);
     event PlayerInitialized(address player, uint256 loc);
     event LocationRevealed(address revealer, uint256 loc, uint256 x, uint256 y);
 
@@ -120,33 +120,6 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         return _location;
     }
 
-    // FUNCTIONS TO ADD
-    function invadeTargetPlanet(
-        uint256[2] memory _a,
-        uint256[2][2] memory _b,
-        uint256[2] memory _c,
-        uint256[9] memory _input
-    ) public onlyWhitelisted notPaused targetPlanetsActive {
-        DFCoreFacet(address(this)).checkRevealProof(_a, _b, _c, _input);
-
-        uint256 locationId = _input[0];
-
-        LibPlanet.refreshPlanet(locationId);
-        Planet memory planet = gs().planets[locationId];
-        PlanetExtendedInfo memory planetExtendedInfo = gs().planetsExtendedInfo[locationId];
-        PlanetExtendedInfo2 storage planetExtendedInfo2 = gs().planetsExtendedInfo2[locationId];
-
-        require(!planetExtendedInfo.destroyed, "planet is destroyed");
-        require(planetExtendedInfo2.invader == address(0), "planet is already invaded");
-        require(planetExtendedInfo2.capturer == address(0), "planet has already been captured");
-        require(planet.owner == msg.sender, "you can only invade planets you own");
-
-        planetExtendedInfo2.invader = msg.sender;
-        planetExtendedInfo2.invadeStartBlock = block.number;
-
-        emit TargetPlanetInvaded(msg.sender, locationId);
-    }
-
     function claimTargetPlanetVictory(uint256 locationId)
         public
         onlyWhitelisted
@@ -158,31 +131,26 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         LibPlanet.refreshPlanet(locationId);
         Planet memory planet = gs().planets[locationId];
         PlanetExtendedInfo memory planetExtendedInfo = gs().planetsExtendedInfo[locationId];
-        PlanetExtendedInfo2 memory planetExtendedInfo2 = gs().planetsExtendedInfo2[locationId];
-
-        require(
-            arenaStorage().arenaPlanetInfo[locationId].targetPlanet,
-            "you can only claim victory with a target planet"
-        );
 
         require(planet.owner == msg.sender, "you can only claim victory with planets you own");
         require(!planetExtendedInfo.destroyed, "planet is destroyed");
+
         require(
-            planetExtendedInfo2.invader != address(0),
-            "you must invade the planet before capturing"
+            arenaStorage().arenaPlanetInfo[locationId].targetPlanet,
+            "you can only claim victory on a target planet"
         );
 
         require(
-            planetExtendedInfo2.invadeStartBlock +
-                arenaConstants().TARGET_PLANET_HOLD_BLOCKS_REQUIRED <=
-                block.number,
-            "you have not held the planet long enough to claim victory with it"
+            (planet.population * 100) / planet.populationCap >=
+                arenaConstants().CLAIM_VICTORY_ENERGY_PERCENT,
+            "planet energy must be greater than victory threshold"
         );
 
-        planetExtendedInfo2.capturer = msg.sender;
         arenaStorage().gameover = true;
         arenaStorage().winners.push(msg.sender);
-        emit Gameover(locationId);
+        arenaStorage().endTime = block.timestamp;
+        gs().paused = true;
+        emit Gameover(locationId, msg.sender);
     }
 
     function createArenaPlanet(ArenaAdminCreatePlanetArgs memory args) public onlyAdmin {
@@ -252,7 +220,6 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         }
     }
 
-    /* calldata is for external function calls */
     function createAndReveal(
         ArenaAdminCreatePlanetArgs memory createPlanetArgs, 
         RevealProofArgs memory revealArgs
