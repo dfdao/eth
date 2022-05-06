@@ -35,6 +35,9 @@ struct ArenaStorage {
     uint256 moveCap;
     mapping(address => ArenaPlayerInfo) arenaPlayerInfo;
     uint256 endTime;
+
+    // Teams
+    mapping(uint256 => address[]) teams;
 }
 
 struct ArenaConstants {
@@ -48,7 +51,10 @@ struct ArenaConstants {
     uint256 CLAIM_VICTORY_ENERGY_PERCENT;
     uint256 START_TIME;
 
-
+     // Teams
+     bool TEAMS_ENABLED;
+     // The number of allowed teams
+     uint256 NUM_TEAMS;
 }
 
 library LibArenaStorage {

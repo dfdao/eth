@@ -245,7 +245,7 @@ struct ArenaPlanetInfo {
 }
 
 struct ArenaPlayerInfo {
-    uint256 moves;
+    uint256 team;
 }
 
 struct ArenaAdminCreatePlanetArgs {

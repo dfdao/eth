@@ -113,6 +113,8 @@ struct InitArgs {
 
     uint256[8] MODIFIERS;
     bool[5] SPACESHIPS;
+    bool TEAMS_ENABLED;
+    uint256 NUM_TEAMS;
 }
 
 contract DFArenaInitialize is WithStorage, WithArenaStorage {
@@ -233,7 +235,10 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
             initArgs.SPACESHIPS[3],
             initArgs.SPACESHIPS[4]
         );
-        
+
+        arenaConstants().TEAMS_ENABLED = initArgs.TEAMS_ENABLED;
+        arenaConstants().NUM_TEAMS = initArgs.NUM_TEAMS;
+
         initializeDefaults();
         initializeUpgrades();
         LibGameUtils.updateWorldRadius();
@@ -241,7 +246,10 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
 
     function initializeDefaults() public {
         PlanetDefaultStats[] storage planetDefaultStats = planetDefaultStats();
-        require ((75* arenaConstants().MODIFIERS.speed / 100) > 0, "cannot initialize planets with 0 speed");
+        require(
+            ((75 * arenaConstants().MODIFIERS.speed) / 100) > 0,
+            "cannot initialize planets with 0 speed"
+        );
 
         planetDefaultStats.push(
             PlanetDefaultStats({

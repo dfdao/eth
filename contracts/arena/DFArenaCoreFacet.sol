@@ -67,11 +67,12 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     }
 
     // FUNCTIONS TO REPLACE on core DF Diamond
-    function initializePlayer(
+    function arenaInitializePlayer(
         uint256[2] memory _a,
         uint256[2][2] memory _b,
         uint256[2] memory _c,
-        uint256[8] memory _input
+        uint256[8] memory _input,
+        uint256 team
     ) public onlyWhitelisted returns (uint256) {
         uint256 _location = _input[0];
         uint256 _perlin = _input[1];
@@ -114,6 +115,11 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
             gameConstants().SPACE_JUNK_LIMIT,
             false
         );
+
+        if(arenaConstants().TEAMS_ENABLED) {
+            require(team < arenaConstants().NUM_TEAMS, 'invalid team');
+            arenaStorage().arenaPlayerInfo[msg.sender].team = team;
+        }
 
         LibGameUtils.updateWorldRadius();
         emit PlayerInitialized(msg.sender, _location);

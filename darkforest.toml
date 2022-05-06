@@ -151,6 +151,11 @@ MODIFIERS = [100, 100, 100, 100, 100, 100, 100, 100]
 
 # Mothership, Whale, Crescent, Gear, Titan
 SPACESHIPS = [true, true, true, true, true]
+
+# Teams      
+TEAMS_ENABLED = false
+NUM_TEAMS = 2
+
 ##########################
 # Planets to add to game #
 ##########################

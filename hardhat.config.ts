@@ -26,6 +26,7 @@ import './tasks/circom';
 import './tasks/compile';
 import './tasks/debug';
 import './tasks/deploy';
+import './tasks/faucet';
 import './tasks/game';
 import './tasks/lobby';
 import './tasks/subgraph';
@@ -42,7 +43,7 @@ const { DEPLOYER_MNEMONIC, ADMIN_PUBLIC_ADDRESS } = process.env;
 const AbiItemsToIgnore = [
   {
     facet: 'DFCoreFacet',
-    functions: ['initializePlayer', 'giveSpaceShips'],
+    functions: ['giveSpaceShips'],
     events: ['PlayerInitialized', 'ArtifactFound', 'LocationRevealed'],
   },
   {
