@@ -29,7 +29,8 @@ import {
     PlanetType, 
     PlanetExtendedInfo, 
     PlanetExtendedInfo2,
-    ArenaPlanetInfo
+    ArenaPlanetInfo,
+    ArenaPlayerInfo
 } from "../DFTypes.sol";
 
 contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
@@ -90,6 +91,22 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
         }
     }
 
+    function arenaPlayers(address key) public view returns (ArenaPlayerInfo memory) {
+        return arenaStorage().arenaPlayerInfo[key];
+    }
+
+    function bulkGetArenaPlayers(uint256 startIdx, uint256 endIdx)
+        public
+        view
+        returns (ArenaPlayerInfo[] memory ret)
+    {
+        // return array of planets corresponding to planetIds[startIdx] through planetIds[endIdx - 1]
+        ret = new ArenaPlayerInfo[](endIdx - startIdx);
+        for (uint256 i = startIdx; i < endIdx; i++) {
+            ret[i - startIdx] = arenaStorage().arenaPlayerInfo[gs().playerIds[i]];
+        }
+    }
+    
     function getWinners() public view returns (address[] memory) {
         return arenaStorage().winners;
     }

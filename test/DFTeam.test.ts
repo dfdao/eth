@@ -2,11 +2,11 @@ import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-waffle';
 import { expect } from 'chai';
 import {
-    conquerUnownedPlanet,
-    fixtureLoader,
-    increaseBlockchainTime,
-    makeInitArgs,
-    makeMoveArgs
+  conquerUnownedPlanet,
+  fixtureLoader,
+  increaseBlockchainTime,
+  makeInitArgs,
+  makeMoveArgs
 } from './utils/TestUtils';
 import { arenaWorldFixture, World } from './utils/TestWorld';
 import { LVL3_UNOWNED_DEEP_SPACE, SPAWN_PLANET_1, SPAWN_PLANET_2 } from './utils/WorldConstants';
@@ -27,11 +27,11 @@ describe('Teams', function () {
       world = await fixtureLoader(worldFixture);
     });
 
-    it('allows players to join a valid team', async function () {
-      await world.user1Core.joinTeam(1);
-      const player = await world.contract.arenaPlayers(world.user1.address);
-      expect(player.team).to.eq(1);
-    });
+    // it('allows players to join a valid team', async function () {
+    //   await world.user1Core.joinTeam(1);
+    //   const player = await world.contract.arenaPlayers(world.user1.address);
+    //   expect(player.team).to.eq(1);
+    // });
 
     it('does not allow players to join an invalid team', async function () {
       await expect(world.user1Core.joinTeam(694201337)).to.be.revertedWith('invalid team');

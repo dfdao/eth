@@ -55,6 +55,12 @@ export const arenaWorldInitializers = settings.parse(decodeInitializers, {
   CLAIM_VICTORY_ENERGY_PERCENT: 50,
 });
 
+export const teamsInitializers = settings.parse(decodeInitializers, {
+  ...defaultInitializerValues,
+  TEAMS_ENABLED: true,
+  NUM_TEAMS: 2,
+});
+
 export const planetLevelThresholdInitializer = settings.parse(decodeInitializers, {
   ...defaultInitializerValues,
   PLANET_LEVEL_THRESHOLDS:[

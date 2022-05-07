@@ -12,7 +12,8 @@ import {
   noPlanetTransferInitializers,
   planetLevelThresholdInitializer,
   target4Initializers,
-  targetPlanetInitializers
+  targetPlanetInitializers,
+  teamsInitializers
 } from './WorldConstants';
 
 
@@ -73,7 +74,7 @@ export function planetLevelThresholdFixture(): Promise<World> {
   return initializeWorld({
     initializers: planetLevelThresholdInitializer,
     whitelistEnabled: false,
-    arena: false,
+    arena: true,
   });
 }
 
@@ -115,6 +116,14 @@ export function modifiedWorldFixture(mod: number): Promise<World> {
 export function spaceshipWorldFixture(spaceships: [boolean, boolean, boolean, boolean, boolean]): Promise<World> {
   return initializeWorld({
     initializers: { ...initializers, SPACESHIPS: spaceships },
+    whitelistEnabled: false,
+    arena: true
+  });
+}
+
+export function teamsFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: teamsInitializers,
     whitelistEnabled: false,
     arena: true
   });
