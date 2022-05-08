@@ -81,14 +81,12 @@ export async function cutUpgradesFromLobby(
   const arenaCoreFacet = await deployContract('DFArenaCoreFacet', {LibGameUtils, LibPlanet}, hre);
   const spaceshipConfigFacet = await deployContract('DFSpaceshipConfigFacet', {LibGameUtils}, hre);
   const tournamentFacet = await deployContract('DFArenaTournamentFacet', {}, hre);
-  const teamFacet = await deployContract('DFTeamFacet', {}, hre);
 
   const arenaFacetCuts = [
     ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
     ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
     ...changes.getFacetCuts('DFSpaceshipConfigFacet', spaceshipConfigFacet),
     ...changes.getFacetCuts('DFArenaTournamentFacet', tournamentFacet),
-    ...changes.getFacetCuts('DFTeamFacet', teamFacet),
   ];
 
   const toCut = [...arenaFacetCuts];

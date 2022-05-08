@@ -83,7 +83,7 @@ Identical to defaultWorldFixture but with arena facets cut in
 */
 export function arenaWorldFixture(): Promise<World> {
   return initializeWorld({
-    initializers: arenaWorldInitializers,
+    initializers,
     whitelistEnabled: false,
     arena: true,
   });

@@ -287,7 +287,6 @@ export async function cutArena(
   const arenaGetterFacet = await deployContract('DFArenaGetterFacet', {}, hre);
   const spaceshipConfigFacet = await deployContract('DFSpaceshipConfigFacet', {LibGameUtils}, hre);
   const tournamentFacet = await deployContract('DFArenaTournamentFacet', {}, hre);
-  const teamFacet = await deployContract('DFTeamFacet', {}, hre);
 
 
   const arenaFacetCuts = [
@@ -295,7 +294,6 @@ export async function cutArena(
     ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
     ...changes.getFacetCuts('DFSpaceshipConfigFacet', spaceshipConfigFacet),
     ...changes.getFacetCuts('DFArenaTournamentFacet', tournamentFacet),
-    ...changes.getFacetCuts('DFTeamFacet', teamFacet),
   ];
 
   const diamondCut = await hre.ethers.getContractAt('DarkForest', diamond.address);

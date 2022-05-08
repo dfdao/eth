@@ -117,7 +117,9 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         );
 
         if(arenaConstants().TEAMS_ENABLED) {
-            require(team < arenaConstants().NUM_TEAMS, 'invalid team');
+            require(team <= arenaConstants().NUM_TEAMS, 'invalid team');
+            require(team > 0, 'team cannot be 0');
+
             arenaStorage().arenaPlayerInfo[msg.sender].team = team;
         }
 

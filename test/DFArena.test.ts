@@ -694,7 +694,7 @@ describe('Arena Functions', function () {
 
   });
 
-  describe.only('Teams', function() {
+  describe('Teams', function() {
     let world: World;
     async function worldFixture() {
       const world = await fixtureLoader(teamsFixture);
@@ -719,13 +719,11 @@ describe('Arena Functions', function () {
       let world: World;
   
       async function worldFixture() {
-        const world = await fixtureLoader(arenaWorldFixture);
+        const world = await fixtureLoader(teamsFixture);
         let initArgs = makeInitArgs(SPAWN_PLANET_1);
-        await world.user1Core.initializePlayer(...initArgs);
-        await world.user1Core.joinTeam(1);
+        await world.user1Core.arenaInitializePlayer(...initArgs, 1);
         initArgs = makeInitArgs(SPAWN_PLANET_2);
-        await world.user2Core.initializePlayer(...initArgs);
-        await world.user2Core.joinTeam(1);
+        await world.user2Core.arenaInitializePlayer(...initArgs, 1);
         await increaseBlockchainTime();
   
         return world;
