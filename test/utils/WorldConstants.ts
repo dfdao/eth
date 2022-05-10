@@ -59,6 +59,8 @@ export const teamsInitializers = settings.parse(decodeInitializers, {
   ...defaultInitializerValues,
   TEAMS_ENABLED: true,
   NUM_TEAMS: 2,
+  TARGET_PLANETS: true,
+  CLAIM_VICTORY_ENERGY_PERCENT: 0,
 });
 
 export const planetLevelThresholdInitializer = settings.parse(decodeInitializers, {

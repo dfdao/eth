@@ -107,6 +107,10 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
         }
     }
     
+    function getTeam(uint256 team) public view returns (address[] memory) {
+        return arenaStorage().teams[team];
+    }
+
     function getWinners() public view returns (address[] memory) {
         return arenaStorage().winners;
     }

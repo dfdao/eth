@@ -32,7 +32,8 @@ import {
     Artifact,
     ArtifactType,
     ArenaPlanetInfo,
-    ArenaAdminCreatePlanetArgs
+    ArenaAdminCreatePlanetArgs,
+    ArenaPlayerInfo
 } from "../DFTypes.sol";
 
 contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
@@ -121,6 +122,7 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
             require(team > 0, 'team cannot be 0');
 
             arenaStorage().arenaPlayerInfo[msg.sender].team = team;
+            arenaStorage().teams[team].push(msg.sender);
         }
 
         LibGameUtils.updateWorldRadius();
@@ -154,8 +156,15 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
             "planet energy must be greater than victory threshold"
         );
 
+        ArenaPlayerInfo memory player = arenaStorage().arenaPlayerInfo[msg.sender];
         arenaStorage().gameover = true;
-        arenaStorage().winners.push(msg.sender);
+        if(arenaConstants().TEAMS_ENABLED){
+            uint256 winningTeam = player.team;
+            arenaStorage().winners = arenaStorage().teams[winningTeam];
+        } else {
+            arenaStorage().winners.push(msg.sender);
+        }
+
         arenaStorage().endTime = block.timestamp;
         gs().paused = true;
         emit Gameover(locationId, msg.sender);

@@ -242,7 +242,7 @@ describe('Arena Functions', function () {
 
     it('reverts if planet not initialized as a spawn planet', async function () {
       await expect(
-        world.user1Core.arenaInitializePlayer(...makeInitArgs(ADMIN_PLANET),0)
+        world.user1Core.arenaInitializePlayer(...makeInitArgs(ADMIN_PLANET),1)
       ).to.be.revertedWith('Planet is not a spawn planet');
     });
 
@@ -263,12 +263,12 @@ describe('Arena Functions', function () {
       const toPlanetExtended = await world.contract.planetsExtendedInfo(ADMIN_PLANET.id);
       expect(toPlanetExtended.isInitialized).to.equal(true);
 
-      await expect(world.user1Core.arenaInitializePlayer(...makeInitArgs(ADMIN_PLANET),0))
+      await expect(world.user1Core.arenaInitializePlayer(...makeInitArgs(ADMIN_PLANET),1))
         .to.emit(world.contract, 'PlayerInitialized')
         .withArgs(world.user1.address, ADMIN_PLANET.id.toString());
 
       await expect(
-        world.user2Core.arenaInitializePlayer(...makeInitArgs(ADMIN_PLANET),0)
+        world.user2Core.arenaInitializePlayer(...makeInitArgs(ADMIN_PLANET),1)
       ).to.be.revertedWith('Planet is owned');
     });
 
@@ -289,7 +289,7 @@ describe('Arena Functions', function () {
       const toPlanetExtended = await world.contract.planetsExtendedInfo(ADMIN_PLANET_CLOAKED.id);
       expect(toPlanetExtended.isInitialized).to.equal(true);
 
-      await expect(world.user1Core.arenaInitializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED),0))
+      await expect(world.user1Core.arenaInitializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED),1))
         .to.emit(world.contract, 'PlayerInitialized')
         .withArgs(world.user1.address, ADMIN_PLANET_CLOAKED.id.toString());
     });
@@ -342,7 +342,7 @@ describe('Arena Functions', function () {
       const numSpawnPlanets = await world.contract.getNSpawnPlanets();
       expect(numSpawnPlanets).to.equal(1);
 
-      await world.user1Core.arenaInitializePlayer(...makeInitArgs(LVL2_PLANET_DEEP_SPACE),0);
+      await world.user1Core.arenaInitializePlayer(...makeInitArgs(LVL2_PLANET_DEEP_SPACE),1);
 
       const spawnPlanetInfo = await world.contract.planets(LVL2_PLANET_DEEP_SPACE.id);
       const spawnPlanetArenaInfo = await world.contract.planetsArenaInfo(LVL2_PLANET_DEEP_SPACE.id);
@@ -377,11 +377,11 @@ describe('Arena Functions', function () {
     async function worldFixture() {
       world = await fixtureLoader(targetPlanetFixture);
       let initArgs = makeInitArgs(SPAWN_PLANET_1);
-      await world.user1Core.arenaInitializePlayer(...initArgs,0);
+      await world.user1Core.arenaInitializePlayer(...initArgs,1);
       // await increaseBlockchainTime();
 
       initArgs = makeInitArgs(SPAWN_PLANET_2);
-      await world.user2Core.arenaInitializePlayer(...initArgs,0);
+      await world.user2Core.arenaInitializePlayer(...initArgs,1);
 
       const perlin = 20;
       const level = 0;
@@ -395,7 +395,7 @@ describe('Arena Functions', function () {
         isTargetPlanet: true,
         isSpawnPlanet: false,
       });
-      // await increaseBlockchainTime();
+      await increaseBlockchainTime();
 
       return world;
     }
@@ -458,11 +458,11 @@ describe('Arena Functions', function () {
     async function worldFixture() {
       world = await fixtureLoader(targetPlanetFixture);
       let initArgs = makeInitArgs(SPAWN_PLANET_1);
-      await world.user1Core.arenaInitializePlayer(...initArgs,0);
+      await world.user1Core.arenaInitializePlayer(...initArgs,1);
       // await increaseBlockchainTime();
 
       initArgs = makeInitArgs(SPAWN_PLANET_2);
-      await world.user2Core.arenaInitializePlayer(...initArgs,0);
+      await world.user2Core.arenaInitializePlayer(...initArgs,1);
 
       const perlin = 20;
       const level = 0;
@@ -590,7 +590,7 @@ describe('Arena Functions', function () {
         spaceshipWorldFixture([true, true, true, false, false])
       );
       let initArgs = makeInitArgs(SPAWN_PLANET_1);
-      await world.user1Core.arenaInitializePlayer(...initArgs,0);
+      await world.user1Core.arenaInitializePlayer(...initArgs,1);
       await world.user1Core.giveSpaceShips(SPAWN_PLANET_1.id);
       await increaseBlockchainTime();
 
@@ -652,7 +652,7 @@ describe('Arena Functions', function () {
         BigNumber.from(planetLevelThresholdInitializer.PLANET_LEVEL_THRESHOLDS[0])
       );
       await expect(
-        world.user1Core.arenaInitializePlayer(...makeInitArgs(SPAWN_PLANET_1),0)
+        world.user1Core.arenaInitializePlayer(...makeInitArgs(SPAWN_PLANET_1),1)
       ).to.be.revertedWith('Not a valid planet location');
     });
   });
@@ -725,6 +725,20 @@ describe('Arena Functions', function () {
         initArgs = makeInitArgs(SPAWN_PLANET_2);
         await world.user2Core.arenaInitializePlayer(...initArgs, 1);
         await increaseBlockchainTime();
+
+        const perlin = 20;
+        const level = 0;
+        const planetType = 1; // asteroid field
+        
+        await world.contract.createArenaPlanet({
+          location: LVL0_PLANET_DEEP_SPACE.id,
+          perlin,
+          level,
+          planetType,
+          requireValidLocationId: true,
+          isTargetPlanet: true,
+          isSpawnPlanet: false,
+        });
   
         return world;
       }
@@ -733,6 +747,12 @@ describe('Arena Functions', function () {
         world = await fixtureLoader(worldFixture);
       });
   
+      it('team object contains correct data', async function() {
+        const team1 = await world.contract.getTeam(1);
+        expect(team1[0]).to.equal(world.user1.address);
+        expect(team1[1]).to.equal(world.user2.address);
+      })
+
       it('adds energy to the planet', async function () {
         await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL3_UNOWNED_DEEP_SPACE);
         await increaseBlockchainTime();
@@ -747,6 +767,15 @@ describe('Arena Functions', function () {
         const planetData = await world.contract.planets(SPAWN_PLANET_2.id);
         expect(planetData.owner).to.eq(world.user2.address);
       });
+
+      it('claim team victory', async function() {
+        await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL0_PLANET_DEEP_SPACE);
+
+        await world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id);
+        const winners = await world.contract.getWinners();
+        expect(winners[0]).to.equal(world.user1.address);
+        expect(winners[1]).to.equal(world.user2.address);
+        });
     });
 
   })
