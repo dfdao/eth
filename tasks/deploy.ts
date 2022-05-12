@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import { task, types } from 'hardhat/config';
 import type { HardhatRuntimeEnvironment, Libraries } from 'hardhat/types';
 import * as path from 'path';
-import * as prettier from 'prettier';
+import { dedent } from 'ts-dedent';
 import * as settings from '../settings';
 import { DiamondChanges } from '../utils/diamond';
 import { tscompile } from '../utils/tscompile';
@@ -122,7 +122,7 @@ async function saveDeploy(
   const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
 
   // Save the addresses of the deployed contracts to the `@darkforest_eth/contracts` package
-  const tsContents = `
+  const tsContents = dedent`
   /**
    * This package contains deployed contract addresses, ABIs, and Typechain types
    * for the Dark Forest game.
@@ -178,26 +178,25 @@ async function saveDeploy(
   export const INIT_ADDRESS = '${args.initAddress}';
   `;
 
-  const { jsContents, dtsContents } = tscompile(tsContents);
+  const { jsContents, jsmapContents, dtsContents, dtsmapContents } = tscompile(tsContents);
 
   const contractsFileTS = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'index.ts');
   const contractsFileJS = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'index.js');
+  const contractsFileJSMap = path.join(
+    hre.packageDirs['@darkforest_eth/contracts'],
+    'index.js.map'
+  );
   const contractsFileDTS = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'index.d.ts');
+  const contractsFileDTSMap = path.join(
+    hre.packageDirs['@darkforest_eth/contracts'],
+    'index.d.ts.map'
+  );
 
-  const options = prettier.resolveConfig.sync(contractsFileTS);
-
-  fs.writeFileSync(
-    contractsFileTS,
-    prettier.format(tsContents, { ...options, parser: 'babel-ts' })
-  );
-  fs.writeFileSync(
-    contractsFileJS,
-    prettier.format(jsContents, { ...options, parser: 'babel-ts' })
-  );
-  fs.writeFileSync(
-    contractsFileDTS,
-    prettier.format(dtsContents, { ...options, parser: 'babel-ts' })
-  );
+  fs.writeFileSync(contractsFileTS, tsContents);
+  fs.writeFileSync(contractsFileJS, jsContents);
+  fs.writeFileSync(contractsFileJSMap, jsmapContents);
+  fs.writeFileSync(contractsFileDTS, dtsContents);
+  fs.writeFileSync(contractsFileDTSMap, dtsmapContents);
 }
 
 export async function deployAndCut(
@@ -269,6 +268,11 @@ export async function deployAndCut(
     ...changes.getFacetCuts('DFLobbyFacet', lobbyFacet),
   ];
 
+  if (isDev) {
+    const debugFacet = await deployDebugFacet({}, libraries, hre);
+    darkForestFacetCuts.push(...changes.getFacetCuts('DFDebugFacet', debugFacet));
+  }
+
   const toCut = [...diamondSpecFacetCuts, ...darkForestFacetCuts];
 
   const diamondCut = await hre.ethers.getContractAt('DarkForest', diamond.address);
@@ -335,16 +339,43 @@ export async function deployAdminFacet(
   return contract;
 }
 
-export async function deployWhitelistFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
-  const factory = await hre.ethers.getContractFactory('DFWhitelistFacet');
+export async function deployDebugFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
+  const factory = await hre.ethers.getContractFactory('DFDebugFacet');
+  const contract = await factory.deploy();
+  await contract.deployTransaction.wait();
+  console.log(`DFDebugFacet deployed to: ${contract.address}`);
+  return contract;
+}
+
+export async function deployWhitelistFacet(
+  {},
+  { Verifier }: Libraries,
+  hre: HardhatRuntimeEnvironment
+) {
+  const factory = await hre.ethers.getContractFactory('DFWhitelistFacet', {
+    libraries: {
+      Verifier,
+    },
+  });
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
   console.log(`DFWhitelistFacet deployed to: ${contract.address}`);
   return contract;
 }
 
-export async function deployArtifactFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
-  const factory = await hre.ethers.getContractFactory('DFArtifactFacet');
+export async function deployArtifactFacet(
+  {},
+  { LibGameUtils, LibPlanet, LibArtifactUtils, Verifier }: Libraries,
+  hre: HardhatRuntimeEnvironment
+) {
+  const factory = await hre.ethers.getContractFactory('DFArtifactFacet', {
+    libraries: {
+      Verifier,
+      LibArtifactUtils,
+      LibGameUtils,
+      LibPlanet,
+    },
+  });
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
   console.log(`DFArtifactFacet deployed to: ${contract.address}`);
@@ -393,14 +424,13 @@ export async function deployLibraries({}, hre: HardhatRuntimeEnvironment) {
 
 export async function deployCoreFacet(
   {},
-  { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet }: Libraries,
+  { Verifier, LibGameUtils, LibPlanet }: Libraries,
   hre: HardhatRuntimeEnvironment
 ) {
   const factory = await hre.ethers.getContractFactory('DFCoreFacet', {
     libraries: {
       Verifier,
       LibGameUtils,
-      LibArtifactUtils,
       LibPlanet,
     },
   });

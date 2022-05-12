@@ -139,6 +139,8 @@ contract DFInitialize is WithStorage {
 
         ws().enabled = whitelistEnabled;
         ws().drip = 0.05 ether;
+        ws().relayerRewardsEnabled = false;
+        ws().relayerReward = 0.01 ether;
 
         gs().planetLevelsCount = 10;
         gs().planetLevelThresholds = initArgs.PLANET_LEVEL_THRESHOLDS;
