@@ -57,6 +57,11 @@ const AbiItemsToIgnore = [
   {
     facet: 'DFArenaGetterFacet',
     functions: ['getArenaConstants']
+  },
+  {
+    facet: 'DFArtifactFacet',
+    events: ['ArtifactFound'],
+    functions: ['giveSpaceShips']
   }
 ];
 

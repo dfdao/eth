@@ -66,6 +66,7 @@
     "node": ">=16"
   },
   "scripts": {
+    "build": "yarn run compile",
     "test": "hardhat test && yarn subgraph:template:dev",
     "lint": "eslint .",
     "format": "prettier --write .",
