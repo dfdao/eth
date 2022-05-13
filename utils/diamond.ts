@@ -56,7 +56,7 @@ export function isIncluded(contractName: string, signature: string): boolean {
   return !isIgnored;
 }
 
-interface FacetCut {
+export interface FacetCut {
   facetAddress: string;
   action: FacetCutAction;
   functionSelectors: string[];

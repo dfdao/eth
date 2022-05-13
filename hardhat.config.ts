@@ -57,6 +57,11 @@ const AbiItemsToIgnore = [
   {
     facet: 'DFArenaGetterFacet',
     functions: ['getArenaConstants']
+  },
+  {
+    facet: 'DFArtifactFacet',
+    events: ['ArtifactFound'],
+    functions: ['giveSpaceShips']
   }
 ];
 
@@ -219,6 +224,12 @@ const config: HardhatUserConfig = {
         name: 'reveal',
         circuit: 'reveal/circuit.circom',
         input: 'reveal/input.json',
+        beacon: '0000000005060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f',
+      },
+      {
+        name: 'whitelist',
+        circuit: 'whitelist/circuit.circom',
+        input: 'whitelist/input.json',
         beacon: '0000000005060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f',
       },
     ],
