@@ -55,7 +55,7 @@ async function deploy(
     );
   }
 
-  const [diamond, diamondInit, initReceipt] = await deployAndCut(
+  const [diamond, diamondInit, initReceipt, libraries] = await deployAndCut(
     { ownerAddress: deployer.address, whitelistEnabled, initializers: hre.initializers },
     hre
   );
@@ -302,7 +302,7 @@ export async function deployAndCut(
   }
   console.log('Completed diamond cut');
 
-  return [diamondCut, diamondInit, initReceipt] as const;
+  return [diamondCut, diamondInit, initReceipt, libraries] as const;
 }
 
 export async function deployGetterFacet(
