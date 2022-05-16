@@ -1,7 +1,20 @@
 import type { DarkForest } from '@darkforest_eth/contracts/typechain';
 import { modPBigInt } from '@darkforest_eth/hashing';
+import {
+  buildContractCallArgs,
+  SnarkJSProofAndSignals,
+  WhitelistSnarkContractCallArgs,
+  WhitelistSnarkInput,
+  whitelistSnarkWasmPath,
+  whitelistSnarkZkeyPath,
+} from '@darkforest_eth/snarks';
+import { ArtifactRarity, ArtifactType, Biome } from '@darkforest_eth/types';
+import { bigIntFromKey } from '@darkforest_eth/whitelist';
+import bigInt from 'big-integer';
 import { BigNumber, BigNumberish } from 'ethers';
 import { ethers, waffle } from 'hardhat';
+// @ts-ignore
+import * as snarkjs from 'snarkjs';
 import { TestLocation } from './TestLocation';
 import { World } from './TestWorld';
 import { ARTIFACT_PLANET_1, initializers, LARGE_INTERVAL, NUM_BLOCKS } from './WorldConstants';
@@ -65,6 +78,21 @@ export function makeRevealArgs(
       PERLIN_MIRROR_Y ? '1' : '0',
     ],
   ];
+}
+
+export async function makeWhitelistArgs(key: string, recipient: string) {
+  const input: WhitelistSnarkInput = {
+    key: bigIntFromKey(key).toString(),
+    recipient: bigInt(recipient.substring(2), 16).toString(),
+  };
+
+  const fullProveResponse = await snarkjs.groth16.fullProve(
+    input,
+    whitelistSnarkWasmPath,
+    whitelistSnarkZkeyPath
+  );
+  const { proof, publicSignals }: SnarkJSProofAndSignals = fullProveResponse;
+  return buildContractCallArgs(proof, publicSignals) as WhitelistSnarkContractCallArgs;
 }
 
 export function makeInitArgs(
@@ -284,4 +312,30 @@ export async function getArtifactsOwnedBy(contract: DarkForest, addr: string) {
   return (await contract.bulkGetArtifactsByIds(artifactsIds)).map(
     (artifactWithMetadata) => artifactWithMetadata[0]
   );
+}
+
+export async function createArtifactOnPlanet(
+  contract: DarkForest,
+  owner: string,
+  planet: TestLocation,
+  type: ArtifactType,
+  { rarity, biome }: { rarity?: ArtifactRarity; biome?: Biome } = {}
+) {
+  rarity ||= ArtifactRarity.Common;
+  biome ||= Biome.FOREST;
+
+  const tokenId = hexToBigNumber(Math.floor(Math.random() * 10000000000).toString(16));
+
+  await contract.adminGiveArtifact({
+    tokenId,
+    discoverer: owner,
+    owner: owner,
+    planetId: planet.id,
+    rarity: rarity.toString(),
+    biome: biome.toString(),
+    artifactType: type.toString(),
+    controller: ZERO_ADDRESS,
+  });
+
+  return tokenId;
 }

@@ -19,8 +19,16 @@ struct WhitelistStorage {
     bool enabled;
     uint256 drip;
     mapping(address => bool) allowedAccounts;
+    // TODO Delete this when we re-deploy a fresh contract
     mapping(bytes32 => bool) allowedKeyHashes;
     address[] allowedAccountsArray;
+    bool relayerRewardsEnabled;
+    uint256 relayerReward;
+    // This is needed to be upgrade-safe because we can't
+    // change the data type of the existing allowedKeyHashes
+    // TODO When we delete the old one, this becomes the only
+    // mapping.
+    mapping(uint256 => bool) newAllowedKeyHashes;
 }
 
 struct GameStorage {

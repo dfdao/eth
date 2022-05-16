@@ -2,10 +2,14 @@ import { task, types } from 'hardhat/config';
 import type { HardhatRuntimeEnvironment, Libraries } from 'hardhat/types';
 import ts from 'typescript';
 import * as settings from '../settings';
-import { deployContract, deployDiamond, saveDeploy, writeToContractsPackage } from '../utils/deploy';
+import {
+  deployContract,
+  deployDiamond,
+  saveDeploy,
+  writeToContractsPackage,
+} from '../utils/deploy';
 import { DiamondChanges } from '../utils/diamond';
-
-
+import { deployAndCut } from '../tasks/deploy';
 
 task('arena:deploy', 'deploy all arena contracts')
   .addOptionalParam('whitelist', 'override the whitelist', false, types.boolean)
@@ -20,7 +24,7 @@ task('arena:deploy', 'deploy all arena contracts')
   .setAction(deploy);
 
 async function deploy(
-  args: { whitelist?: boolean; fund: number; subgraph?: string, faucet?: boolean },
+  args: { whitelist?: boolean; fund: number; subgraph?: string; faucet?: boolean },
   hre: HardhatRuntimeEnvironment
 ) {
   const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
@@ -55,7 +59,6 @@ async function deploy(
       )} but has ${hre.ethers.utils.formatEther(balance)} top up and rerun`
     );
   }
-
   const [diamond, diamondInit, initReceipt] = await deployAndCutArena(
     { ownerAddress: deployer.address, whitelistEnabled, initializers: hre.initializers },
     hre
@@ -93,10 +96,9 @@ async function deploy(
   }
 
   if (args.faucet) {
-    console.log('calling faucet')
-    await hre.run('faucet:deploy', {value: args.fund});
+    console.log('calling faucet');
+    await hre.run('faucet:deploy', { value: args.fund });
     console.log('deployed faucet');
-
   }
 
   // TODO: Upstream change to update task name from `hardhat-4byte-uploader`
@@ -124,83 +126,15 @@ export async function deployAndCutArena(
   },
   hre: HardhatRuntimeEnvironment
 ) {
+  const [deployer] = await hre.ethers.getSigners();
+
+  // Importing from base deploy.ts task
+  const [diamond, diamondInit, initReceipt, libraries] = await deployAndCut(
+    { ownerAddress: deployer.address, whitelistEnabled, initializers: hre.initializers },
+    hre
+  );
+
   const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
-
-  const changes = new DiamondChanges();
-
-  const Verifier = (await deployContract('Verifier', {}, hre)).address;
-  const LibGameUtils = (await deployContract('LibGameUtils', {}, hre)).address;
-  const LibLazyUpdate = (await deployContract('LibLazyUpdate', {}, hre)).address;
-  const LibArtifactUtils = (await deployContract('LibArtifactUtils', { LibGameUtils }, hre))
-    .address;
-  const LibPlanet = (
-    await deployContract('LibPlanet', { LibGameUtils, LibLazyUpdate, Verifier }, hre)
-  ).address;
-
-  // const { LibGameUtils, LibArtifactUtils, LibPlanet } = await deployLibraries({}, hre);
-
-  // Diamond Spec facets
-  // Note: These won't be updated during an upgrade without manual intervention
-  const diamondCutFacet = await deployContract('DiamondCutFacet', {}, hre);
-  const diamondLoupeFacet = await deployContract('DiamondLoupeFacet', {}, hre);
-  const ownershipFacet = await deployContract('OwnershipFacet', {}, hre);
-
-  // The `cuts` to perform for Diamond Spec facets
-  const diamondSpecFacetCuts = [
-    // Note: The `diamondCut` is omitted because it is cut upon deployment
-    ...changes.getFacetCuts('DiamondLoupeFacet', diamondLoupeFacet),
-    ...changes.getFacetCuts('OwnershipFacet', ownershipFacet),
-  ];
-
-  const diamond = await deployDiamond(
-    {
-      ownerAddress,
-      // The `diamondCutFacet` is cut upon deployment
-      diamondCutAddress: diamondCutFacet.address,
-    },
-    {},
-    hre
-  );
-
-  const diamondInit = await deployContract('DFInitialize', { LibGameUtils }, hre);
-
-  // Dark Forest facets
-  const coreFacet = await deployContract(
-    'DFCoreFacet',
-    { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet },
-    hre
-  );
-  const moveFacet = await deployContract(
-    'DFMoveFacet',
-    { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet },
-    hre
-  );
-  const captureFacet = await deployContract('DFCaptureFacet', { LibPlanet }, hre);
-  const artifactFacet = await deployContract('DFArtifactFacet', {}, hre);
-  const getterFacet = await deployContract('DFGetterFacet', { LibGameUtils }, hre);
-  const whitelistFacet = await deployContract('DFWhitelistFacet', {}, hre);
-  const adminFacet = await deployContract(
-    'DFAdminFacet',
-    { LibArtifactUtils, LibGameUtils, LibPlanet },
-    hre
-  );
-  const lobbyFacet = await deployContract('DFLobbyFacet', {}, hre);
-
-  // The `cuts` to perform for Dark Forest facets
-  const darkForestFacetCuts = [
-    ...changes.getFacetCuts('DFCoreFacet', coreFacet),
-    ...changes.getFacetCuts('DFMoveFacet', moveFacet),
-    ...changes.getFacetCuts('DFCaptureFacet', captureFacet),
-    ...changes.getFacetCuts('DFArtifactFacet', artifactFacet),
-    ...changes.getFacetCuts('DFGetterFacet', getterFacet),
-    ...changes.getFacetCuts('DFWhitelistFacet', whitelistFacet),
-    ...changes.getFacetCuts('DFAdminFacet', adminFacet),
-    ...changes.getFacetCuts('DFLobbyFacet', lobbyFacet),
-  ];
-
-  const toCut = [...diamondSpecFacetCuts, ...darkForestFacetCuts];
-
-  const diamondCut = await hre.ethers.getContractAt('DarkForest', diamond.address);
 
   const tokenBaseUri = `${
     isDev
@@ -208,30 +142,10 @@ export async function deployAndCutArena(
       : 'https://nft.zkga.me/token-uri/artifact/'
   }${hre.network.config?.chainId || 'unknown'}-${diamond.address}/`;
 
-  // EIP-2535 specifies that the `diamondCut` function takes two optional
-  // arguments: address _init and bytes calldata _calldata
-  // These arguments are used to execute an arbitrary function using delegatecall
-  // in order to set state variables in the diamond during deployment or an upgrade
-  // More info here: https://eips.ethereum.org/EIPS/eip-2535#diamond-interface
-
-  const initAddress = diamondInit.address;
-  const initFunctionCall = diamondInit.interface.encodeFunctionData('init', [
-    whitelistEnabled,
-    tokenBaseUri,
-    initializers,
-  ]);
-
-  const initTx = await diamondCut.diamondCut(toCut, initAddress, initFunctionCall);
-  const initReceipt = await initTx.wait();
-  if (!initReceipt.status) {
-    throw Error(`Diamond cut failed: ${initTx.hash}`);
-  }
-  console.log('Completed diamond cut');
-
   const [arenaDiamond, arenaDiamondInit, arenaDiamondInitReceipt] = await cutArena(
     diamond.address,
     hre,
-    { LibGameUtils, LibPlanet, LibArtifactUtils, Verifier },
+    libraries,
     whitelistEnabled,
     tokenBaseUri,
     initializers
@@ -241,7 +155,7 @@ export async function deployAndCutArena(
       coreBlockNumber: initReceipt.blockNumber,
       diamondAddress: arenaDiamond.address,
       initAddress: arenaDiamondInit.address,
-      libraries: { Verifier, LibGameUtils, LibArtifactUtils, LibPlanet },
+      libraries,
     },
     hre
   );
@@ -257,7 +171,6 @@ export async function cutArena(
   tokenBaseUri: string,
   initializers: HardhatRuntimeEnvironment['initializers']
 ) {
-
   const origDiamond = await hre.ethers.getContractAt('DarkForest', diamondAddress);
 
   const lobbyInitAddress = hre.ethers.constants.AddressZero;
@@ -285,9 +198,12 @@ export async function cutArena(
   const diamondInit = await deployContract('DFArenaInitialize', { LibGameUtils }, hre);
   const arenaCoreFacet = await deployContract('DFArenaCoreFacet', { LibGameUtils, LibPlanet }, hre);
   const arenaGetterFacet = await deployContract('DFArenaGetterFacet', {}, hre);
-  const spaceshipConfigFacet = await deployContract('DFSpaceshipConfigFacet', {LibGameUtils}, hre);
+  const spaceshipConfigFacet = await deployContract(
+    'DFSpaceshipConfigFacet',
+    { LibGameUtils },
+    hre
+  );
   const tournamentFacet = await deployContract('DFArenaTournamentFacet', {}, hre);
-
 
   const arenaFacetCuts = [
     ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
