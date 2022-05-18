@@ -393,56 +393,56 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
             popGroMultiplier: 120,
             rangeMultiplier: 100,
             speedMultiplier: 100,
-            defMultiplier: 120
+            defMultiplier: 175
         });
         upgrades[uint256(UpgradeBranch.DEFENSE)][1] = Upgrade({
             popCapMultiplier: 120,
             popGroMultiplier: 120,
             rangeMultiplier: 100,
             speedMultiplier: 100,
-            defMultiplier: 120
+            defMultiplier: 175
         });
         upgrades[uint256(UpgradeBranch.DEFENSE)][2] = Upgrade({
             popCapMultiplier: 120,
             popGroMultiplier: 120,
             rangeMultiplier: 100,
             speedMultiplier: 100,
-            defMultiplier: 120
+            defMultiplier: 175
         });
         upgrades[uint256(UpgradeBranch.DEFENSE)][3] = Upgrade({
             popCapMultiplier: 120,
             popGroMultiplier: 120,
             rangeMultiplier: 100,
             speedMultiplier: 100,
-            defMultiplier: 120
+            defMultiplier: 175
         });
 
         // range
         upgrades[uint256(UpgradeBranch.RANGE)][0] = Upgrade({
             popCapMultiplier: 120,
             popGroMultiplier: 120,
-            rangeMultiplier: 125,
+            rangeMultiplier: 115,
             speedMultiplier: 100,
             defMultiplier: 100
         });
         upgrades[uint256(UpgradeBranch.RANGE)][1] = Upgrade({
             popCapMultiplier: 120,
             popGroMultiplier: 120,
-            rangeMultiplier: 125,
+            rangeMultiplier: 115,
             speedMultiplier: 100,
             defMultiplier: 100
         });
         upgrades[uint256(UpgradeBranch.RANGE)][2] = Upgrade({
             popCapMultiplier: 120,
             popGroMultiplier: 120,
-            rangeMultiplier: 125,
+            rangeMultiplier: 115,
             speedMultiplier: 100,
             defMultiplier: 100
         });
         upgrades[uint256(UpgradeBranch.RANGE)][3] = Upgrade({
             popCapMultiplier: 120,
             popGroMultiplier: 120,
-            rangeMultiplier: 125,
+            rangeMultiplier: 115,
             speedMultiplier: 100,
             defMultiplier: 100
         });
