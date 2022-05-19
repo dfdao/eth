@@ -244,8 +244,6 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
             (bool success, bytes memory returndata) = address(this).delegatecall(abi.encodeWithSignature("transferOwnership(address)", address(0)));
             require(success, "transfer ownership did not succeed");
         }
-
-        
     }
 
     function initializeDefaults() public {

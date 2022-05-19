@@ -19,9 +19,6 @@ import {IERC173} from "../vendor/interfaces/IERC173.sol";
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
 import {WithArenaStorage, ArenaStorage, ArenaPlanetInfo, ArenaConstants} from "../libraries/LibArenaStorage.sol";
-
-import {SpaceType, DFPInitPlanetArgs, Artifact, ArtifactType, Player, Planet, PlanetType, PlanetExtendedInfo, PlanetExtendedInfo2, RevealProofArgs} from "../DFTypes.sol";
-
 import {
     Planet, 
     PlanetExtendedInfo, 
@@ -29,10 +26,12 @@ import {
     PlanetEventMetadata, 
     PlanetDefaultStats, 
     Player, 
+    SpaceType,
     Artifact,
     ArtifactType,
+    DFPInitPlanetArgs,
     ArenaPlanetInfo,
-    ArenaAdminCreatePlanetArgs
+    ArenaCreateRevealPlanetArgs
 } from "../DFTypes.sol";
 
 contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
@@ -153,24 +152,27 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         emit Gameover(locationId, msg.sender);
     }
 
-    function createArenaPlanet(ArenaAdminCreatePlanetArgs memory args) public onlyAdmin {
+    function createArenaPlanet(ArenaCreateRevealPlanetArgs memory args) public onlyAdmin {
         require(gameConstants().ADMIN_CAN_ADD_PLANETS, "admin can no longer add planets");
         if (args.requireValidLocationId) {
             require(LibGameUtils._locationIdValid(args.location), "Not a valid planet location");
         }
 
-        if (args.isTargetPlanet)
+        if (args.isTargetPlanet) {
             require(arenaConstants().TARGET_PLANETS, "admin cannot create target planets");
-        if (args.isSpawnPlanet)
+            arenaStorage().targetPlanetIds.push(args.location);
+        }
+        if (args.isSpawnPlanet) {
             require(arenaConstants().MANUAL_SPAWN, "admin cannot create spawn planets");
+            arenaStorage().spawnPlanetIds.push(args.location);
+        }
+            
 
         if (args.isTargetPlanet || args.isSpawnPlanet) {
             arenaStorage().arenaPlanetInfo[args.location] = ArenaPlanetInfo(
                 args.isSpawnPlanet,
                 args.isTargetPlanet
             );
-            if (args.isTargetPlanet) arenaStorage().targetPlanetIds.push(args.location);
-            if (args.isSpawnPlanet) arenaStorage().spawnPlanetIds.push(args.location);
         }
 
         SpaceType spaceType = LibGameUtils.spaceTypeFromPerlin(args.perlin);
@@ -193,47 +195,45 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     }
 
     function arenaRevealLocation(
-        uint256[2] memory _a,
-        uint256[2][2] memory _b,
-        uint256[2] memory _c,
-        uint256[9] memory _input
+        uint256 location,
+        uint256 x,
+        uint256 y,
+        uint256 perlin
     ) public onlyWhitelisted returns (uint256) {
-        require(DFCoreFacet(address(this)).checkRevealProof(_a, _b, _c, _input), "Failed reveal pf check");
 
-        if (!gs().planetsExtendedInfo[_input[0]].isInitialized) {
-            LibPlanet.initializePlanetWithDefaults(_input[0], _input[1], false);
+        if (!gs().planetsExtendedInfo[location].isInitialized) {
+            LibPlanet.initializePlanetWithDefaults(location, perlin, false);
         }
 
         LibPlanet.revealLocation(
-            _input[0],
-            _input[1],
-            _input[2],
-            _input[3],
-            msg.sender != LibDiamond.contractOwner()
+            location,
+            perlin,
+            x,
+            y,
+             /* if this is true, check timestamp for reveal. We want false for admin / init planets */
+            false // !initPlanetExistsOrAdmin(location)
         );
-        emit LocationRevealed(msg.sender, _input[0], _input[2], _input[3]);
+        emit LocationRevealed(msg.sender, location, x, y);
     }
 
-    function bulkCreatePlanet(ArenaAdminCreatePlanetArgs[] memory planets) public onlyAdmin {
+    function bulkCreatePlanet(ArenaCreateRevealPlanetArgs[] memory planets) public onlyAdmin {
         for(uint i = 0; i < planets.length; i++) {
             createArenaPlanet(planets[i]);
         }
     }
 
     function createAndReveal(
-        ArenaAdminCreatePlanetArgs memory createPlanetArgs, 
-        RevealProofArgs memory revealArgs
+        ArenaCreateRevealPlanetArgs memory createPlanetArgs
     ) public onlyAdmin {
         createArenaPlanet(createPlanetArgs);
-        arenaRevealLocation(revealArgs._a, revealArgs._b, revealArgs._c, revealArgs._input);
+        arenaRevealLocation(createPlanetArgs.location, createPlanetArgs.x, createPlanetArgs.y, createPlanetArgs.perlin);
     }
 
     function bulkCreateAndReveal(
-        ArenaAdminCreatePlanetArgs [] calldata createArgsList,
-        RevealProofArgs [] calldata revealArgsList
+        ArenaCreateRevealPlanetArgs [] calldata createArgsList
     ) public {
         for (uint256 i = 0; i < createArgsList.length; i++) {
-            createAndReveal(createArgsList[i], revealArgsList[i]);
+            createAndReveal(createArgsList[i]);
         }
     }
 
