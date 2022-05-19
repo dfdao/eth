@@ -8,6 +8,7 @@ import { deployAndCut } from '../../tasks/deploy';
 import {
   arenaWorldInitializers,
   initializers,
+  initPlanetsInitializers,
   manualSpawnInitializers,
   noAdminInitializers,
   noPlanetTransferInitializers,
@@ -92,6 +93,14 @@ export function arenaWorldFixture(): Promise<World> {
 export function noAdminWorldFixture(): Promise<World> {
   return initializeWorld({
     initializers: noAdminInitializers,
+    whitelistEnabled: false,
+    arena: true,
+  });
+}
+
+export function initPlanetsArenaFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: initPlanetsInitializers,
     whitelistEnabled: false,
     arena: true,
   });

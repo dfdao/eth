@@ -37,7 +37,7 @@ import {WithArenaStorage} from "./libraries/LibArenaStorage.sol";
 import {LibGameUtils} from "./libraries/LibGameUtils.sol";
 
 // Type imports
-import {PlanetDefaultStats, Upgrade, UpgradeBranch, Modifiers, Mod, Spaceships} from "./DFTypes.sol";
+import {PlanetDefaultStats, Upgrade, UpgradeBranch, Modifiers, Mod, ArenaCreateRevealPlanetArgs, Spaceships} from "./DFTypes.sol";
 
 struct InitArgs {
     bool START_PAUSED;
@@ -113,6 +113,7 @@ struct InitArgs {
     uint256[8] MODIFIERS;
     bool[5] SPACESHIPS;
     bool NO_ADMIN;
+    ArenaCreateRevealPlanetArgs[] INIT_PLANETS;
 }
 
 contract DFArenaInitialize is WithStorage, WithArenaStorage {
@@ -235,7 +236,23 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
         );
 
         arenaConstants().NO_ADMIN = initArgs.NO_ADMIN;
-        
+
+        for(uint i = 0; i < initArgs.INIT_PLANETS.length; i++) {
+            ArenaCreateRevealPlanetArgs memory initPlanet = initArgs.INIT_PLANETS[i];
+            ArenaCreateRevealPlanetArgs storage _initPlanet = arenaStorage().initPlanets[initPlanet.location];
+
+            _initPlanet.location = initPlanet.location;
+            _initPlanet.x = initPlanet.x;
+            _initPlanet.y = initPlanet.y;
+            _initPlanet.perlin = initPlanet.perlin;
+            _initPlanet.isSpawnPlanet = initPlanet.isSpawnPlanet;
+            _initPlanet.isTargetPlanet = initPlanet.isTargetPlanet;
+            _initPlanet.planetType = initPlanet.planetType;
+            _initPlanet.level = initPlanet.level;
+        }
+
+        arenaConstants().INIT_PLANETS = initArgs.INIT_PLANETS;
+    
         initializeDefaults();
         initializeUpgrades();
         LibGameUtils.updateWorldRadius();

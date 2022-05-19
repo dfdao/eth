@@ -1,4 +1,5 @@
 import { decodeInitializers } from '@darkforest_eth/settings';
+import { PlanetType } from '@darkforest_eth/types';
 import * as settings from '../../settings';
 import { TestLocation } from './TestLocation';
 
@@ -361,3 +362,21 @@ export const SMALL_INTERVAL = 5; // seconds
 export const TOLERANCE = 2; // seconds
 export const LARGE_INTERVAL = 3 * 86400; // seconds
 export const NUM_BLOCKS = 50;
+
+export const initPlanetsInitializers = settings.parse(decodeInitializers, {
+  ...arenaWorldInitializers,
+  INIT_PLANETS: [
+    {
+    location: ADMIN_PLANET_CLOAKED.id,
+    x: 10,
+    y: 10,
+    perlin: 20,
+    level: 3,
+    planetType: PlanetType.PLANET,
+    requireValidLocationId: false,
+    isTargetPlanet: false,
+    isSpawnPlanet: true,
+  },
+  ]
+});
+

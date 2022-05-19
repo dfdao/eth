@@ -16,6 +16,7 @@ import {
     ArenaPlanetInfo,
     ArenaPlayerInfo,
     Modifiers,
+    ArenaCreateRevealPlanetArgs,
     Spaceships
 } from "../DFTypes.sol";
 
@@ -37,6 +38,7 @@ struct ArenaStorage {
     uint256 moveCap;
     mapping(address => ArenaPlayerInfo) arenaPlayerInfo;
     uint256 endTime;
+    mapping(uint256 => ArenaCreateRevealPlanetArgs) initPlanets;
 }
 
 struct ArenaConstants {
@@ -50,7 +52,7 @@ struct ArenaConstants {
     uint256 CLAIM_VICTORY_ENERGY_PERCENT;
     uint256 START_TIME;
     bool NO_ADMIN;
-
+    ArenaCreateRevealPlanetArgs[] INIT_PLANETS; // TODO: Confirm this won't mess up Diamond storage
 }
 
 library LibArenaStorage {
