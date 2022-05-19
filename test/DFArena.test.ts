@@ -14,6 +14,7 @@ import {
   arenaWorldFixture,
   manualSpawnFixture,
   modifiedWorldFixture,
+  noAdminWorldFixture,
   planetLevelThresholdFixture,
   spaceshipWorldFixture,
   targetPlanetFixture,
@@ -690,4 +691,22 @@ describe('Arena Functions', function () {
     });
 
   });
+
+  describe('No Admin World', function () {
+    let world: World;
+
+    beforeEach('load fixture', async function () {
+      world = await fixtureLoader(noAdminWorldFixture);
+    });
+
+    it.only('confirms owner is 0x0', async function () {
+      expect(await world.contract.owner()).to.equal(hre.ethers.constants.AddressZero);
+    });
+
+    it.only('reverts on an admin call', async function () {
+      await expect(world.contract.adminSetWorldRadius(200)).to.be.revertedWith('LibDiamond: Must be contract owner');
+
+    });
+
+  })
 });

@@ -19,6 +19,8 @@ import {
     Spaceships
 } from "../DFTypes.sol";
 
+/* Remember! Only add new storage variables at the end of structs !! */
+
 struct TournamentStorage {
     address[] matches;
     uint256 numMatches;
@@ -47,7 +49,7 @@ struct ArenaConstants {
     Spaceships SPACESHIPS;
     uint256 CLAIM_VICTORY_ENERGY_PERCENT;
     uint256 START_TIME;
-
+    bool NO_ADMIN;
 
 }
 

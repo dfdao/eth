@@ -9,6 +9,7 @@ import {
   arenaWorldInitializers,
   initializers,
   manualSpawnInitializers,
+  noAdminInitializers,
   noPlanetTransferInitializers,
   planetLevelThresholdInitializer,
   target4Initializers,
@@ -83,6 +84,14 @@ Identical to defaultWorldFixture but with arena facets cut in
 export function arenaWorldFixture(): Promise<World> {
   return initializeWorld({
     initializers: arenaWorldInitializers,
+    whitelistEnabled: false,
+    arena: true,
+  });
+}
+
+export function noAdminWorldFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: noAdminInitializers,
     whitelistEnabled: false,
     arena: true,
   });

@@ -35,6 +35,8 @@ import {LibDiamond} from "./vendor/libraries/LibDiamond.sol";
 import {WithStorage} from "./libraries/LibStorage.sol";
 import {WithArenaStorage} from "./libraries/LibArenaStorage.sol";
 import {LibGameUtils} from "./libraries/LibGameUtils.sol";
+import "hardhat/console.sol";
+
 
 
 // Type imports
@@ -113,6 +115,7 @@ struct InitArgs {
 
     uint256[8] MODIFIERS;
     bool[5] SPACESHIPS;
+    bool NO_ADMIN;
 }
 
 contract DFArenaInitialize is WithStorage, WithArenaStorage {
@@ -124,7 +127,7 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
         bool whitelistEnabled,
         string memory artifactBaseURI,
         InitArgs memory initArgs
-    ) external {
+    ) external {        
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         ds.supportedInterfaces[type(IERC165).interfaceId] = true;
@@ -134,6 +137,10 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
         ds.supportedInterfaces[type(IERC721).interfaceId] = true;
         ds.supportedInterfaces[type(IERC721Metadata).interfaceId] = true;
         ds.supportedInterfaces[type(IERC721Enumerable).interfaceId] = true;
+
+        console.log("address %s", address(this));
+        console.log("contract owner %s", LibDiamond.diamondStorage().contractOwner);
+        console.log("msg.sender %s", msg.sender);
 
         // Setup the ERC721 metadata
         // TODO(#1925): Add name and symbol for the artifact tokens
@@ -233,10 +240,21 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
             initArgs.SPACESHIPS[3],
             initArgs.SPACESHIPS[4]
         );
+
+        arenaConstants().NO_ADMIN = initArgs.NO_ADMIN;
         
         initializeDefaults();
         initializeUpgrades();
         LibGameUtils.updateWorldRadius();
+
+        if(initArgs.NO_ADMIN) {
+            (bool success, bytes memory returndata) = address(this).delegatecall(abi.encodeWithSignature("transferOwnership(address)", address(0)));
+            require(success, "transfer ownership did not succeed");
+            console.log("contract owner is now %s", LibDiamond.diamondStorage().contractOwner);
+
+        }
+
+        
     }
 
     function initializeDefaults() public {
