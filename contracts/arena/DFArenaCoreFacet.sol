@@ -65,6 +65,23 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         _;
     }
 
+    // True if init planet
+    function isInitPlanet(ArenaCreateRevealPlanetArgs memory _initPlanetArgs) public view returns (bool) {
+
+        ArenaCreateRevealPlanetArgs memory initPlanet = arenaStorage().initPlanets[_initPlanetArgs.location];
+        return
+        (
+            initPlanet.location == _initPlanetArgs.location &&
+            initPlanet.x == _initPlanetArgs.x &&
+            initPlanet.y == _initPlanetArgs.y &&
+            initPlanet.perlin == _initPlanetArgs.perlin &&
+            initPlanet.isSpawnPlanet == _initPlanetArgs.isSpawnPlanet &&
+            initPlanet.isTargetPlanet == _initPlanetArgs.isTargetPlanet &&
+            initPlanet.level == _initPlanetArgs.level &&
+            initPlanet.planetType == _initPlanetArgs.planetType
+        );
+    }
+
     // FUNCTIONS TO REPLACE on core DF Diamond
     function initializePlayer(
         uint256[2] memory _a,
@@ -152,8 +169,10 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         emit Gameover(locationId, msg.sender);
     }
 
-    function createArenaPlanet(ArenaCreateRevealPlanetArgs memory args) public onlyAdmin {
+    function createArenaPlanet(ArenaCreateRevealPlanetArgs memory args) public {
         require(gameConstants().ADMIN_CAN_ADD_PLANETS, "admin can no longer add planets");
+        require(msg.sender == LibDiamond.contractOwner() || isInitPlanet(args), "must be admin or init planet");
+
         if (args.requireValidLocationId) {
             require(LibGameUtils._locationIdValid(args.location), "Not a valid planet location");
         }
@@ -195,25 +214,22 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     }
 
     function arenaRevealLocation(
-        uint256 location,
-        uint256 x,
-        uint256 y,
-        uint256 perlin
+        ArenaCreateRevealPlanetArgs memory args
     ) public onlyWhitelisted returns (uint256) {
 
-        if (!gs().planetsExtendedInfo[location].isInitialized) {
-            LibPlanet.initializePlanetWithDefaults(location, perlin, false);
+        if (!gs().planetsExtendedInfo[args.location].isInitialized) {
+            LibPlanet.initializePlanetWithDefaults(args.location, args.perlin, false);
         }
 
         LibPlanet.revealLocation(
-            location,
-            perlin,
-            x,
-            y,
+            args.location,
+            args.perlin,
+            args.x,
+            args.y,
              /* if this is true, check timestamp for reveal. We want false for admin / init planets */
-            false // !initPlanetExistsOrAdmin(location)
+            !(msg.sender == LibDiamond.contractOwner() || isInitPlanet(args)) // !initPlanetExistsOrAdmin(location)
         );
-        emit LocationRevealed(msg.sender, location, x, y);
+        emit LocationRevealed(msg.sender, args.location, args.x, args.y);
     }
 
     function bulkCreatePlanet(ArenaCreateRevealPlanetArgs[] memory planets) public onlyAdmin {
@@ -222,11 +238,12 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         }
     }
 
+    /* should be only admin or init planet*/
     function createAndReveal(
         ArenaCreateRevealPlanetArgs memory createPlanetArgs
-    ) public onlyAdmin {
+    ) public {
         createArenaPlanet(createPlanetArgs);
-        arenaRevealLocation(createPlanetArgs.location, createPlanetArgs.x, createPlanetArgs.y, createPlanetArgs.perlin);
+        arenaRevealLocation(createPlanetArgs);
     }
 
     function bulkCreateAndReveal(

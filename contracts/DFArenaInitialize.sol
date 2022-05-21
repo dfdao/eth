@@ -239,7 +239,11 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
 
         for(uint i = 0; i < initArgs.INIT_PLANETS.length; i++) {
             ArenaCreateRevealPlanetArgs memory initPlanet = initArgs.INIT_PLANETS[i];
+
             ArenaCreateRevealPlanetArgs storage _initPlanet = arenaStorage().initPlanets[initPlanet.location];
+
+            /* Store planet ids for retrieval later */
+            arenaConstants().INIT_PLANET_IDS.push(initPlanet.location);
 
             _initPlanet.location = initPlanet.location;
             _initPlanet.x = initPlanet.x;
@@ -250,8 +254,6 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
             _initPlanet.planetType = initPlanet.planetType;
             _initPlanet.level = initPlanet.level;
         }
-
-        arenaConstants().INIT_PLANETS = initArgs.INIT_PLANETS;
     
         initializeDefaults();
         initializeUpgrades();

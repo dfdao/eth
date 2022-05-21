@@ -12,6 +12,7 @@ import {
 } from './utils/TestUtils';
 import {
   arenaWorldFixture,
+  initPlanetsArenaFixture,
   manualSpawnFixture,
   modifiedWorldFixture,
   noAdminWorldFixture,
@@ -23,6 +24,7 @@ import {
 import {
   ADMIN_PLANET,
   ADMIN_PLANET_CLOAKED,
+  initPlanetsInitializers,
   LVL0_PLANET_DEEP_SPACE,
   LVL1_ASTEROID_1,
   LVL1_PLANET_SPACE,
@@ -166,19 +168,17 @@ describe('Arena Functions', function () {
       const planetType = 1; // asteroid field
       const x = 10;
       const y = 30;
-      const createReveal = await world.contract.createAndReveal(
-        {
-          location: ADMIN_PLANET_CLOAKED.id,
-          x,
-          y,
-          perlin,
-          level,
-          planetType,
-          requireValidLocationId: false,
-          isTargetPlanet: false,
-          isSpawnPlanet: true,
-        }
-      );
+      const createReveal = await world.contract.createAndReveal({
+        location: ADMIN_PLANET_CLOAKED.id,
+        x,
+        y,
+        perlin,
+        level,
+        planetType,
+        requireValidLocationId: false,
+        isTargetPlanet: false,
+        isSpawnPlanet: true,
+      });
 
       const createRevealReceipt = await createReveal.wait();
 
@@ -211,7 +211,7 @@ describe('Arena Functions', function () {
           isTargetPlanet: false,
           isSpawnPlanet: true,
         };
-      
+
         planetArgList.push(planetArgs);
       });
 
@@ -424,7 +424,7 @@ describe('Arena Functions', function () {
       it('needs to have enough energy', async function () {
         await expect(
           world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id)
-        ).to.be.revertedWith("planet energy must be greater than victory threshold");
+        ).to.be.revertedWith('planet energy must be greater than victory threshold');
       });
       describe('time elapsed', async function () {
         beforeEach(async function () {
@@ -514,8 +514,9 @@ describe('Arena Functions', function () {
           }%`
         );
 
-        await expect(world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id)).to.be.revertedWith(
-          "planet energy must be greater than victory threshold"        );
+        await expect(
+          world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id)
+        ).to.be.revertedWith('planet energy must be greater than victory threshold');
       });
 
       it('get round duration fails if round not over', async function () {
@@ -681,7 +682,6 @@ describe('Arena Functions', function () {
     });
 
     it('New lobby adress is stored on chain', async function () {
-
       const initAddress = hre.ethers.constants.AddressZero;
       const initFunctionCall = '0x';
       // Make Lobby
@@ -701,9 +701,8 @@ describe('Arena Functions', function () {
       expect(await lobby.owner()).to.equal(world.user1.address);
 
       expect((await world.contract.getNumMatches()).toNumber()).to.equal(1);
-      expect((await world.contract.getMatch(0))).to.equal(lobbyAddress);
+      expect(await world.contract.getMatch(0)).to.equal(lobbyAddress);
     });
-
   });
 
   describe('No Admin World', function () {
@@ -718,9 +717,59 @@ describe('Arena Functions', function () {
     });
 
     it('reverts on an admin call', async function () {
-      await expect(world.contract.adminSetWorldRadius(200)).to.be.revertedWith('LibDiamond: Must be contract owner');
+      await expect(world.contract.adminSetWorldRadius(200)).to.be.revertedWith(
+        'LibDiamond: Must be contract owner'
+      );
+    });
+  });
 
+  describe('Init Planet Commit', function () {
+    let world: World;
+
+    beforeEach('load fixture', async function () {
+      world = await fixtureLoader(initPlanetsArenaFixture);
     });
 
-  })
+    it.only('init planet id exists in arena constants', async function () {
+      expect((await world.contract.getArenaConstants()).INIT_PLANET_IDS[0]).to.equal(
+        initPlanetsInitializers.INIT_PLANETS[0].location
+      );
+    });
+
+    it.only('init planet exists in arena storage via getter', async function () {
+      const initPlanets = await world.contract.getInitPlanets();
+      expect(initPlanets[0].location).to.equal(initPlanetsInitializers.INIT_PLANETS[0].location);
+      expect(initPlanets[0].perlin).to.equal(initPlanetsInitializers.INIT_PLANETS[0].perlin);
+      expect(initPlanets[0].x).to.equal(initPlanetsInitializers.INIT_PLANETS[0].x);
+      expect(initPlanets[0].y).to.equal(initPlanetsInitializers.INIT_PLANETS[0].y);
+      expect(initPlanets[0].isSpawnPlanet).to.equal(
+        initPlanetsInitializers.INIT_PLANETS[0].isSpawnPlanet
+      );
+      expect(initPlanets[0].isTargetPlanet).to.equal(
+        initPlanetsInitializers.INIT_PLANETS[0].isTargetPlanet
+      );
+    });
+
+    it('confirms owner is 0x0', async function () {
+      expect(await world.contract.owner()).to.equal(hre.ethers.constants.AddressZero);
+    });
+
+    it.only('can create and reveal init planet with no admin', async function () {
+      const createReveal = await world.contract.createAndReveal(initPlanetsInitializers.INIT_PLANETS[0]);
+
+      const createRevealReceipt = await createReveal.wait();
+
+      console.log(`createAndReveal used ${createRevealReceipt.gasUsed} gas`);
+
+      const testPlanet = await world.contract.getRevealedCoords(ADMIN_PLANET_CLOAKED.id);
+
+      expect(testPlanet.x).to.equal(initPlanetsInitializers.INIT_PLANETS[0].x);
+      expect(testPlanet.y).to.equal(initPlanetsInitializers.INIT_PLANETS[0].y);
+    });
+
+    it.only('cannot create and reveal planet that is not an init planet', async function () {
+      const planet = {...initPlanetsInitializers.INIT_PLANETS[0], x: 15};
+      await expect(world.contract.createAndReveal(planet)).to.be.revertedWith('must be admin or init planet');
+    });
+  });
 });

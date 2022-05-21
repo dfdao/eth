@@ -29,6 +29,7 @@ import {
     PlanetType, 
     PlanetExtendedInfo, 
     PlanetExtendedInfo2,
+    ArenaCreateRevealPlanetArgs,
     ArenaPlanetInfo
 } from "../DFTypes.sol";
 
@@ -121,5 +122,14 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
 
     function getMatch(uint256 id) public view returns (address) {
         return tournamentStorage().matches[id];
+    }
+
+    function getInitPlanets() public view returns (ArenaCreateRevealPlanetArgs[] memory ret) {
+        uint256[] memory initPlanetIds = arenaConstants().INIT_PLANET_IDS;
+
+        ret = new ArenaCreateRevealPlanetArgs[](initPlanetIds.length);
+        for(uint256 i = 0; i < initPlanetIds.length; i++) {
+            ret[i] = arenaStorage().initPlanets[initPlanetIds[i]];
+        }
     }
 }

@@ -364,10 +364,13 @@ export const LARGE_INTERVAL = 3 * 86400; // seconds
 export const NUM_BLOCKS = 50;
 
 export const initPlanetsInitializers = settings.parse(decodeInitializers, {
-  ...arenaWorldInitializers,
+  ...defaultInitializerValues,
+  NO_ADMIN: true,
+  MANUAL_SPAWN: true,
+  TARGET_PLANETS: true,
   INIT_PLANETS: [
     {
-    location: ADMIN_PLANET_CLOAKED.id,
+    location: ADMIN_PLANET_CLOAKED.id.toHexString(),
     x: 10,
     y: 10,
     perlin: 20,
