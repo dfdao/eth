@@ -30,12 +30,6 @@ async function deploy(
   const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
 
   let whitelistEnabled = false;
-  // if (typeof args.whitelist === 'undefined') {
-  //   // `whitelistEnabled` defaults to `false` in dev but `true` in prod
-  //   whitelistEnabled = isDev ? false : true;
-  // } else {
-  //   whitelistEnabled = args.whitelist;
-  // }
 
   // Ensure we have required keys in our initializers
   settings.required(hre.initializers, ['PLANETHASH_KEY', 'SPACETYPE_KEY', 'BIOMEBASE_KEY']);
@@ -181,22 +175,6 @@ export async function cutArena(
   const lobbyInitAddress = hre.ethers.constants.AddressZero;
   const lobbyInitFunctionCall = '0x';
 
-  // // Make Lobby
-  // const tx = await origDiamond.createLobby(lobbyInitAddress, lobbyInitFunctionCall);
-  // const rc = await tx.wait();
-  // if (!rc.events) throw Error('No event occurred');
-
-  // const event = rc.events.find((event: any) => event.event === 'LobbyCreated');
-  // if (!event || !event.args) throw Error('No event found');
-
-  // const lobbyAddress = event.args.lobbyAddress;
-
-  // if (!lobbyAddress) throw Error('No lobby address found');
-
-  // console.log(`lobby Diamond created at ${lobbyAddress} with ${rc.gasUsed} gas`);
-
-  // const diamond = await hre.ethers.getContractAt('DarkForest', lobbyAddress);
-
   const prevFacets = await diamond.facets();
 
   const changes = new DiamondChanges(prevFacets);
@@ -243,12 +221,6 @@ export async function cutArena(
   if (!lobbyAddress) throw Error('No lobby address found');
 
   const arena = await hre.ethers.getContractAt('DarkForest', lobbyAddress);
-
-  console.log(
-    `Arena created and initialized at ${lobbyAddress} with ${
-      rc.gasUsed
-    } gas.\nOwner: ${await arena.owner()}`
-  );
 
   return [arena, diamondInit, rc] as const;
 }
