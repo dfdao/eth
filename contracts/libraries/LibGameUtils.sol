@@ -20,6 +20,7 @@ import {
     ArtifactType,
     ArtifactRarity,
     Upgrade,
+    ArenaCreateRevealPlanetArgs,
     PlanetDefaultStats
 } from "../DFTypes.sol";
 
@@ -45,6 +46,21 @@ library LibGameUtils {
         for (uint256 i = _startByte; i <= _endByte; i++) {
             _byteUInt += uint256(uint8(_b[i])) * (256**(_endByte - i));
         }
+    }
+
+    function _hashInitPlanet(ArenaCreateRevealPlanetArgs memory planet) public pure returns (bytes32) {
+        return(
+            keccak256(abi.encode(
+                planet.location, 
+                planet.x, 
+                planet.y, 
+                planet.perlin, 
+                planet.planetType,
+                planet.requireValidLocationId,
+                planet.isTargetPlanet,
+                planet.isSpawnPlanet
+            ))
+        );
     }
 
     function _locationIdValid(uint256 _loc) public view returns (bool) {

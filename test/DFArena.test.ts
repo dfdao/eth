@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import {
   fixtureLoader,
+  getInitPlanetHash,
   increaseBlockchainTime,
   increaseBlocks,
   makeInitArgs,
@@ -190,7 +191,7 @@ describe('Arena Functions', function () {
       expect(testPlanet.y).to.equal(y);
     });
 
-    it.only('bulk creates and reveals multiple planets', async function () {
+    it('bulk creates and reveals multiple planets', async function () {
       const perlin = 20;
       const level = 5;
       const planetType = 1; // asteroid field
@@ -723,38 +724,28 @@ describe('Arena Functions', function () {
     });
   });
 
-  describe('Init Planet Commit', function () {
+  describe.only('Init Planet Commit', function () {
     let world: World;
 
     beforeEach('load fixture', async function () {
       world = await fixtureLoader(initPlanetsArenaFixture);
     });
 
-    it.only('init planet id exists in arena constants', async function () {
-      expect((await world.contract.getArenaConstants()).INIT_PLANET_IDS[0]).to.equal(
-        initPlanetsInitializers.INIT_PLANETS[0].location
-      );
-    });
+    it.only('init planet hashes match arena constants', async function () {
+      const INIT_HASHES = (await world.contract.getArenaConstants()).INIT_PLANET_HASHES
+      for(var i = 0; i < INIT_HASHES.length; i++) {
+        expect(INIT_HASHES[i]).to.equal(
+          getInitPlanetHash(initPlanetsInitializers.INIT_PLANETS[i])
+        );
+      }
 
-    it.only('init planet exists in arena storage via getter', async function () {
-      const initPlanets = await world.contract.getInitPlanets();
-      expect(initPlanets[0].location).to.equal(initPlanetsInitializers.INIT_PLANETS[0].location);
-      expect(initPlanets[0].perlin).to.equal(initPlanetsInitializers.INIT_PLANETS[0].perlin);
-      expect(initPlanets[0].x).to.equal(initPlanetsInitializers.INIT_PLANETS[0].x);
-      expect(initPlanets[0].y).to.equal(initPlanetsInitializers.INIT_PLANETS[0].y);
-      expect(initPlanets[0].isSpawnPlanet).to.equal(
-        initPlanetsInitializers.INIT_PLANETS[0].isSpawnPlanet
-      );
-      expect(initPlanets[0].isTargetPlanet).to.equal(
-        initPlanetsInitializers.INIT_PLANETS[0].isTargetPlanet
-      );
     });
 
     it('confirms owner is 0x0', async function () {
       expect(await world.contract.owner()).to.equal(hre.ethers.constants.AddressZero);
     });
 
-    it.only('can create and reveal init planet with no admin', async function () {
+    it('can create and reveal init planet with no admin', async function () {
       const createReveal = await world.contract.createAndReveal(initPlanetsInitializers.INIT_PLANETS[0]);
 
       const createRevealReceipt = await createReveal.wait();
@@ -767,7 +758,7 @@ describe('Arena Functions', function () {
       expect(testPlanet.y).to.equal(initPlanetsInitializers.INIT_PLANETS[0].y);
     });
 
-    it.only('cannot create and reveal planet that is not an init planet', async function () {
+    it('cannot create and reveal planet that is not an init planet', async function () {
       const planet = {...initPlanetsInitializers.INIT_PLANETS[0], x: 15};
       await expect(world.contract.createAndReveal(planet)).to.be.revertedWith('must be admin or init planet');
     });

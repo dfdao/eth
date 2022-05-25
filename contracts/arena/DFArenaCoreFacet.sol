@@ -68,18 +68,7 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     // True if init planet
     function isInitPlanet(ArenaCreateRevealPlanetArgs memory _initPlanetArgs) public view returns (bool) {
 
-        ArenaCreateRevealPlanetArgs memory initPlanet = arenaStorage().initPlanets[_initPlanetArgs.location];
-        return
-        (
-            initPlanet.location == _initPlanetArgs.location &&
-            initPlanet.x == _initPlanetArgs.x &&
-            initPlanet.y == _initPlanetArgs.y &&
-            initPlanet.perlin == _initPlanetArgs.perlin &&
-            initPlanet.isSpawnPlanet == _initPlanetArgs.isSpawnPlanet &&
-            initPlanet.isTargetPlanet == _initPlanetArgs.isTargetPlanet &&
-            initPlanet.level == _initPlanetArgs.level &&
-            initPlanet.planetType == _initPlanetArgs.planetType
-        );
+        return arenaStorage().initPlanetHashes[LibGameUtils._hashInitPlanet(_initPlanetArgs)];
     }
 
     // FUNCTIONS TO REPLACE on core DF Diamond

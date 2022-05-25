@@ -1,3 +1,4 @@
+import { modPBigInt } from '@darkforest_eth/hashing';
 import { decodeInitializers } from '@darkforest_eth/settings';
 import { PlanetType } from '@darkforest_eth/types';
 import * as settings from '../../settings';
@@ -37,7 +38,7 @@ export const target4Initializers = settings.parse(decodeInitializers, {
 export const manualSpawnInitializers = settings.parse(decodeInitializers, {
   ...defaultInitializerValues,
   MANUAL_SPAWN: true,
-  INIT_PERLIN_MIN : 0,
+  INIT_PERLIN_MIN: 0,
   INIT_PERLIN_MAX: 31,
 });
 
@@ -58,23 +59,12 @@ export const arenaWorldInitializers = settings.parse(decodeInitializers, {
 
 export const noAdminInitializers = settings.parse(decodeInitializers, {
   ...defaultInitializerValues,
-  NO_ADMIN: true
+  NO_ADMIN: true,
 });
 
 export const planetLevelThresholdInitializer = settings.parse(decodeInitializers, {
   ...defaultInitializerValues,
-  PLANET_LEVEL_THRESHOLDS:[
-    5,
-    5,
-    5,
-    5,
-    5,
-    5,
-    5,
-    5,
-    5,
-    5
-  ],
+  PLANET_LEVEL_THRESHOLDS: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5],
 });
 
 export const VALID_INIT_PERLIN = initializers.INIT_PERLIN_MIN;
@@ -370,16 +360,93 @@ export const initPlanetsInitializers = settings.parse(decodeInitializers, {
   TARGET_PLANETS: true,
   INIT_PLANETS: [
     {
-    location: ADMIN_PLANET_CLOAKED.id.toHexString(),
-    x: 10,
-    y: 10,
-    perlin: 20,
-    level: 3,
-    planetType: PlanetType.PLANET,
-    requireValidLocationId: false,
-    isTargetPlanet: false,
-    isSpawnPlanet: true,
-  },
-  ]
+      location: ADMIN_PLANET_CLOAKED.id.toHexString(),
+      x: modPBigInt(-10).toString(),
+      y: modPBigInt(10).toString(),
+      perlin: 20,
+      level: 3,
+      planetType: PlanetType.PLANET,
+      requireValidLocationId: false,
+      isTargetPlanet: false,
+      isSpawnPlanet: true,
+    },
+    {
+      location: ARTIFACT_PLANET_1.id.toHexString(),
+      x: modPBigInt(-4).toString(),
+      y: modPBigInt(5).toString(),
+      perlin: 20,
+      level: 3,
+      planetType: PlanetType.PLANET,
+      requireValidLocationId: false,
+      isTargetPlanet: false,
+      isSpawnPlanet: true,
+    },
+    {
+      location: LVL1_PLANET_SPACE.id.toHexString(),
+      x: modPBigInt(-100).toString(),
+      y: modPBigInt(100).toString(),
+      perlin: 20,
+      level: 3,
+      planetType: PlanetType.PLANET,
+      requireValidLocationId: false,
+      isTargetPlanet: false,
+      isSpawnPlanet: true,
+    },
+    {
+      location: LVL1_PLANET_SPACE.id.toHexString(),
+      x: modPBigInt(-150).toString(),
+      y: modPBigInt(150).toString(),
+      perlin: 20,
+      level: 3,
+      planetType: PlanetType.PLANET,
+      requireValidLocationId: false,
+      isTargetPlanet: false,
+      isSpawnPlanet: true,
+    },
+    {
+      location: LVL0_PLANET_DEEP_SPACE.id.toHexString(),
+      x: modPBigInt(-200).toString(),
+      y: modPBigInt(200).toString(),
+      perlin: 20,
+      level: 3,
+      planetType: PlanetType.PLANET,
+      requireValidLocationId: false,
+      isTargetPlanet: false,
+      isSpawnPlanet: true,
+    },
+    {
+      location: LVL0_PLANET_POPCAP_BOOSTED.id.toHexString(),
+      x: modPBigInt(-240).toString(),
+      y: modPBigInt(240).toString(),
+      perlin: 20,
+      level: 3,
+      planetType: PlanetType.PLANET,
+      requireValidLocationId: false,
+      isTargetPlanet: false,
+      isSpawnPlanet: true,
+    },
+    {
+      location: LVL1_ASTEROID_DEEP_SPACE.id.toHexString(),
+      x: modPBigInt(-340).toString(),
+      y: modPBigInt(340).toString(),
+      perlin: 20,
+      level: 3,
+      planetType: PlanetType.PLANET,
+      requireValidLocationId: false,
+      isTargetPlanet: false,
+      isSpawnPlanet: true,
+    },
+    {
+      location: LVL1_PLANET_DEEP_SPACE.id.toHexString(),
+      x: modPBigInt(-350).toString(),
+      y: modPBigInt(350).toString(),
+      perlin: 20,
+      level: 3,
+      planetType: PlanetType.PLANET,
+      requireValidLocationId: false,
+      isTargetPlanet: false,
+      isSpawnPlanet: true,
+    },
+  ],
 });
 

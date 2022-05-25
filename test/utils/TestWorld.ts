@@ -155,7 +155,7 @@ export async function initializeWorld({
   let deploy = arena ? deployAndCutArena : deployAndCut;
 
   const [diamond, diamondInit] = await deploy(
-    { ownerAddress: deployer.address, whitelistEnabled, initializers },
+    { ownerAddress: deployer.address, whitelistEnabled, initializers, save: false },
     hre
   );
   contract = diamond;

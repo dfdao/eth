@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 // Library imports
 import {LibDiamond} from "../vendor/libraries/LibDiamond.sol";
+import {LibGameUtils} from "../libraries/LibGameUtils.sol";
 
 // Contract imports
 import {Diamond} from "../vendor/Diamond.sol";
@@ -124,12 +125,8 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
         return tournamentStorage().matches[id];
     }
 
-    function getInitPlanets() public view returns (ArenaCreateRevealPlanetArgs[] memory ret) {
-        uint256[] memory initPlanetIds = arenaConstants().INIT_PLANET_IDS;
-
-        ret = new ArenaCreateRevealPlanetArgs[](initPlanetIds.length);
-        for(uint256 i = 0; i < initPlanetIds.length; i++) {
-            ret[i] = arenaStorage().initPlanets[initPlanetIds[i]];
-        }
+    function getInitPlanetHashes() public view returns (bytes32[] memory) {
+        bytes32[] memory initPlanetIds = arenaConstants().INIT_PLANET_HASHES;
+        return initPlanetIds;
     }
 }

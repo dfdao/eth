@@ -35,6 +35,7 @@ import {LibDiamond} from "./vendor/libraries/LibDiamond.sol";
 import {WithStorage} from "./libraries/LibStorage.sol";
 import {WithArenaStorage} from "./libraries/LibArenaStorage.sol";
 import {LibGameUtils} from "./libraries/LibGameUtils.sol";
+import "hardhat/console.sol";
 
 // Type imports
 import {PlanetDefaultStats, Upgrade, UpgradeBranch, Modifiers, Mod, ArenaCreateRevealPlanetArgs, Spaceships} from "./DFTypes.sol";
@@ -237,23 +238,28 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
 
         arenaConstants().NO_ADMIN = initArgs.NO_ADMIN;
 
-        for(uint i = 0; i < initArgs.INIT_PLANETS.length; i++) {
+        console.log('init planets length %s', initArgs.INIT_PLANETS.length);
+
+        uint256 startGas = gasleft();
+
+        uint256 initLength = initArgs.INIT_PLANETS.length;
+
+        /* each planet costs about 50k gas */
+        for(uint i = 0; i < initLength; i++) {
             ArenaCreateRevealPlanetArgs memory initPlanet = initArgs.INIT_PLANETS[i];
 
-            ArenaCreateRevealPlanetArgs storage _initPlanet = arenaStorage().initPlanets[initPlanet.location];
+            bytes32 initHash = LibGameUtils._hashInitPlanet(initPlanet);
+
+            arenaStorage().initPlanetHashes[initHash] = true;
 
             /* Store planet ids for retrieval later */
-            arenaConstants().INIT_PLANET_IDS.push(initPlanet.location);
+            arenaConstants().INIT_PLANET_HASHES.push(initHash);
 
-            _initPlanet.location = initPlanet.location;
-            _initPlanet.x = initPlanet.x;
-            _initPlanet.y = initPlanet.y;
-            _initPlanet.perlin = initPlanet.perlin;
-            _initPlanet.isSpawnPlanet = initPlanet.isSpawnPlanet;
-            _initPlanet.isTargetPlanet = initPlanet.isTargetPlanet;
-            _initPlanet.planetType = initPlanet.planetType;
-            _initPlanet.level = initPlanet.level;
         }
+
+        uint256 gasUsed = startGas - gasleft();
+
+        console.log("gas used by init planets: %s", gasUsed);
     
         initializeDefaults();
         initializeUpgrades();

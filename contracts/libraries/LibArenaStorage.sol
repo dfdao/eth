@@ -38,7 +38,7 @@ struct ArenaStorage {
     uint256 moveCap;
     mapping(address => ArenaPlayerInfo) arenaPlayerInfo;
     uint256 endTime;
-    mapping(uint256 => ArenaCreateRevealPlanetArgs) initPlanets;
+    mapping(bytes32 => bool) initPlanetHashes;
 }
 
 struct ArenaConstants {
@@ -52,7 +52,7 @@ struct ArenaConstants {
     uint256 CLAIM_VICTORY_ENERGY_PERCENT;
     uint256 START_TIME;
     bool NO_ADMIN;
-    uint256 [] INIT_PLANET_IDS; // TODO: Confirm this won't mess up Diamond storage
+    bytes32 [] INIT_PLANET_HASHES; // TODO: Confirm this won't mess up Diamond storage
 }
 
 library LibArenaStorage {
