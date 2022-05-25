@@ -10,7 +10,7 @@ import {
   whitelistSnarkWasmPath,
   whitelistSnarkZkeyPath,
 } from '@darkforest_eth/snarks';
-import { ArtifactRarity, ArtifactType, Biome } from '@darkforest_eth/types';
+import { ArtifactRarity, ArtifactType, Biome, RevealedCoords } from '@darkforest_eth/types';
 import { bigIntFromKey } from '@darkforest_eth/whitelist';
 import bigInt from 'big-integer';
 import { BigNumber, BigNumberish } from 'ethers';

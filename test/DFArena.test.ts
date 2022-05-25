@@ -1,7 +1,7 @@
 import { LobbyCreatedEvent } from '@darkforest_eth/contracts/typechain/DarkForest';
 import { ArtifactType } from '@darkforest_eth/types';
 import { expect } from 'chai';
-import { BigNumber } from 'ethers';
+import { BigNumber, constants } from 'ethers';
 import {
   fixtureLoader,
   getInitPlanetHash,
@@ -13,6 +13,7 @@ import {
 } from './utils/TestUtils';
 import {
   arenaWorldFixture,
+  initializeWorld,
   initPlanetsArenaFixture,
   manualSpawnFixture,
   modifiedWorldFixture,
@@ -25,6 +26,7 @@ import {
 import {
   ADMIN_PLANET,
   ADMIN_PLANET_CLOAKED,
+  arenaWorldInitializers,
   initPlanetsInitializers,
   LVL0_PLANET_DEEP_SPACE,
   LVL1_ASTEROID_1,
@@ -714,7 +716,7 @@ describe('Arena Functions', function () {
     });
 
     it('confirms owner is 0x0', async function () {
-      expect(await world.contract.owner()).to.equal(hre.ethers.constants.AddressZero);
+      expect(await world.contract.owner()).to.equal(constants.AddressZero);
     });
 
     it('reverts on an admin call', async function () {
@@ -724,29 +726,37 @@ describe('Arena Functions', function () {
     });
   });
 
-  describe.only('Init Planet Commit', function () {
+  describe('Init Planet Commit', function () {
     let world: World;
+    let world1: World;
 
     beforeEach('load fixture', async function () {
       world = await fixtureLoader(initPlanetsArenaFixture);
     });
 
-    it.only('init planet hashes match arena constants', async function () {
-      const INIT_HASHES = (await world.contract.getArenaConstants()).INIT_PLANET_HASHES
-      for(var i = 0; i < INIT_HASHES.length; i++) {
-        expect(INIT_HASHES[i]).to.equal(
-          getInitPlanetHash(initPlanetsInitializers.INIT_PLANETS[i])
-        );
-      }
+    it('has different config hashes for different initializers', async function () {
+      /* When I load this as a fixture, Hardhat bugs out. Perhaps because deterministic contract address? */
+      const world1 = await initializeWorld({initializers: arenaWorldInitializers, whitelistEnabled: false, arena: true});
+      const worldConfig = (await world.contract.getArenaConstants()).CONFIG_HASH;
+      const world1Config = (await world1.contract.getArenaConstants()).CONFIG_HASH;
+      expect(worldConfig).to.not.equal(world1Config);
+    });
 
+    it('init planet hashes match arena constants', async function () {
+      const INIT_HASHES = (await world.contract.getArenaConstants()).INIT_PLANET_HASHES;
+      for (var i = 0; i < INIT_HASHES.length; i++) {
+        expect(INIT_HASHES[i]).to.equal(getInitPlanetHash(initPlanetsInitializers.INIT_PLANETS[i]));
+      }
     });
 
     it('confirms owner is 0x0', async function () {
-      expect(await world.contract.owner()).to.equal(hre.ethers.constants.AddressZero);
+      expect(await world.contract.owner()).to.equal(constants.AddressZero);
     });
 
     it('can create and reveal init planet with no admin', async function () {
-      const createReveal = await world.contract.createAndReveal(initPlanetsInitializers.INIT_PLANETS[0]);
+      const createReveal = await world.contract.createAndReveal(
+        initPlanetsInitializers.INIT_PLANETS[0]
+      );
 
       const createRevealReceipt = await createReveal.wait();
 
@@ -759,8 +769,11 @@ describe('Arena Functions', function () {
     });
 
     it('cannot create and reveal planet that is not an init planet', async function () {
-      const planet = {...initPlanetsInitializers.INIT_PLANETS[0], x: 15};
-      await expect(world.contract.createAndReveal(planet)).to.be.revertedWith('must be admin or init planet');
+      const planet = { ...initPlanetsInitializers.INIT_PLANETS[0], x: 15 };
+      await expect(world.contract.createAndReveal(planet)).to.be.revertedWith(
+        'must be admin or init planet'
+      );
     });
+
   });
 });

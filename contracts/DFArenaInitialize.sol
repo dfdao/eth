@@ -125,7 +125,7 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
     function init(
         bool whitelistEnabled,
         string memory artifactBaseURI,
-        InitArgs memory initArgs
+        InitArgs calldata initArgs
     ) external {        
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -237,10 +237,7 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
         );
 
         arenaConstants().NO_ADMIN = initArgs.NO_ADMIN;
-
-        console.log('init planets length %s', initArgs.INIT_PLANETS.length);
-
-        uint256 startGas = gasleft();
+        arenaConstants().CONFIG_HASH = keccak256(abi.encode(initArgs));
 
         uint256 initLength = initArgs.INIT_PLANETS.length;
 
@@ -254,12 +251,7 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
 
             /* Store planet ids for retrieval later */
             arenaConstants().INIT_PLANET_HASHES.push(initHash);
-
         }
-
-        uint256 gasUsed = startGas - gasleft();
-
-        console.log("gas used by init planets: %s", gasUsed);
     
         initializeDefaults();
         initializeUpgrades();

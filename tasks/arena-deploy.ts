@@ -177,7 +177,7 @@ export async function cutArena(
 ) {
   const diamond = await hre.ethers.getContractAt('DarkForest', diamondAddress);
 
-  console.log(`diamond owner ${await diamond.owner()}`)
+  console.log(`diamond owner ${await diamond.owner()}`);
   const lobbyInitAddress = hre.ethers.constants.AddressZero;
   const lobbyInitFunctionCall = '0x';
 
@@ -231,7 +231,6 @@ export async function cutArena(
   }
   console.log(`Completed diamond cut of Arena facets with ${initReceipt.gasUsed} gas`);
 
-  console.log(`msg.sender ${await diamond.signer.getAddress()}`)
   const tx = await diamond.createLobby(initAddress, initFunctionCall);
   const rc = await tx.wait();
   if (!rc.events) throw Error('No event occurred');
@@ -245,7 +244,11 @@ export async function cutArena(
 
   const arena = await hre.ethers.getContractAt('DarkForest', lobbyAddress);
 
-  console.log(`Arena created and initialized at ${lobbyAddress} with ${rc.gasUsed} gas.\nOwner: ${await arena.owner()}`);
+  console.log(
+    `Arena created and initialized at ${lobbyAddress} with ${
+      rc.gasUsed
+    } gas.\nOwner: ${await arena.owner()}`
+  );
 
   return [arena, diamondInit, rc] as const;
 }
