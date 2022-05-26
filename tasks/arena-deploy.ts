@@ -222,5 +222,8 @@ export async function cutArena(
 
   const arena = await hre.ethers.getContractAt('DarkForest', lobbyAddress);
 
+  console.log(`Created and initialized Arena with ${rc.gasUsed} gas`);
+
+
   return [arena, diamondInit, rc] as const;
 }
