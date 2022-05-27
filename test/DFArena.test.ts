@@ -368,6 +368,50 @@ describe('Arena Functions', function () {
     });
   });
 
+  describe('Move Count', function () {
+    let world: World;
+
+    async function worldFixture() {
+      const world = await fixtureLoader(targetPlanetFixture);
+      let initArgs = makeInitArgs(SPAWN_PLANET_1);
+      await world.user1Core.initializePlayer(...initArgs);
+      await increaseBlockchainTime();
+
+      return world;
+    }
+
+    beforeEach('load fixture', async function () {
+      world = await fixtureLoader(worldFixture);
+    });
+
+    it('start time is set on first move', async function() {
+      expect(await world.user1Core.getStartTime()).to.be.equal(0);
+      expect(await world.user1Core.getRoundDuration()).to.be.equal(0);
+      const start = Date.now() / 1000;
+      const dist = 1;
+      const shipsSent = 30000;
+      const silverSent = 0;
+      await world.user1Core.move(
+        ...makeMoveArgs(SPAWN_PLANET_1, LVL0_PLANET_DEEP_SPACE, dist, shipsSent, silverSent)
+      );
+      expect((await world.user1Core.getStartTime()).toNumber()).to.not.be.equal(0);
+      const now =  Date.now() / 1000;
+      expect((await world.user1Core.getRoundDuration()).toNumber()).to.be.approximately(now - start, 2);
+
+    })
+
+    it('move count increments', async function() {
+      expect((await world.user1Core.arenaPlayers(world.user1.address)).moves).to.be.equal(0);
+      const dist = 1;
+      const shipsSent = 30000;
+      const silverSent = 0;
+      await world.user1Core.move(
+        ...makeMoveArgs(SPAWN_PLANET_1, LVL0_PLANET_DEEP_SPACE, dist, shipsSent, silverSent)
+      );
+      expect((await world.user1Core.arenaPlayers(world.user1.address)).moves).to.be.equal(1);
+    })
+  })
+
   describe('Invade and Claim Victory', function () {
     let world: World;
 
@@ -503,10 +547,6 @@ describe('Arena Functions', function () {
 
         await expect(world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id)).to.be.revertedWith(
           "planet energy must be greater than victory threshold"        );
-      });
-
-      it('get round duration fails if round not over', async function () {
-        await expect(world.user1Core.getRoundDuration()).to.be.revertedWith('game is not yet over');
       });
 
       it('claim victory succeeds and emits Gameover if target is above energy threshold ', async function () {
@@ -690,4 +730,5 @@ describe('Arena Functions', function () {
     });
 
   });
+
 });

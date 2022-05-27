@@ -44,7 +44,7 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
         uint256 abandoning
     );
 
-    event GameStarted(address player);
+    event GameStarted(uint256 timestamp);
 
     function move(
         uint256[2] memory _a,
@@ -116,10 +116,9 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
         
         if(arenaStorage().startTime == 0) {
            arenaStorage().startTime = block.timestamp; 
-           emit GameStarted(msg.sender);
+           emit GameStarted(block.timestamp);
         }
-        ArenaPlayerInfo storage arenaPlayer = arenaStorage().arenaPlayerInfo[msg.sender];
-        arenaPlayer.moves++;
+        arenaStorage().arenaPlayerInfo[msg.sender].moves++;
 
         LibGameUtils.updateWorldRadius();
         emit ArrivalQueued(

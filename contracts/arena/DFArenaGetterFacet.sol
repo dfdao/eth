@@ -128,7 +128,9 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
         if(arenaStorage().startTime == 0) {
             return 0;
         }
-        require(arenaStorage().gameover && arenaStorage().endTime > 0, "game is not yet over");
+        if(arenaStorage().endTime == 0) {
+            return block.timestamp - arenaStorage().startTime;
+        }
         return arenaStorage().endTime - arenaStorage().startTime;
     }
 

@@ -11,9 +11,6 @@ import InitABI from '@darkforest_eth/contracts/abis/DFArenaInitialize.json';
 import { Contract } from 'ethers';
 import { deployContract } from '../utils/deploy';
 import { DiamondChanges } from '../utils/diamond';
-import { cutUpgradesFromLobby } from '../tasks/arena-upgrade';
-import { getTrailingCommentRanges } from 'typescript';
-
 describe('Arena Upgrade', function () {
   describe('Lobby with Initializer', async function () {
     let world: World;
