@@ -1,17 +1,20 @@
 import { LobbyCreatedEvent } from '@darkforest_eth/contracts/typechain/DarkForest';
 import { ArtifactType } from '@darkforest_eth/types';
 import { expect } from 'chai';
-import { BigNumber } from 'ethers';
+import { BigNumber, BigNumberish } from 'ethers';
 import {
+  conquerUnownedPlanet,
   fixtureLoader,
   increaseBlockchainTime,
   increaseBlocks,
+  makeFindArtifactArgs,
   makeInitArgs,
   makeMoveArgs,
   makeRevealArgs,
 } from './utils/TestUtils';
 import {
   arenaWorldFixture,
+  deterministicArtifactFixture,
   manualSpawnFixture,
   modifiedWorldFixture,
   planetLevelThresholdFixture,
@@ -22,16 +25,22 @@ import {
 import {
   ADMIN_PLANET,
   ADMIN_PLANET_CLOAKED,
+  ARTIFACT_PLANET_1,
+  LVL0_PLANET_DEAD_SPACE,
   LVL0_PLANET_DEEP_SPACE,
   LVL1_ASTEROID_1,
   LVL1_PLANET_SPACE,
   LVL2_PLANET_DEEP_SPACE,
+  LVL3_SPACETIME_1,
+  LVL3_SPACETIME_2,
   planetLevelThresholdInitializer,
+  SPACE_PERLIN,
   SPAWN_PLANET_1,
   SPAWN_PLANET_2,
   VALID_INIT_PERLIN,
 } from './utils/WorldConstants';
 import hre from 'hardhat';
+import { TestLocation } from './utils/TestLocation';
 
 describe('Arena Functions', function () {
   describe('Create Planets', function () {
@@ -686,8 +695,85 @@ describe('Arena Functions', function () {
       expect(await lobby.owner()).to.equal(world.user1.address);
 
       expect((await world.contract.getNumMatches()).toNumber()).to.equal(1);
-      expect((await world.contract.getMatch(0))).to.equal(lobbyAddress);
-    });
 
+  describe('Deterministic Artifacts', function () {
+    let world1: World;
+    let world2: World;
+
+    async function getArtifactsOnPlanet(world: World, locationId: BigNumberish) {
+      return (await world.contract.getArtifactsOnPlanet(locationId))
+        .map((metadata) => metadata.artifact)
+        .filter((artifact) => artifact.artifactType < ArtifactType.ShipMothership);
+    }
+
+    async function worldFixture() {
+      const world = await deterministicArtifactFixture();
+  
+      // Initialize player
+      await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
+      await world.user1Core.giveSpaceShips(SPAWN_PLANET_1.id);
+      // await world.user2Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_2));
+  
+      // Conquer initial planets
+      //// Player 1
+      await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, ARTIFACT_PLANET_1);
+      // await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL3_SPACETIME_1);
+      //// Player 2
+      // await conquerUnownedPlanet(world, world.user2Core, SPAWN_PLANET_2, LVL3_SPACETIME_2);
+      await increaseBlockchainTime();
+  
+      // Move the Gear ship into position
+      const gearShip = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
+        (a) => a.artifact.artifactType === ArtifactType.ShipGear
+      );
+      const gearId = gearShip?.artifact.id;
+      await world.user1Core.move(
+        ...makeMoveArgs(SPAWN_PLANET_1, ARTIFACT_PLANET_1, 100, 0, 0, gearId)
+      );
+      await increaseBlockchainTime();
+      await world.user1Core.refreshPlanet(ARTIFACT_PLANET_1.id);
+  
+      // Conquer another planet for artifact storage
+      // await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL0_PLANET_DEAD_SPACE);
+  
+      return world;
+    }
+  
+
+    beforeEach('load fixture', async function () {
+      world1 = await fixtureLoader(worldFixture);
+      world2 = await fixtureLoader(worldFixture);
+    });
+    it.only('creates same artifact in different worlds', async function () {
+      this.timeout(1000 * 60);
+
+      const randomHex = `00007c2512896efb182d462faee0000fb33d58930eb9e6b4fbae6d048e9c44`;
+
+      const planetWithArtifactLoc = new TestLocation({
+        hex: randomHex,
+        perlin: SPACE_PERLIN,
+        distFromOrigin: 1998,
+      });
+
+      await world1.user1Core.prospectPlanet(ARTIFACT_PLANET_1.id);
+      await increaseBlockchainTime(10);
+
+      // await world2.user1Core.prospectPlanet(ARTIFACT_PLANET_1.id);
+
+      await increaseBlockchainTime(10);
+
+      await world1.user1Core.findArtifact(...makeFindArtifactArgs(planetWithArtifactLoc));
+      // await world2.user1Core.findArtifact(...makeFindArtifactArgs(planetWithArtifactLoc));
+
+      await increaseBlockchainTime();
+
+      const artifactsOnPlanet1 = await getArtifactsOnPlanet(world1, planetWithArtifactLoc.id);
+      // const artifactsOnPlanet2 = await getArtifactsOnPlanet(world2, planetWithArtifactLoc.id);
+
+      const artifact1Id = artifactsOnPlanet1[0].id;
+      // const artifact2Id = artifactsOnPlanet2[0].id;
+
+      // expect(artifact1Id).to.be.equal(artifact2Id);
+    });
   });
 });

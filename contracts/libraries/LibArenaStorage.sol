@@ -47,6 +47,7 @@ struct ArenaConstants {
     Spaceships SPACESHIPS;
     uint256 CLAIM_VICTORY_ENERGY_PERCENT;
     uint256 START_TIME;
+    bool RANDOM_ARTIFACTS;
 
 
 }

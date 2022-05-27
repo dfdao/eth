@@ -113,6 +113,8 @@ struct InitArgs {
 
     uint256[8] MODIFIERS;
     bool[5] SPACESHIPS;
+
+    bool RANDOM_ARTIFACTS;
 }
 
 contract DFArenaInitialize is WithStorage, WithArenaStorage {
@@ -216,6 +218,7 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
         arenaConstants().TARGET_PLANETS = initArgs.TARGET_PLANETS;
         arenaConstants().CLAIM_VICTORY_ENERGY_PERCENT = initArgs.CLAIM_VICTORY_ENERGY_PERCENT;
         arenaConstants().MANUAL_SPAWN = initArgs.MANUAL_SPAWN;
+        arenaConstants().RANDOM_ARTIFACTS = initArgs.RANDOM_ARTIFACTS;
 
         arenaConstants().MODIFIERS.popCap = initArgs.MODIFIERS[uint256(Mod.popCap)];
         arenaConstants().MODIFIERS.popGrowth = initArgs.MODIFIERS[uint256(Mod.popGrowth)];

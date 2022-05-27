@@ -7,6 +7,7 @@ import { deployAndCutArena } from '../../tasks/arena-deploy';
 import { deployAndCut } from '../../tasks/deploy';
 import {
   arenaWorldInitializers,
+  deterministicArtifactInitializers,
   initializers,
   manualSpawnInitializers,
   noPlanetTransferInitializers,
@@ -118,6 +119,15 @@ export function spaceshipWorldFixture(spaceships: [boolean, boolean, boolean, bo
     whitelistEnabled: false,
     arena: true
   });
+}
+
+export function deterministicArtifactFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: deterministicArtifactInitializers,
+    whitelistEnabled: false,
+    arena: true
+  });
+  
 }
 
 export async function initializeWorld({
