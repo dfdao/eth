@@ -101,16 +101,15 @@ library LibArtifactUtils {
         require(checkFindArtifact(args.planetId, info, planet));
 
         Biome biome = LibGameUtils._getBiome(info.spaceType, args.biomebase);
-        bytes32 randomness = "1";
+        bytes memory randomness = "1";
         if(arenaConstants().RANDOM_ARTIFACTS) {
-            randomness = blockhash(info.prospectedBlockNumber);
+            randomness = abi.encodePacked(args.coreAddress, blockhash(info.prospectedBlockNumber));
         }
         uint256 artifactSeed =
             uint256(
                 keccak256(
                     abi.encodePacked(
                         args.planetId,
-                        args.coreAddress,
                         randomness
                     )
                 )

@@ -422,7 +422,7 @@ describe('Arena Functions', function () {
       it('needs to have enough energy', async function () {
         await expect(
           world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id)
-        ).to.be.revertedWith("planet energy must be greater than victory threshold");
+        ).to.be.revertedWith('planet energy must be greater than victory threshold');
       });
       describe('time elapsed', async function () {
         beforeEach(async function () {
@@ -510,8 +510,9 @@ describe('Arena Functions', function () {
           }%`
         );
 
-        await expect(world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id)).to.be.revertedWith(
-          "planet energy must be greater than victory threshold"        );
+        await expect(
+          world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id)
+        ).to.be.revertedWith('planet energy must be greater than victory threshold');
       });
 
       it('get round duration fails if round not over', async function () {
@@ -675,7 +676,6 @@ describe('Arena Functions', function () {
     });
 
     it('New lobby adress is stored on chain', async function () {
-
       const initAddress = hre.ethers.constants.AddressZero;
       const initFunctionCall = '0x';
       // Make Lobby
@@ -695,6 +695,8 @@ describe('Arena Functions', function () {
       expect(await lobby.owner()).to.equal(world.user1.address);
 
       expect((await world.contract.getNumMatches()).toNumber()).to.equal(1);
+    });
+  });
 
   describe('Deterministic Artifacts', function () {
     let world1: World;
@@ -708,12 +710,12 @@ describe('Arena Functions', function () {
 
     async function worldFixture() {
       const world = await deterministicArtifactFixture();
-  
+
       // Initialize player
       await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
       await world.user1Core.giveSpaceShips(SPAWN_PLANET_1.id);
       // await world.user2Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_2));
-  
+
       // Conquer initial planets
       //// Player 1
       await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, ARTIFACT_PLANET_1);
@@ -721,7 +723,7 @@ describe('Arena Functions', function () {
       //// Player 2
       // await conquerUnownedPlanet(world, world.user2Core, SPAWN_PLANET_2, LVL3_SPACETIME_2);
       await increaseBlockchainTime();
-  
+
       // Move the Gear ship into position
       const gearShip = (await world.user1Core.getArtifactsOnPlanet(SPAWN_PLANET_1.id)).find(
         (a) => a.artifact.artifactType === ArtifactType.ShipGear
@@ -732,48 +734,81 @@ describe('Arena Functions', function () {
       );
       await increaseBlockchainTime();
       await world.user1Core.refreshPlanet(ARTIFACT_PLANET_1.id);
-  
+
       // Conquer another planet for artifact storage
       // await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL0_PLANET_DEAD_SPACE);
-  
+
       return world;
     }
-  
 
     beforeEach('load fixture', async function () {
-      world1 = await fixtureLoader(worldFixture);
-      world2 = await fixtureLoader(worldFixture);
+      world1 = await worldFixture();
+      world2 = await worldFixture();
     });
     it.only('creates same artifact in different worlds', async function () {
       this.timeout(1000 * 60);
 
-      const randomHex = `00007c2512896efb182d462faee0000fb33d58930eb9e6b4fbae6d048e9c44`;
+      /* eslint-disable @typescript-eslint/no-explicit-any */
+      let artifacts: any;
+      let prevLocation = SPAWN_PLANET_1;
 
+      const randomHex =
+      `00007c2512896efb182d462faee0000fb33d58930eb9e6b4fbae6d048e9c44` +
+      0 + '' + (0 % 10);
       const planetWithArtifactLoc = new TestLocation({
         hex: randomHex,
         perlin: SPACE_PERLIN,
         distFromOrigin: 1998,
       });
 
-      await world1.user1Core.prospectPlanet(ARTIFACT_PLANET_1.id);
-      await increaseBlockchainTime(10);
+      await world1.contract.adminInitializePlanet(
+        planetWithArtifactLoc.id,
+        planetWithArtifactLoc.perlin
+      );
 
-      // await world2.user1Core.prospectPlanet(ARTIFACT_PLANET_1.id);
+      await world2.contract.adminInitializePlanet(
+        planetWithArtifactLoc.id,
+        planetWithArtifactLoc.perlin
+      );
+
+
+      await world1.contract.adminGiveSpaceShip(
+        planetWithArtifactLoc.id,
+        world1.user1.address,
+        ArtifactType.ShipGear
+      );
+
+      await world2.contract.adminGiveSpaceShip(
+        planetWithArtifactLoc.id,
+        world1.user1.address,
+        ArtifactType.ShipGear
+      );
+
+
+      await increaseBlockchainTime();
+
+      await world1.user1Core.move(...makeMoveArgs(prevLocation, planetWithArtifactLoc, 0, 80000, 0)); // move 80000 from asteroids but 160000 from ruins since ruins are higher level
+      await world2.user1Core.move(...makeMoveArgs(prevLocation, planetWithArtifactLoc, 0, 80000, 0)); // move 80000 from asteroids but 160000 from ruins since ruins are higher level
+
+      await increaseBlockchainTime();
+
+      await world1.user1Core.prospectPlanet(planetWithArtifactLoc.id);
+      await world2.user1Core.prospectPlanet(planetWithArtifactLoc.id);
 
       await increaseBlockchainTime(10);
 
       await world1.user1Core.findArtifact(...makeFindArtifactArgs(planetWithArtifactLoc));
-      // await world2.user1Core.findArtifact(...makeFindArtifactArgs(planetWithArtifactLoc));
+      await world2.user1Core.findArtifact(...makeFindArtifactArgs(planetWithArtifactLoc));
 
       await increaseBlockchainTime();
 
       const artifactsOnPlanet1 = await getArtifactsOnPlanet(world1, planetWithArtifactLoc.id);
-      // const artifactsOnPlanet2 = await getArtifactsOnPlanet(world2, planetWithArtifactLoc.id);
+      const artifactsOnPlanet2 = await getArtifactsOnPlanet(world2, planetWithArtifactLoc.id);
 
       const artifact1Id = artifactsOnPlanet1[0].id;
-      // const artifact2Id = artifactsOnPlanet2[0].id;
+      const artifact2Id = artifactsOnPlanet2[0].id;
 
-      // expect(artifact1Id).to.be.equal(artifact2Id);
+      expect(artifact1Id).to.be.equal(artifact2Id);
     });
   });
 });

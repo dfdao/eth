@@ -73,7 +73,7 @@ export const planetLevelThresholdInitializer = settings.parse(decodeInitializers
 
 export const deterministicArtifactInitializers = settings.parse(decodeInitializers, {
   ...defaultInitializerValues,
-  RANDOM_ARTIFACTS: true
+  RANDOM_ARTIFACTS: false
 });
 
 export const VALID_INIT_PERLIN = initializers.INIT_PERLIN_MIN;
