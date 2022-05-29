@@ -235,6 +235,24 @@ type Lobby @entity {
   lobbyAddress: ID!
 }
 
+type Arena @entity {
+  id: ID!
+  ownerAddress: ID!
+  lobbyAddress: ID!
+  gameOver: Boolean!
+  duration: BigInt!
+  winners: [ArenaPlayer!]!
+  players: [ArenaPlayer!]! @derivedFrom(field: "arena")
+}
+
+type ArenaPlayer @entity {
+  id: ID!
+  address: ID! 
+  initTimestamp: Int!
+  winner: Boolean!
+  arena: Arena!
+}
+
 enum ArtifactType {
   UNKNOWN
   MONOLITH
