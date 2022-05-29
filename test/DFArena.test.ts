@@ -714,7 +714,6 @@ describe('Arena Functions', function () {
       // Initialize player
       await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
       await world.user1Core.giveSpaceShips(SPAWN_PLANET_1.id);
-      // await world.user2Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_2));
 
       // Conquer initial planets
       //// Player 1
