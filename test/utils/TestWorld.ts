@@ -8,7 +8,9 @@ import { deployAndCut } from '../../tasks/deploy';
 import {
   arenaWorldInitializers,
   initializers,
+  initPlanetsInitializers,
   manualSpawnInitializers,
+  noAdminInitializers,
   noPlanetTransferInitializers,
   planetLevelThresholdInitializer,
   target4Initializers,
@@ -88,6 +90,22 @@ export function arenaWorldFixture(): Promise<World> {
   });
 }
 
+export function noAdminWorldFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: noAdminInitializers,
+    whitelistEnabled: false,
+    arena: true,
+  });
+}
+
+export function initPlanetsArenaFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: initPlanetsInitializers,
+    whitelistEnabled: false,
+    arena: true,
+  });
+}
+
 export function manualSpawnFixture(): Promise<World> {
   return initializeWorld({
     initializers: manualSpawnInitializers,
@@ -137,7 +155,7 @@ export async function initializeWorld({
   let deploy = arena ? deployAndCutArena : deployAndCut;
 
   const [diamond, diamondInit] = await deploy(
-    { ownerAddress: deployer.address, whitelistEnabled, initializers },
+    { ownerAddress: deployer.address, whitelistEnabled, initializers, save: false },
     hre
   );
   contract = diamond;

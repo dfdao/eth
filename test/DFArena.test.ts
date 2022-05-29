@@ -1,9 +1,10 @@
 import { LobbyCreatedEvent } from '@darkforest_eth/contracts/typechain/DarkForest';
 import { ArtifactType } from '@darkforest_eth/types';
 import { expect } from 'chai';
-import { BigNumber } from 'ethers';
+import { BigNumber, constants } from 'ethers';
 import {
   fixtureLoader,
+  getInitPlanetHash,
   increaseBlockchainTime,
   increaseBlocks,
   makeInitArgs,
@@ -12,8 +13,11 @@ import {
 } from './utils/TestUtils';
 import {
   arenaWorldFixture,
+  initializeWorld,
+  initPlanetsArenaFixture,
   manualSpawnFixture,
   modifiedWorldFixture,
+  noAdminWorldFixture,
   planetLevelThresholdFixture,
   spaceshipWorldFixture,
   targetPlanetFixture,
@@ -22,6 +26,8 @@ import {
 import {
   ADMIN_PLANET,
   ADMIN_PLANET_CLOAKED,
+  arenaWorldInitializers,
+  initPlanetsInitializers,
   LVL0_PLANET_DEEP_SPACE,
   LVL1_ASTEROID_1,
   LVL1_PLANET_SPACE,
@@ -49,6 +55,8 @@ describe('Arena Functions', function () {
       const y = 20;
       await world.contract.createArenaPlanet({
         location: ADMIN_PLANET_CLOAKED.id,
+        x,
+        y,
         perlin,
         level,
         planetType,
@@ -75,6 +83,8 @@ describe('Arena Functions', function () {
       const y = 20;
       await world.contract.createArenaPlanet({
         location: ADMIN_PLANET_CLOAKED.id,
+        x,
+        y,
         perlin,
         level,
         planetType,
@@ -105,6 +115,8 @@ describe('Arena Functions', function () {
       const planets = [
         {
           location: ADMIN_PLANET.id,
+          x,
+          y,
           perlin,
           level,
           planetType,
@@ -114,6 +126,8 @@ describe('Arena Functions', function () {
         },
         {
           location: ADMIN_PLANET_CLOAKED.id,
+          x,
+          y,
           perlin,
           level,
           planetType,
@@ -123,6 +137,8 @@ describe('Arena Functions', function () {
         },
         {
           location: LVL1_PLANET_SPACE.id,
+          x,
+          y,
           perlin,
           level,
           planetType,
@@ -154,25 +170,18 @@ describe('Arena Functions', function () {
       const level = 5;
       const planetType = 1; // asteroid field
       const x = 10;
-      const y = 20;
-      const revealArgs = makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y);
-      const createReveal = await world.contract.createAndReveal(
-        {
-          location: ADMIN_PLANET_CLOAKED.id,
-          perlin,
-          level,
-          planetType,
-          requireValidLocationId: false,
-          isTargetPlanet: false,
-          isSpawnPlanet: true,
-        },
-        {
-          _a: revealArgs[0],
-          _b: revealArgs[1],
-          _c: revealArgs[2],
-          _input: revealArgs[3],
-        }
-      );
+      const y = 30;
+      const createReveal = await world.contract.createAndReveal({
+        location: ADMIN_PLANET_CLOAKED.id,
+        x,
+        y,
+        perlin,
+        level,
+        planetType,
+        requireValidLocationId: false,
+        isTargetPlanet: false,
+        isSpawnPlanet: true,
+      });
 
       const createRevealReceipt = await createReveal.wait();
 
@@ -196,6 +205,8 @@ describe('Arena Functions', function () {
       planets.map((p) => {
         const planetArgs = {
           location: p.id,
+          x: Math.floor(Math.random() * 100),
+          y: Math.floor(Math.random() * 100),
           perlin,
           level,
           planetType,
@@ -203,23 +214,11 @@ describe('Arena Functions', function () {
           isTargetPlanet: false,
           isSpawnPlanet: true,
         };
-        const revealArgs = makeRevealArgs(
-          p,
-          Math.floor(Math.random() * 100),
-          Math.floor(Math.random() * 100)
-        );
-        const structRevealArgs = {
-          _a: revealArgs[0],
-          _b: revealArgs[1],
-          _c: revealArgs[2],
-          _input: revealArgs[3],
-        };
 
         planetArgList.push(planetArgs);
-        revealArgList.push(structRevealArgs);
       });
 
-      const tx = await world.contract.bulkCreateAndReveal(planetArgList, revealArgList);
+      const tx = await world.contract.bulkCreateAndReveal(planetArgList);
       const rct = await tx.wait();
       console.log(`created and revealed ${planets.length} planets with ${rct.gasUsed} gas`);
 
@@ -227,6 +226,9 @@ describe('Arena Functions', function () {
 
       for (var i = 0; i < planets.length; i++) {
         expect(data[i].revealedCoords.locationId).to.equal(planets[i].id);
+        expect(data[i].revealedCoords.x).to.equal(planetArgList[i].x);
+        expect(data[i].revealedCoords.y).to.equal(planetArgList[i].y);
+        expect(data[i].info.perlin).to.equal(planetArgList[i].perlin);
       }
     });
   });
@@ -249,6 +251,8 @@ describe('Arena Functions', function () {
       const planetType = 0; // planet
       await world.contract.createArenaPlanet({
         location: ADMIN_PLANET_CLOAKED.id,
+        x: 10,
+        y: 10,
         perlin,
         level,
         planetType,
@@ -275,6 +279,8 @@ describe('Arena Functions', function () {
       const planetType = 0; // planet
       await world.contract.createArenaPlanet({
         location: ADMIN_PLANET_CLOAKED.id,
+        x: 10,
+        y: 10,
         perlin,
         level,
         planetType,
@@ -299,6 +305,8 @@ describe('Arena Functions', function () {
       const y = 20;
       await world.contract.createArenaPlanet({
         location: ADMIN_PLANET_CLOAKED.id,
+        x,
+        y,
         perlin,
         level,
         planetType,
@@ -326,6 +334,8 @@ describe('Arena Functions', function () {
       const y = 20;
       await world.contract.createArenaPlanet({
         location: LVL2_PLANET_DEEP_SPACE.id,
+        x,
+        y,
         perlin,
         level,
         planetType,
@@ -357,6 +367,8 @@ describe('Arena Functions', function () {
       await expect(
         world.contract.createArenaPlanet({
           location: ADMIN_PLANET_CLOAKED.id,
+          x: 10,
+          y: 20,
           perlin,
           level,
           planetType,
@@ -429,6 +441,8 @@ describe('Arena Functions', function () {
       const planetType = 1; // asteroid field
       await world.contract.createArenaPlanet({
         location: LVL0_PLANET_DEEP_SPACE.id,
+        x: 10,
+        y: 20,
         perlin,
         level,
         planetType,
@@ -457,7 +471,7 @@ describe('Arena Functions', function () {
       it('needs to have enough energy', async function () {
         await expect(
           world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id)
-        ).to.be.revertedWith("planet energy must be greater than victory threshold");
+        ).to.be.revertedWith('planet energy must be greater than victory threshold');
       });
       describe('time elapsed', async function () {
         beforeEach(async function () {
@@ -510,6 +524,8 @@ describe('Arena Functions', function () {
       const planetType = 1; // asteroid field
       await world.contract.createArenaPlanet({
         location: LVL0_PLANET_DEEP_SPACE.id,
+        x: 10,
+        y: 10,
         perlin,
         level,
         planetType,
@@ -545,8 +561,9 @@ describe('Arena Functions', function () {
           }%`
         );
 
-        await expect(world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id)).to.be.revertedWith(
-          "planet energy must be greater than victory threshold"        );
+        await expect(
+          world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id)
+        ).to.be.revertedWith('planet energy must be greater than victory threshold');
       });
 
       it('claim victory succeeds and emits Gameover if target is above energy threshold ', async function () {
@@ -572,6 +589,8 @@ describe('Arena Functions', function () {
     it('initializes planets with modifiers', async function () {
       const planet = {
         location: LVL1_ASTEROID_1.id,
+        x: 10,
+        y: 10,
         perlin: 20,
         level: 5,
         planetType: 1, //asteroid
@@ -706,7 +725,6 @@ describe('Arena Functions', function () {
     });
 
     it('New lobby adress is stored on chain', async function () {
-
       const initAddress = hre.ethers.constants.AddressZero;
       const initFunctionCall = '0x';
       // Make Lobby
@@ -726,7 +744,75 @@ describe('Arena Functions', function () {
       expect(await lobby.owner()).to.equal(world.user1.address);
 
       expect((await world.contract.getNumMatches()).toNumber()).to.equal(1);
-      expect((await world.contract.getMatch(0))).to.equal(lobbyAddress);
+      expect(await world.contract.getMatch(0)).to.equal(lobbyAddress);
+    });
+  });
+
+  describe('No Admin World', function () {
+    let world: World;
+
+    beforeEach('load fixture', async function () {
+      world = await fixtureLoader(noAdminWorldFixture);
+    });
+
+    it('confirms owner is 0x0', async function () {
+      expect(await world.contract.owner()).to.equal(constants.AddressZero);
+    });
+
+    it('reverts on an admin call', async function () {
+      await expect(world.contract.adminSetWorldRadius(200)).to.be.revertedWith(
+        'LibDiamond: Must be contract owner'
+      );
+    });
+  });
+
+  describe('Init Planet Commit', function () {
+    let world: World;
+    let world1: World;
+
+    beforeEach('load fixture', async function () {
+      world = await fixtureLoader(initPlanetsArenaFixture);
+    });
+
+    it('has different config hashes for different initializers', async function () {
+      /* When I load this as a fixture, Hardhat bugs out. Perhaps because deterministic contract address? */
+      const world1 = await initializeWorld({initializers: arenaWorldInitializers, whitelistEnabled: false, arena: true});
+      const worldConfig = (await world.contract.getArenaConstants()).CONFIG_HASH;
+      const world1Config = (await world1.contract.getArenaConstants()).CONFIG_HASH;
+      expect(worldConfig).to.not.equal(world1Config);
+    });
+
+    it('init planet hashes match arena constants', async function () {
+      const INIT_HASHES = (await world.contract.getArenaConstants()).INIT_PLANET_HASHES;
+      for (var i = 0; i < INIT_HASHES.length; i++) {
+        expect(INIT_HASHES[i]).to.equal(getInitPlanetHash(initPlanetsInitializers.INIT_PLANETS[i]));
+      }
+    });
+
+    it('confirms owner is 0x0', async function () {
+      expect(await world.contract.owner()).to.equal(constants.AddressZero);
+    });
+
+    it('can create and reveal init planet with no admin', async function () {
+      const createReveal = await world.contract.createAndReveal(
+        initPlanetsInitializers.INIT_PLANETS[0]
+      );
+
+      const createRevealReceipt = await createReveal.wait();
+
+      console.log(`createAndReveal used ${createRevealReceipt.gasUsed} gas`);
+
+      const testPlanet = await world.contract.getRevealedCoords(ADMIN_PLANET_CLOAKED.id);
+
+      expect(testPlanet.x).to.equal(initPlanetsInitializers.INIT_PLANETS[0].x);
+      expect(testPlanet.y).to.equal(initPlanetsInitializers.INIT_PLANETS[0].y);
+    });
+
+    it('cannot create and reveal planet that is not an init planet', async function () {
+      const planet = { ...initPlanetsInitializers.INIT_PLANETS[0], x: 15 };
+      await expect(world.contract.createAndReveal(planet)).to.be.revertedWith(
+        'must be admin or init planet'
+      );
     });
 
   });

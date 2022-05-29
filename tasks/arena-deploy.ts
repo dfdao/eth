@@ -30,12 +30,6 @@ async function deploy(
   const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
 
   let whitelistEnabled = false;
-  // if (typeof args.whitelist === 'undefined') {
-  //   // `whitelistEnabled` defaults to `false` in dev but `true` in prod
-  //   whitelistEnabled = isDev ? false : true;
-  // } else {
-  //   whitelistEnabled = args.whitelist;
-  // }
 
   // Ensure we have required keys in our initializers
   settings.required(hre.initializers, ['PLANETHASH_KEY', 'SPACETYPE_KEY', 'BIOMEBASE_KEY']);
@@ -119,10 +113,12 @@ export async function deployAndCutArena(
     ownerAddress,
     whitelistEnabled,
     initializers,
+    save = true,
   }: {
     ownerAddress: string;
     whitelistEnabled: boolean;
     initializers: HardhatRuntimeEnvironment['initializers'];
+    save?: boolean;
   },
   hre: HardhatRuntimeEnvironment
 ) {
@@ -150,15 +146,17 @@ export async function deployAndCutArena(
     tokenBaseUri,
     initializers
   );
-  await saveDeploy(
-    {
-      coreBlockNumber: initReceipt.blockNumber,
-      diamondAddress: arenaDiamond.address,
-      initAddress: arenaDiamondInit.address,
-      libraries,
-    },
-    hre
-  );
+  if (save) {
+    await saveDeploy(
+      {
+        coreBlockNumber: initReceipt.blockNumber,
+        diamondAddress: arenaDiamond.address,
+        initAddress: arenaDiamondInit.address,
+        libraries,
+      },
+      hre
+    );
+  }
 
   return [arenaDiamond, arenaDiamondInit, arenaDiamondInitReceipt] as const;
 }
@@ -171,26 +169,11 @@ export async function cutArena(
   tokenBaseUri: string,
   initializers: HardhatRuntimeEnvironment['initializers']
 ) {
-  const origDiamond = await hre.ethers.getContractAt('DarkForest', diamondAddress);
+  const diamond = await hre.ethers.getContractAt('DarkForest', diamondAddress);
 
+  console.log(`diamond owner ${await diamond.owner()}`);
   const lobbyInitAddress = hre.ethers.constants.AddressZero;
   const lobbyInitFunctionCall = '0x';
-
-  // Make Lobby
-  const tx = await origDiamond.createLobby(lobbyInitAddress, lobbyInitFunctionCall);
-  const rc = await tx.wait();
-  if (!rc.events) throw Error('No event occurred');
-
-  const event = rc.events.find((event: any) => event.event === 'LobbyCreated');
-  if (!event || !event.args) throw Error('No event found');
-
-  const lobbyAddress = event.args.lobbyAddress;
-
-  if (!lobbyAddress) throw Error('No lobby address found');
-
-  console.log(`lobby Diamond created at ${lobbyAddress}`);
-
-  const diamond = await hre.ethers.getContractAt('DarkForest', lobbyAddress);
 
   const prevFacets = await diamond.facets();
 
@@ -212,8 +195,6 @@ export async function cutArena(
     ...changes.getFacetCuts('DFArenaTournamentFacet', tournamentFacet),
   ];
 
-  const diamondCut = await hre.ethers.getContractAt('DarkForest', diamond.address);
-
   const initAddress = diamondInit.address;
   const initFunctionCall = diamondInit.interface.encodeFunctionData('init', [
     whitelistEnabled,
@@ -221,12 +202,28 @@ export async function cutArena(
     initializers,
   ]);
 
-  const initTx = await diamondCut.diamondCut(arenaFacetCuts, initAddress, initFunctionCall);
+  const initTx = await diamond.diamondCut(arenaFacetCuts, lobbyInitAddress, lobbyInitFunctionCall);
   const initReceipt = await initTx.wait();
   if (!initReceipt.status) {
     throw Error(`Diamond cut failed: ${initTx.hash}`);
   }
-  console.log('Completed diamond cut of Arena facets');
+  console.log(`Completed diamond cut of Arena facets with ${initReceipt.gasUsed} gas`);
 
-  return [diamond, diamondInit, initReceipt] as const;
+  const tx = await diamond.createLobby(initAddress, initFunctionCall);
+  const rc = await tx.wait();
+  if (!rc.events) throw Error('No event occurred');
+
+  const event = rc.events.find((event: any) => event.event === 'LobbyCreated');
+  if (!event || !event.args) throw Error('No event found');
+
+  const lobbyAddress = event.args.lobbyAddress;
+
+  if (!lobbyAddress) throw Error('No lobby address found');
+
+  const arena = await hre.ethers.getContractAt('DarkForest', lobbyAddress);
+
+  console.log(`Created and initialized Arena with ${rc.gasUsed} gas`);
+
+
+  return [arena, diamondInit, rc] as const;
 }

@@ -151,6 +151,10 @@ MODIFIERS = [100, 100, 100, 100, 100, 100, 100, 100]
 
 # Mothership, Whale, Crescent, Gear, Titan
 SPACESHIPS = [true, true, true, true, true]
+
+NO_ADMIN = false
+
+INIT_PLANETS = []
 ##########################
 # Planets to add to game #
 ##########################
