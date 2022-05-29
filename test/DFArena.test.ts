@@ -718,7 +718,6 @@ describe('Arena Functions', function () {
       // Conquer initial planets
       //// Player 1
       await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, ARTIFACT_PLANET_1);
-      // await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL3_SPACETIME_1);
       //// Player 2
       // await conquerUnownedPlanet(world, world.user2Core, SPAWN_PLANET_2, LVL3_SPACETIME_2);
       await increaseBlockchainTime();
