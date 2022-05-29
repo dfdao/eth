@@ -214,7 +214,6 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
 
         //arenaMode initialization
         arenaStorage().gameover = false;
-        arenaConstants().START_TIME = block.timestamp;
         arenaConstants().TARGET_PLANETS = initArgs.TARGET_PLANETS;
         arenaConstants().CLAIM_VICTORY_ENERGY_PERCENT = initArgs.CLAIM_VICTORY_ENERGY_PERCENT;
         arenaConstants().MANUAL_SPAWN = initArgs.MANUAL_SPAWN;
