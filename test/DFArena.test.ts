@@ -733,7 +733,6 @@ describe('Arena Functions', function () {
       await world.user1Core.refreshPlanet(ARTIFACT_PLANET_1.id);
 
       // Conquer another planet for artifact storage
-      // await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL0_PLANET_DEAD_SPACE);
 
       return world;
     }
