@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 // Library imports
 import {LibDiamond} from "../vendor/libraries/LibDiamond.sol";
+import {LibGameUtils} from "../libraries/LibGameUtils.sol";
 
 // Contract imports
 import {Diamond} from "../vendor/Diamond.sol";
@@ -29,6 +30,7 @@ import {
     PlanetType, 
     PlanetExtendedInfo, 
     PlanetExtendedInfo2,
+    ArenaCreateRevealPlanetArgs,
     ArenaPlanetInfo
 } from "../DFTypes.sol";
 
@@ -121,5 +123,10 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
 
     function getMatch(uint256 id) public view returns (address) {
         return tournamentStorage().matches[id];
+    }
+
+    function getInitPlanetHashes() public view returns (bytes32[] memory) {
+        bytes32[] memory initPlanetIds = arenaConstants().INIT_PLANET_HASHES;
+        return initPlanetIds;
     }
 }

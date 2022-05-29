@@ -11,8 +11,6 @@ import InitABI from '@darkforest_eth/contracts/abis/DFArenaInitialize.json';
 import { Contract } from 'ethers';
 import { deployContract } from '../utils/deploy';
 import { DiamondChanges } from '../utils/diamond';
-import { cutUpgradesFromLobby } from '../tasks/arena-upgrade';
-import { getTrailingCommentRanges } from 'typescript';
 
 describe('Arena Upgrade', function () {
   describe('Lobby with Initializer', async function () {
@@ -30,6 +28,8 @@ describe('Arena Upgrade', function () {
       await expect(
         world.contract.createArenaPlanet({
           location: ADMIN_PLANET_CLOAKED.id,
+          x: 10,
+          y: 10,
           perlin,
           level,
           planetType,
@@ -120,6 +120,8 @@ describe('Arena Upgrade', function () {
       const y = 20;
       await lobby.createArenaPlanet({
         location: ADMIN_PLANET_CLOAKED.id,
+        x,
+        y,
         perlin,
         level,
         planetType,
