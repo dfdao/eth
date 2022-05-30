@@ -9,6 +9,7 @@ import {LibGameUtils} from "./LibGameUtils.sol";
 
 // Storage imports
 import {LibStorage, GameStorage, GameConstants} from "./LibStorage.sol";
+import {LibArenaStorage, ArenaConstants} from "./LibArenaStorage.sol";
 
 // Type imports
 import {
@@ -30,6 +31,10 @@ library LibArtifactUtils {
 
     function gameConstants() internal pure returns (GameConstants storage) {
         return LibStorage.gameConstants();
+    }
+
+    function arenaConstants() internal pure returns (ArenaConstants storage) {
+        return LibArenaStorage.arenaConstants();
     }
 
     // also need to copy some of DFCore's event signatures
@@ -96,14 +101,16 @@ library LibArtifactUtils {
         require(checkFindArtifact(args.planetId, info, planet));
 
         Biome biome = LibGameUtils._getBiome(info.spaceType, args.biomebase);
-
+        bytes memory randomness = "";
+        if(arenaConstants().RANDOM_ARTIFACTS) {
+            randomness = abi.encodePacked(args.coreAddress, blockhash(info.prospectedBlockNumber));
+        }
         uint256 artifactSeed =
             uint256(
                 keccak256(
                     abi.encodePacked(
                         args.planetId,
-                        args.coreAddress,
-                        blockhash(info.prospectedBlockNumber)
+                        randomness
                     )
                 )
             );
