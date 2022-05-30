@@ -51,6 +51,9 @@ struct ArenaConstants {
     Modifiers MODIFIERS;
     Spaceships SPACESHIPS;
     uint256 CLAIM_VICTORY_ENERGY_PERCENT;
+
+    bool RANDOM_ARTIFACTS;
+
     bool NO_ADMIN;
     bytes32 [] INIT_PLANET_HASHES; // This won't mess up Diamond storage
 }
