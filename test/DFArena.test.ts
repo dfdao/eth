@@ -412,9 +412,11 @@ describe('Arena Functions', function () {
       const dist = 1;
       const shipsSent = 30000;
       const silverSent = 0;
-      await world.user1Core.move(
+      await expect(world.user1Core.move(
         ...makeMoveArgs(SPAWN_PLANET_1, LVL0_PLANET_DEEP_SPACE, dist, shipsSent, silverSent)
-      );
+      )).to.emit(world.contract, 'GameStarted')
+      .withArgs(world.user1.address);
+
       expect((await world.user1Core.getStartTime()).toNumber()).to.not.be.equal(0);
       const now =  Date.now() / 1000;
       expect((await world.user1Core.getRoundDuration()).toNumber()).to.be.approximately(now - start, 2);
@@ -575,8 +577,10 @@ describe('Arena Functions', function () {
         ).to.be.revertedWith('planet energy must be greater than victory threshold');
       });
 
-      it('get round duration fails if round not over', async function () {
-        await expect(world.user1Core.getRoundDuration()).to.be.revertedWith('game is not yet over');
+      it('get round duration 0 if round not over', async function () {
+        await increaseBlockchainTime(51);
+        const roundDuration = await world.user1Core.getRoundDuration();
+        expect(roundDuration.toNumber()).to.be.greaterThan(50);
 
       });
 
