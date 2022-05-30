@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 // Library imports
 import {LibDiamond} from "../vendor/libraries/LibDiamond.sol";
+import {LibGameUtils} from "../libraries/LibGameUtils.sol";
 
 // Contract imports
 import {Diamond} from "../vendor/Diamond.sol";
@@ -29,7 +30,9 @@ import {
     PlanetType, 
     PlanetExtendedInfo, 
     PlanetExtendedInfo2,
-    ArenaPlanetInfo
+    ArenaPlanetInfo,
+    ArenaPlayerInfo
+    ArenaCreateRevealPlanetArgs
 } from "../DFTypes.sol";
 
 contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
@@ -90,6 +93,23 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
         }
     }
 
+
+    function arenaPlayers(address key) public view returns (ArenaPlayerInfo memory) {
+        return arenaStorage().arenaPlayerInfo[key];
+    }
+
+    function bulkGetArenaPlayers(uint256 startIdx, uint256 endIdx)
+        public
+        view
+        returns (ArenaPlayerInfo[] memory ret)
+    {
+        // return array of planets corresponding to planetIds[startIdx] through planetIds[endIdx - 1]
+        ret = new ArenaPlayerInfo[](endIdx - startIdx);
+        for (uint256 i = startIdx; i < endIdx; i++) {
+            ret[i - startIdx] = arenaStorage().arenaPlayerInfo[gs().playerIds[i]];
+        }
+    }
+
     function getWinners() public view returns (address[] memory) {
         return arenaStorage().winners;
     }
@@ -98,13 +118,22 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
         return arenaStorage().gameover;
     }
 
+    function getStartTime() public view returns (uint256) {
+        return arenaStorage().startTime;
+    }
+
     function getEndTime() public view returns (uint256) {
         return arenaStorage().endTime;
     }
 
     function getRoundDuration() public view returns (uint256) {
-        require(arenaStorage().gameover && arenaStorage().endTime > 0, "game is not yet over");
-        return arenaStorage().endTime - arenaConstants().START_TIME;
+        if(arenaStorage().startTime == 0) {
+            return 0;
+        }
+        if(arenaStorage().endTime == 0) {
+            return block.timestamp - arenaStorage().startTime;
+        }
+        return arenaStorage().endTime - arenaStorage().startTime;
     }
 
     function getArenaConstants() public pure returns (ArenaConstants memory) {
@@ -121,5 +150,10 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
 
     function getMatch(uint256 id) public view returns (address) {
         return tournamentStorage().matches[id];
+    }
+
+    function getInitPlanetHashes() public view returns (bytes32[] memory) {
+        bytes32[] memory initPlanetIds = arenaConstants().INIT_PLANET_HASHES;
+        return initPlanetIds;
     }
 }

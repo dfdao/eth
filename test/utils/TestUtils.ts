@@ -1,5 +1,7 @@
+import { LOCATION_ID_UB } from '@darkforest_eth/constants';
 import type { DarkForest } from '@darkforest_eth/contracts/typechain';
 import { modPBigInt } from '@darkforest_eth/hashing';
+import { address, locationIdFromDecStr, RawRevealedCoords } from '@darkforest_eth/serde'
 import {
   buildContractCallArgs,
   SnarkJSProofAndSignals,
@@ -8,7 +10,7 @@ import {
   whitelistSnarkWasmPath,
   whitelistSnarkZkeyPath,
 } from '@darkforest_eth/snarks';
-import { ArtifactRarity, ArtifactType, Biome } from '@darkforest_eth/types';
+import { ArtifactRarity, ArtifactType, Biome, RevealedCoords } from '@darkforest_eth/types';
 import { bigIntFromKey } from '@darkforest_eth/whitelist';
 import bigInt from 'big-integer';
 import { BigNumber, BigNumberish } from 'ethers';
@@ -37,6 +39,54 @@ export const fixtureLoader = waffle.createFixtureLoader();
 
 export function hexToBigNumber(hex: string): BigNumber {
   return BigNumber.from(`0x${hex}`);
+}
+
+export function decodeRevealedCoords(coords: {x: number, y: number}) {
+  let xBI = bigInt(coords.x.toString()); // nonnegative residue mod p
+  let yBI = bigInt(coords.y.toString()); // nonnegative residue mod p
+  let x = 0;
+  let y = 0;
+  if (xBI.gt(LOCATION_ID_UB.divide(2))) {
+    xBI = xBI.minus(LOCATION_ID_UB);
+  }
+  x = xBI.toJSNumber();
+  if (yBI.gt(LOCATION_ID_UB.divide(2))) {
+    yBI = yBI.minus(LOCATION_ID_UB);
+  }
+  y = yBI.toJSNumber();
+  return {
+    x,
+    y,
+  };
+}
+
+export function getInitPlanetHash(initPlanet: {
+  x: string;
+  y: string;
+  level: number;
+  planetType: number;
+  requireValidLocationId: boolean;
+  location: string;
+  perlin: number;
+  isTargetPlanet: boolean;
+  isSpawnPlanet: boolean;
+}): string {
+  const abiCoder = ethers.utils.defaultAbiCoder;
+  return ethers.utils.keccak256(
+    abiCoder.encode(
+      ['uint', 'uint', 'uint', 'uint', 'uint', 'bool', 'bool', 'bool'],
+      [
+        BigInt(initPlanet.location),
+        BigInt(initPlanet.x),
+        BigInt(initPlanet.y),
+        initPlanet.perlin,
+        initPlanet.planetType,
+        initPlanet.requireValidLocationId,
+        initPlanet.isTargetPlanet,
+        initPlanet.isSpawnPlanet,
+      ]
+    )
+  );
 }
 
 export function makeRevealArgs(

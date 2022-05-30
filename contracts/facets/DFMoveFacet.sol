@@ -10,6 +10,7 @@ import {Verifier} from "../Verifier.sol";
 
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
+import {WithArenaStorage} from "../libraries/LibArenaStorage.sol";
 
 // Type imports
 import {
@@ -24,10 +25,11 @@ import {
     PlanetExtendedInfo2,
     PlanetEventMetadata,
     PlanetEventType,
-    Upgrade
+    Upgrade,
+    ArenaPlayerInfo
 } from "../DFTypes.sol";
 
-contract DFMoveFacet is WithStorage {
+contract DFMoveFacet is WithStorage, WithArenaStorage {
     modifier notPaused() {
         require(!gs().paused, "Game is paused");
         _;
@@ -41,6 +43,8 @@ contract DFMoveFacet is WithStorage {
         uint256 artifactId,
         uint256 abandoning
     );
+
+    event GameStarted(uint256 timestamp);
 
     function move(
         uint256[2] memory _a,
@@ -109,6 +113,12 @@ contract DFMoveFacet is WithStorage {
         }
 
         _executeMove(args);
+        
+        if(arenaStorage().startTime == 0) {
+           arenaStorage().startTime = block.timestamp; 
+           emit GameStarted(block.timestamp);
+        }
+        arenaStorage().arenaPlayerInfo[msg.sender].moves++;
 
         LibGameUtils.updateWorldRadius();
         emit ArrivalQueued(

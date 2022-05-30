@@ -28,6 +28,8 @@ describe('Arena Upgrade', function () {
       await expect(
         world.contract.createArenaPlanet({
           location: ADMIN_PLANET_CLOAKED.id,
+          x: 10,
+          y: 10,
           perlin,
           level,
           planetType,
@@ -118,6 +120,8 @@ describe('Arena Upgrade', function () {
       const y = 20;
       await lobby.createArenaPlanet({
         location: ADMIN_PLANET_CLOAKED.id,
+        x,
+        y,
         perlin,
         level,
         planetType,

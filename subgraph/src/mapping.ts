@@ -24,6 +24,7 @@ import {
   Transfer,
 } from '../generated/DarkForest/DarkForest';
 import {
+  Arena,
   Arrival,
   ArrivalQueue,
   Artifact,
@@ -48,6 +49,7 @@ import {
   refreshSpaceshipFromContractData,
   refreshVoyageFromContractData,
 } from './helpers/decoders';
+import { DarkForest as DFDiamond } from '../generated/templates'
 
 // NOTE: the timestamps within are all unix epoch in seconds NOT MILLISECONDS
 // like in all the JS code where youll see divided by contractPrecision. As a
@@ -367,7 +369,19 @@ export function handleLobbyCreated(event: LobbyCreated): void {
   lobby.ownerAddress = event.params.ownerAddress.toHexString();
   lobby.lobbyAddress = event.params.lobbyAddress.toHexString();
   lobby.save();
-}
+
+  /* new arena */
+  const arena = new Arena(event.params.lobbyAddress.toHexString());
+  arena.ownerAddress = event.params.ownerAddress.toHexString();
+  arena.lobbyAddress = event.params.lobbyAddress.toHexString();
+  arena.gameOver = false;
+  // arena.players = [];
+  arena.winners = new Array<string>()
+  arena.save();
+
+  // /* new data source */ 
+  DFDiamond.create(event.params.lobbyAddress)  
+} 
 
 function processScheduledArrivalsSinceLastBlock(meta: Meta, current: i32): void {
   // process last+1 up to and including current

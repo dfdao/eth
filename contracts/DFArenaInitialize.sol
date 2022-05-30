@@ -35,10 +35,10 @@ import {LibDiamond} from "./vendor/libraries/LibDiamond.sol";
 import {WithStorage} from "./libraries/LibStorage.sol";
 import {WithArenaStorage} from "./libraries/LibArenaStorage.sol";
 import {LibGameUtils} from "./libraries/LibGameUtils.sol";
-
+import "hardhat/console.sol";
 
 // Type imports
-import {PlanetDefaultStats, Upgrade, UpgradeBranch, Modifiers, Mod, Spaceships} from "./DFTypes.sol";
+import {PlanetDefaultStats, Upgrade, UpgradeBranch, Modifiers, Mod, ArenaCreateRevealPlanetArgs, Spaceships} from "./DFTypes.sol";
 
 struct InitArgs {
     bool START_PAUSED;
@@ -115,6 +115,8 @@ struct InitArgs {
     bool[5] SPACESHIPS;
 
     bool RANDOM_ARTIFACTS;
+    bool NO_ADMIN;
+    ArenaCreateRevealPlanetArgs[] INIT_PLANETS;
 }
 
 contract DFArenaInitialize is WithStorage, WithArenaStorage {
@@ -125,8 +127,8 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
     function init(
         bool whitelistEnabled,
         string memory artifactBaseURI,
-        InitArgs memory initArgs
-    ) external {
+        InitArgs calldata initArgs
+    ) external {        
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         ds.supportedInterfaces[type(IERC165).interfaceId] = true;
@@ -214,7 +216,6 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
 
         //arenaMode initialization
         arenaStorage().gameover = false;
-        arenaConstants().START_TIME = block.timestamp;
         arenaConstants().TARGET_PLANETS = initArgs.TARGET_PLANETS;
         arenaConstants().CLAIM_VICTORY_ENERGY_PERCENT = initArgs.CLAIM_VICTORY_ENERGY_PERCENT;
         arenaConstants().MANUAL_SPAWN = initArgs.MANUAL_SPAWN;
@@ -236,10 +237,32 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
             initArgs.SPACESHIPS[3],
             initArgs.SPACESHIPS[4]
         );
-        
+
+        arenaConstants().NO_ADMIN = initArgs.NO_ADMIN;
+        arenaConstants().CONFIG_HASH = keccak256(abi.encode(initArgs));
+
+        uint256 initLength = initArgs.INIT_PLANETS.length;
+
+        /* each planet costs about 50k gas */
+        for(uint i = 0; i < initLength; i++) {
+            ArenaCreateRevealPlanetArgs memory initPlanet = initArgs.INIT_PLANETS[i];
+
+            bytes32 initHash = LibGameUtils._hashInitPlanet(initPlanet);
+
+            arenaStorage().initPlanetHashes[initHash] = true;
+
+            /* Store planet ids for retrieval later */
+            arenaConstants().INIT_PLANET_HASHES.push(initHash);
+        }
+    
         initializeDefaults();
         initializeUpgrades();
         LibGameUtils.updateWorldRadius();
+
+        if(initArgs.NO_ADMIN) {
+            (bool success, bytes memory returndata) = address(this).delegatecall(abi.encodeWithSignature("transferOwnership(address)", address(0)));
+            require(success, "transfer ownership did not succeed");
+        }
     }
 
     function initializeDefaults() public {

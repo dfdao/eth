@@ -248,8 +248,10 @@ struct ArenaPlayerInfo {
     uint256 moves;
 }
 
-struct ArenaAdminCreatePlanetArgs {
+struct ArenaCreateRevealPlanetArgs {
     uint256 location;
+    uint256 x;
+    uint256 y;
     uint256 perlin;
     uint256 level;
     PlanetType planetType;
