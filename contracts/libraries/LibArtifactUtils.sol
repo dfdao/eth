@@ -101,7 +101,7 @@ library LibArtifactUtils {
         require(checkFindArtifact(args.planetId, info, planet));
 
         Biome biome = LibGameUtils._getBiome(info.spaceType, args.biomebase);
-        bytes memory randomness = "1";
+        bytes memory randomness = "";
         if(arenaConstants().RANDOM_ARTIFACTS) {
             randomness = abi.encodePacked(args.coreAddress, blockhash(info.prospectedBlockNumber));
         }
