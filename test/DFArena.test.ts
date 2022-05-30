@@ -741,7 +741,7 @@ describe('Arena Functions', function () {
       world1 = await worldFixture();
       world2 = await worldFixture();
     });
-    it.only('creates same artifact in different worlds', async function () {
+    it('creates same artifact in different worlds', async function () {
       this.timeout(1000 * 60);
 
       /* eslint-disable @typescript-eslint/no-explicit-any */
