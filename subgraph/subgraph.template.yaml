@@ -23,7 +23,7 @@ dataSources:
       eventHandlers:
         - event: LobbyCreated(address,address)
           handler: handleLobbyCreated
-      file: ./src/mapping.ts
+      file: ./src/arena.ts
 templates:
   - kind: ethereum/contract
     name: DarkForest
@@ -45,6 +45,8 @@ templates:
           handler: handlePlayerInitialized
         - event: Gameover(uint256,address)
           handler: handleGameover
+        - event: GameStarted(address)
+          handler: handleGameStarted
       file: ./src/arena.ts
 
 

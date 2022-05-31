@@ -44,6 +44,7 @@ async function subgraphCodegen(_args: HardhatArguments, hre: HardhatRuntimeEnvir
 
   // hardcoded for now, will be able to set with plugin
   const subgraphPath = path.join(hre.config.paths.root, 'subgraph');
+  
   const abisPath = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'abis');
 
   const startBlock = await hre.ethers.provider.getBlockNumber();
@@ -57,7 +58,7 @@ async function subgraphCodegen(_args: HardhatArguments, hre: HardhatRuntimeEnvir
 
   await fs.writeFile(path.join(subgraphPath, 'subgraph.yaml'), '# ' + warning + yaml);
 
-  await exec(`npx graph codegen subgraph/subgraph.yaml`, {
+  await exec(`graph codegen`, {
     cwd: subgraphPath,
     env: { ...process.env },
     stdio: 'inherit',
@@ -86,14 +87,18 @@ async function subgraphDeploy(args: { name: string }, hre: HardhatRuntimeEnviron
 
   const subgraphPath = path.join(hre.config.paths.root, 'subgraph');
 
-  await exec(`npx graph create --node http://localhost:8020/ ${args.name}`, {
+  console.log(`subgraph Path ${subgraphPath}`);
+
+  await exec(`cd ${subgraphPath} && pwd`);
+
+  await exec(`graph create --node http://localhost:8020/ ${args.name}`, {
     cwd: subgraphPath,
     env: { ...process.env },
     stdio: 'inherit',
   });
 
   await exec(
-    `npx graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 -l df ${args.name} `,
+    `graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 -l df ${args.name} `,
     {
       cwd: subgraphPath,
       env: { ...process.env },
