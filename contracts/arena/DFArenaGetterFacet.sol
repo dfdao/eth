@@ -92,7 +92,6 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
         }
     }
 
-
     function arenaPlayers(address key) public view returns (ArenaPlayerInfo memory) {
         return arenaStorage().arenaPlayerInfo[key];
     }
@@ -191,7 +190,7 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
             PLANET_TRANSFER_ENABLED: gameConstants().PLANET_TRANSFER_ENABLED,
             PHOTOID_ACTIVATION_DELAY: gameConstants().PHOTOID_ACTIVATION_DELAY, 
             LOCATION_REVEAL_COOLDOWN: gameConstants().LOCATION_REVEAL_COOLDOWN, 
-            PLANET_TYPE_WEIGHTS: gameConstants().PLANET_TYPE_WEIGHTS,
+            // PLANET_TYPE_WEIGHTS: gameConstants().PLANET_TYPE_WEIGHTS,
             SILVER_SCORE_VALUE: gameConstants().SILVER_SCORE_VALUE,
             ARTIFACT_POINT_VALUES: gameConstants().ARTIFACT_POINT_VALUES,       
             // Space Junk

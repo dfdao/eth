@@ -326,7 +326,7 @@ struct AllConstants {
     uint256[10] PLANET_LEVEL_THRESHOLDS;
     uint256 PLANET_RARITY;
     bool PLANET_TRANSFER_ENABLED;
-    uint8[5][10][4] PLANET_TYPE_WEIGHTS; // spaceType (enum 0-3) -> planetLevel (0-7) -> planetType (enum 0-4)
+    // uint8[5][10][4] PLANET_TYPE_WEIGHTS; // spaceType (enum 0-3) -> planetLevel (0-7) -> planetType (enum 0-4)
     uint256 SILVER_SCORE_VALUE;
     uint256[6] ARTIFACT_POINT_VALUES;
     uint256 PHOTOID_ACTIVATION_DELAY;

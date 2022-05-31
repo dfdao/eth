@@ -3,15 +3,17 @@ type Arena @entity {
   creator: ID!
   firstMover: ArenaPlayer # might not exist right away
   ownerAddress: ID!
-  configHash: Bytes!
+  configHash: Bytes # doesn't exist on old Diamonds
+  config: ArenaConfig # doesn't exist on old diamonds
   lobbyAddress: ID!
   gameOver: Boolean!
-  duration: BigInt!
-  creationTime: BigInt!
-  startBlock: BigInt!
-  startTime: BigInt!, # might not exist right away
+  duration: Int!
+  creationTime: Int!
+  startBlock: Int!
+  startTime: Int!, # might not exist right away
   winners: [ArenaPlayer!]!
   players: [ArenaPlayer!]! @derivedFrom(field: "arena")
+  planets: [ArenaPlanet!]! @derivedFrom(field: "arena")
 }
 
 type ArenaPlayer @entity {
@@ -20,6 +22,7 @@ type ArenaPlayer @entity {
   initTimestamp: Int!
   winner: Boolean!
   arena: Arena!
+  moves: Int! # Not updated until end of round.
 }
 
 type ArenaConfig @entity {
@@ -29,49 +32,77 @@ type ArenaConfig @entity {
     LOCATION_REVEAL_COOLDOWN: Int!
     TOKEN_MINT_END_TIMESTAMP: Int!
     WORLD_RADIUS_LOCKED: Boolean!
-    WORLD_RADIUS_MIN: BigInt! 
+    WORLD_RADIUS_MIN: Int! 
     DISABLE_ZK_CHECKS: Boolean!
-    PLANETHASH_KEY: BigInt! 
-    SPACETYPE_KEY: BigInt! 
-    BIOMEBASE_KEY: BigInt! 
+    PLANETHASH_KEY: Int! 
+    SPACETYPE_KEY: Int! 
+    BIOMEBASE_KEY: Int! 
     PERLIN_MIRROR_X: Boolean! 
     PERLIN_MIRROR_Y: Boolean! 
-    PERLIN_LENGTH_SCALE: BigInt!
-    MAX_NATURAL_PLANET_LEVEL: BigInt!
-    TIME_FACTOR_HUNDREDTHS: BigInt! 
-    PERLIN_THRESHOLD_1: BigInt! 
-    PERLIN_THRESHOLD_2: BigInt! 
-    PERLIN_THRESHOLD_3: BigInt! 
-    INIT_PERLIN_MIN: BigInt! 
-    INIT_PERLIN_MAX: BigInt! 
-    SPAWN_RIM_AREA: BigInt! 
-    BIOME_THRESHOLD_1: BigInt! 
-    BIOME_THRESHOLD_2: BigInt! 
-    PLANET_LEVEL_THRESHOLDS: [BigInt!]!
-    PLANET_RARITY: BigInt! 
+    PERLIN_LENGTH_SCALE: Int!
+    MAX_NATURAL_PLANET_LEVEL: Int!
+    TIME_FACTOR_HUNDREDTHS: Int! 
+    PERLIN_THRESHOLD_1: Int! 
+    PERLIN_THRESHOLD_2: Int! 
+    PERLIN_THRESHOLD_3: Int! 
+    INIT_PERLIN_MIN: Int! 
+    INIT_PERLIN_MAX: Int! 
+    SPAWN_RIM_AREA: Int! 
+    BIOME_THRESHOLD_1: Int! 
+    BIOME_THRESHOLD_2: Int! 
+    PLANET_LEVEL_THRESHOLDS: [Int!]!
+    PLANET_RARITY: Int! 
     PLANET_TRANSFER_ENABLED: Boolean! 
     # Don't know how to handle this uint8[5][10][4] PLANET_TYPE_WEIGHTS: // spaceType (enum 0-3) -> planetLevel (0-7) -> planetType (enum 0-4)
-    SILVER_SCORE_VALUE: BigInt! 
-    ARTIFACT_POINT_VALUES: [BigInt!]!
-    PHOTOID_ACTIVATION_DELAY: BigInt! 
+    SILVER_SCORE_VALUE: Int! 
+    ARTIFACT_POINT_VALUES: [Int!]!
+    PHOTOID_ACTIVATION_DELAY: Int! 
     SPACE_JUNK_ENABLED: Boolean! 
-    SPACE_JUNK_LIMIT: BigInt! 
-    PLANET_LEVEL_JUNK: [BigInt!]!
-    ABANDON_SPEED_CHANGE_PERCENT: BigInt! 
-    ABANDON_RANGE_CHANGE_PERCENT: BigInt! 
+    SPACE_JUNK_LIMIT: Int! 
+    PLANET_LEVEL_JUNK: [Int!]!
+    ABANDON_SPEED_CHANGE_PERCENT: Int! 
+    ABANDON_RANGE_CHANGE_PERCENT: Int! 
     CAPTURE_ZONES_ENABLED: Boolean! 
-    CAPTURE_ZONE_COUNT: BigInt! 
-    CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL: BigInt! 
-    CAPTURE_ZONE_RADIUS: BigInt! 
-    CAPTURE_ZONE_PLANET_LEVEL_SCORE: [BigInt!]!
-    CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED: BigInt! 
-    CAPTURE_ZONES_PER_5000_WORLD_RADIUS: BigInt! 
+    CAPTURE_ZONE_COUNT: Int! 
+    CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL: Int! 
+    CAPTURE_ZONE_RADIUS: Int! 
+    CAPTURE_ZONE_PLANET_LEVEL_SCORE: [Int!]!
+    CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED: Int! 
+    CAPTURE_ZONES_PER_5000_WORLD_RADIUS: Int! 
     TARGET_PLANETS: Boolean! 
-    CLAIM_VICTORY_ENERGY_PERCENT: BigInt! 
+    CLAIM_VICTORY_ENERGY_PERCENT: Int! 
     MANUAL_SPAWN: Boolean! 
-    MODIFIERS: [BigInt!]!
+    MODIFIERS: [Int!]!
     SPACESHIPS: [Boolean!]!
     NO_ADMIN: Boolean!
     INIT_PLANET_HASHES: [Bytes!]!
     CONFIG_HASH: Bytes!  
+}
+
+type Player @entity {
+  id: ID!
+  wins: Int!
+
+
+}
+type ArenaPlanet @entity {
+  id: ID!
+  arena: Arena!
+  locationDec: BigInt!
+  x: Int!
+  y: Int!
+  perlin: Int!
+  level: Int!
+  planetType: PlanetType!
+  targetPlanet: Boolean!
+  spawnPlanet: Boolean!
+  winner: Boolean!
+}
+
+enum PlanetType {
+  PLANET
+  ASTEROID
+  FOUNDRY
+  SPACETIME_RIP
+  QUASAR
 }

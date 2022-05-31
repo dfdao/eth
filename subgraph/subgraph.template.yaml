@@ -35,8 +35,10 @@ templates:
       apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
-        - ArenaPlayer
         - Arena
+        - ArenaConfig
+        - ArenaPlayer
+        - ArenaPlanet
       abis:
         - name: DarkForest
           file: '{{{DARKFOREST_ABI_PATH}}}'
@@ -47,9 +49,9 @@ templates:
           handler: handleGameover
         - event: GameStarted(address)
           handler: handleGameStarted
+        - event: AdminPlanetCreated(uint256)
+          handler: handleAdminPlanetCreated
       file: ./src/arena.ts
-
-
 
 
 # dataSources:
