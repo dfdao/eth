@@ -9,20 +9,30 @@ type Arena @entity {
   gameOver: Boolean!
   duration: Int!
   creationTime: Int!
-  startBlock: Int!
+  creationBlock: Int!
   startTime: Int!, # might not exist right away
+  endTime: Int!
   winners: [ArenaPlayer!]!
   players: [ArenaPlayer!]! @derivedFrom(field: "arena")
   planets: [ArenaPlanet!]! @derivedFrom(field: "arena")
 }
 
+type Player @entity {
+  id: ID!
+  wins: Int!
+  matches: Int!
+  arenaPlayers: [ArenaPlayer!]! @derivedFrom(field: "player")
+}
+
 type ArenaPlayer @entity {
   id: ID!
-  address: ID! 
+  player: Player!
+  address: ID!
+  homePlanet: ArenaPlanet
   initTimestamp: Int!
   winner: Boolean!
   arena: Arena!
-  moves: Int! # Not updated until end of round.
+  moves: Int!
 }
 
 type ArenaConfig @entity {
@@ -30,7 +40,7 @@ type ArenaConfig @entity {
     arena: Arena!
     ADMIN_CAN_ADD_PLANETS: Boolean!
     LOCATION_REVEAL_COOLDOWN: Int!
-    TOKEN_MINT_END_TIMESTAMP: Int!
+    TOKEN_MINT_END_TIMESTAMP: BigInt!
     WORLD_RADIUS_LOCKED: Boolean!
     WORLD_RADIUS_MIN: Int! 
     DISABLE_ZK_CHECKS: Boolean!
@@ -79,24 +89,25 @@ type ArenaConfig @entity {
     CONFIG_HASH: Bytes!  
 }
 
-type Player @entity {
-  id: ID!
-  wins: Int!
-
-
-}
 type ArenaPlanet @entity {
   id: ID!
   arena: Arena!
   locationDec: BigInt!
-  x: Int!
-  y: Int!
+  x: Int
+  y: Int
   perlin: Int!
   level: Int!
   planetType: PlanetType!
+  spaceType: SpaceType!
   targetPlanet: Boolean!
   spawnPlanet: Boolean!
-  winner: Boolean!
+  isEnergyCapBoosted: Boolean!
+  isEnergyGrowthBoosted: Boolean!
+  isRangeBoosted: Boolean!
+  isSpeedBoosted: Boolean!
+  isDefenseBoosted: Boolean!
+  isSpaceJunkHalved: Boolean!
+  winner: ArenaPlayer
 }
 
 enum PlanetType {
@@ -105,4 +116,11 @@ enum PlanetType {
   FOUNDRY
   SPACETIME_RIP
   QUASAR
+}
+
+enum SpaceType {
+  NEBULA
+  SPACE
+  DEEP_SPACE
+  DEAD_SPACE
 }

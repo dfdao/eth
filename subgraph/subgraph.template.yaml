@@ -6,7 +6,7 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: DarkForest
-    network: xdai
+    network: optimism
     source:
       address: '{{{CONTRACT_ADDRESS}}}'
       abi: DarkForest
@@ -17,6 +17,7 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - Lobby
+        - Arena
       abis:
         - name: DarkForest
           file: '{{{DARKFOREST_ABI_PATH}}}'
@@ -27,7 +28,7 @@ dataSources:
 templates:
   - kind: ethereum/contract
     name: DarkForest
-    network: xdai
+    network: optimism
     source:
       abi: DarkForest
     mapping:
@@ -51,72 +52,6 @@ templates:
           handler: handleGameStarted
         - event: AdminPlanetCreated(uint256)
           handler: handleAdminPlanetCreated
+        - event: ArrivalQueued(address,uint256,uint256,uint256,uint256,uint256)
+          handler: handleArrivalQueued
       file: ./src/arena.ts
-
-
-# dataSources:
-#   - kind: ethereum/contract
-#     name: DarkForest
-#     network: xdai
-#     source:
-#       address: '{{{CONTRACT_ADDRESS}}}'
-#       abi: DarkForest
-#       startBlock: #{{{START_BLOCK}}}
-#     mapping:
-#       kind: ethereum/events
-#       apiVersion: 0.0.5
-#       language: wasm/assemblyscript
-#       entities:
-#         - Player
-#         - Planet
-#         - Arrival
-#         - Upgrade
-#         - Hat
-#         - ArrivalQueue
-#         - DepartureQueue
-#         - Meta
-#         - Artifact
-#         - Spaceship
-#       abis:
-#         - name: DarkForest
-#           file: '{{{DARKFOREST_ABI_PATH}}}'
-#       eventHandlers:
-#         - event: ArtifactDeposited(address,uint256,uint256)
-#           handler: handleArtifactDeposited
-#         - event: ArtifactWithdrawn(address,uint256,uint256)
-#           handler: handleArtifactWithdrawn
-#         - event: ArtifactFound(address,uint256,uint256)
-#           handler: handleArtifactFound
-#         - event: ArtifactActivated(address,uint256,uint256)
-#           handler: handleArtifactActivated
-#         - event: ArtifactDeactivated(address,uint256,uint256)
-#           handler: handleArtifactDeactivated
-#         - event: AdminPlanetCreated(uint256)
-#           handler: handleAdminPlanetCreated
-#         - event: PlanetProspected(address,uint256)
-#           handler: handlePlanetProspected
-#         - event: PlanetTransferred(address,uint256,address)
-#           handler: handlePlanetTransferred
-#         - event: PlanetUpgraded(address,uint256,uint256,uint256)
-#           handler: handlePlanetUpgraded
-#         - event: PlanetHatBought(address,uint256,uint256)
-#           handler: handlePlanetHatBought
-#         - event: ArrivalQueued(address,uint256,uint256,uint256,uint256,uint256)
-#           handler: handleArrivalQueued
-#         - event: PlayerInitialized(address,uint256)
-#           handler: handlePlayerInitialized
-#         - event: PlanetSilverWithdrawn(address,uint256,uint256)
-#           handler: handlePlanetSilverWithdrawn
-#         - event: LocationRevealed(address,uint256,uint256,uint256)
-#           handler: handleLocationRevealed
-#         - event: Transfer(indexed address,indexed address,indexed uint256)
-#           handler: handleTransfer
-#         - event: LobbyCreated(address,address)
-#           handler: handleLobbyCreated
-#         - event: PlanetInvaded(address,uint256)
-#           handler: handlePlanetInvaded
-#         - event: PlanetCaptured(address,uint256)
-#           handler: handlePlanetCaptured
-#       blockHandlers:
-#         - handler: handleBlock
-#       file: ./src/mapping.ts
