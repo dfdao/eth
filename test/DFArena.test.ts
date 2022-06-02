@@ -405,25 +405,28 @@ describe('Arena Functions', function () {
       world = await fixtureLoader(worldFixture);
     });
 
-    it('start time is set on first move', async function() {
+    it('start time is set on first move', async function () {
       expect(await world.user1Core.getStartTime()).to.be.equal(0);
       expect(await world.user1Core.getRoundDuration()).to.be.equal(0);
       const start = Date.now() / 1000;
       const dist = 1;
       const shipsSent = 30000;
       const silverSent = 0;
-      await expect(world.user1Core.move(
-        ...makeMoveArgs(SPAWN_PLANET_1, LVL0_PLANET_DEEP_SPACE, dist, shipsSent, silverSent)
-      )).to.emit(world.contract, 'GameStarted')
-      .withArgs(world.user1.address);
+      await expect(
+        world.user1Core.move(
+          ...makeMoveArgs(SPAWN_PLANET_1, LVL0_PLANET_DEEP_SPACE, dist, shipsSent, silverSent)
+        )
+      ).to.emit(world.contract, 'GameStarted');
 
-      expect((await world.user1Core.getStartTime()).toNumber()).to.not.be.equal(0);
-      const now =  Date.now() / 1000;
-      expect((await world.user1Core.getRoundDuration()).toNumber()).to.be.approximately(now - start, 2);
+      expect((await world.user1Core.getStartTime()).toNumber()).to.be.greaterThanOrEqual(start);
+      const now = Date.now() / 1000;
+      expect((await world.user1Core.getRoundDuration()).toNumber()).to.be.approximately(
+        now - start,
+        2
+      );
+    });
 
-    })
-
-    it('move count increments', async function() {
+    it('move count increments', async function () {
       expect((await world.user1Core.arenaPlayers(world.user1.address)).moves).to.be.equal(0);
       const dist = 1;
       const shipsSent = 30000;
@@ -432,8 +435,8 @@ describe('Arena Functions', function () {
         ...makeMoveArgs(SPAWN_PLANET_1, LVL0_PLANET_DEEP_SPACE, dist, shipsSent, silverSent)
       );
       expect((await world.user1Core.arenaPlayers(world.user1.address)).moves).to.be.equal(1);
-    })
-  })
+    });
+  });
 
   describe('Invade and Claim Victory', function () {
     let world: World;
@@ -581,7 +584,6 @@ describe('Arena Functions', function () {
         await increaseBlockchainTime(51);
         const roundDuration = await world.user1Core.getRoundDuration();
         expect(roundDuration.toNumber()).to.be.greaterThan(50);
-
       });
 
       it('claim victory succeeds and emits Gameover if target is above energy threshold ', async function () {
@@ -795,7 +797,11 @@ describe('Arena Functions', function () {
 
     it('has different config hashes for different initializers', async function () {
       /* When I load this as a fixture, Hardhat bugs out. Perhaps because deterministic contract address? */
-      const world1 = await initializeWorld({initializers: arenaWorldInitializers, whitelistEnabled: false, arena: true});
+      const world1 = await initializeWorld({
+        initializers: arenaWorldInitializers,
+        whitelistEnabled: false,
+        arena: true,
+      });
       const worldConfig = (await world.contract.getArenaConstants()).CONFIG_HASH;
       const world1Config = (await world1.contract.getArenaConstants()).CONFIG_HASH;
       expect(worldConfig).to.not.equal(world1Config);
@@ -886,8 +892,7 @@ describe('Arena Functions', function () {
       let prevLocation = SPAWN_PLANET_1;
 
       const randomHex =
-      `00007c2512896efb182d462faee0000fb33d58930eb9e6b4fbae6d048e9c44` +
-      0 + '' + (0 % 10);
+        `00007c2512896efb182d462faee0000fb33d58930eb9e6b4fbae6d048e9c44` + 0 + '' + (0 % 10);
       const planetWithArtifactLoc = new TestLocation({
         hex: randomHex,
         perlin: SPACE_PERLIN,
@@ -904,7 +909,6 @@ describe('Arena Functions', function () {
         planetWithArtifactLoc.perlin
       );
 
-
       await world1.contract.adminGiveSpaceShip(
         planetWithArtifactLoc.id,
         world1.user1.address,
@@ -917,11 +921,14 @@ describe('Arena Functions', function () {
         ArtifactType.ShipGear
       );
 
-
       await increaseBlockchainTime();
 
-      await world1.user1Core.move(...makeMoveArgs(prevLocation, planetWithArtifactLoc, 0, 80000, 0)); // move 80000 from asteroids but 160000 from ruins since ruins are higher level
-      await world2.user1Core.move(...makeMoveArgs(prevLocation, planetWithArtifactLoc, 0, 80000, 0)); // move 80000 from asteroids but 160000 from ruins since ruins are higher level
+      await world1.user1Core.move(
+        ...makeMoveArgs(prevLocation, planetWithArtifactLoc, 0, 80000, 0)
+      ); // move 80000 from asteroids but 160000 from ruins since ruins are higher level
+      await world2.user1Core.move(
+        ...makeMoveArgs(prevLocation, planetWithArtifactLoc, 0, 80000, 0)
+      ); // move 80000 from asteroids but 160000 from ruins since ruins are higher level
 
       await increaseBlockchainTime();
 
@@ -944,5 +951,4 @@ describe('Arena Functions', function () {
       expect(artifact1Id).to.be.equal(artifact2Id);
     });
   });
-
 });

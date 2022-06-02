@@ -16,8 +16,9 @@ import {IDiamondLoupe} from "../vendor/interfaces/IDiamondLoupe.sol";
 import {IERC173} from "../vendor/interfaces/IERC173.sol";
 
 // Storage imports
-import {WithStorage} from "../libraries/LibStorage.sol";
+import {WithStorage, GameConstants, SnarkConstants} from "../libraries/LibStorage.sol";
 import {WithArenaStorage, ArenaStorage, ArenaConstants, TournamentStorage} from "../libraries/LibArenaStorage.sol";
+
 import {
     SpaceType, 
     DFPInitPlanetArgs, 
@@ -30,9 +31,16 @@ import {
     PlanetExtendedInfo, 
     PlanetExtendedInfo2,
     ArenaPlanetInfo,
-    AllConstants,
     ArenaPlayerInfo
 } from "../DFTypes.sol";
+
+struct AllConstants {
+    GameConstants gc;
+    SnarkConstants sc;
+    ArenaConstants ac;
+    // Additional values from storage
+    uint256 TOKEN_MINT_END_TIMESTAMP;
+}
 
 contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
 
@@ -156,70 +164,12 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
     }
 
     function getAllConstants() public view returns (AllConstants memory) {
-        uint256[10] memory thresholds;
-        
-        for (uint i = 0; i < 10; i += 1) {
-            thresholds[i] = gs().planetLevelThresholds[i];
-        }
-
-        AllConstants memory a = AllConstants({   
-            // SNARK keys and perlin params
-            DISABLE_ZK_CHECKS: snarkConstants().DISABLE_ZK_CHECKS,
-            PLANETHASH_KEY: snarkConstants().PLANETHASH_KEY,
-            SPACETYPE_KEY: snarkConstants().SPACETYPE_KEY,
-            BIOMEBASE_KEY: snarkConstants().BIOMEBASE_KEY,
-            PERLIN_MIRROR_X: snarkConstants().PERLIN_MIRROR_X,
-            PERLIN_MIRROR_Y: snarkConstants().PERLIN_MIRROR_Y,
-            PERLIN_LENGTH_SCALE: snarkConstants().PERLIN_LENGTH_SCALE,
-            PLANET_LEVEL_THRESHOLDS: thresholds,
-            ADMIN_CAN_ADD_PLANETS: gameConstants().ADMIN_CAN_ADD_PLANETS,
-            WORLD_RADIUS_LOCKED: gameConstants().WORLD_RADIUS_LOCKED, 
-            WORLD_RADIUS_MIN: gameConstants().WORLD_RADIUS_MIN,
-            // Game config
-            MAX_NATURAL_PLANET_LEVEL: gameConstants().MAX_NATURAL_PLANET_LEVEL, 
-            TIME_FACTOR_HUNDREDTHS:  gameConstants().TIME_FACTOR_HUNDREDTHS,        
-            PERLIN_THRESHOLD_1: gameConstants().PERLIN_THRESHOLD_1,    
-            PERLIN_THRESHOLD_2: gameConstants().PERLIN_THRESHOLD_2,    
-            PERLIN_THRESHOLD_3: gameConstants().PERLIN_THRESHOLD_3,    
-            INIT_PERLIN_MIN: gameConstants().INIT_PERLIN_MIN, 
-            INIT_PERLIN_MAX: gameConstants().INIT_PERLIN_MAX, 
-            SPAWN_RIM_AREA: gameConstants().SPAWN_RIM_AREA, 
-            BIOME_THRESHOLD_1: gameConstants().BIOME_THRESHOLD_1,   
-            BIOME_THRESHOLD_2: gameConstants().BIOME_THRESHOLD_2,   
-            PLANET_RARITY: gameConstants().PLANET_RARITY, 
-            PLANET_TRANSFER_ENABLED: gameConstants().PLANET_TRANSFER_ENABLED,
-            PHOTOID_ACTIVATION_DELAY: gameConstants().PHOTOID_ACTIVATION_DELAY, 
-            LOCATION_REVEAL_COOLDOWN: gameConstants().LOCATION_REVEAL_COOLDOWN, 
-            // PLANET_TYPE_WEIGHTS: gameConstants().PLANET_TYPE_WEIGHTS,
-            SILVER_SCORE_VALUE: gameConstants().SILVER_SCORE_VALUE,
-            ARTIFACT_POINT_VALUES: gameConstants().ARTIFACT_POINT_VALUES,       
-            // Space Junk
-            SPACE_JUNK_ENABLED: gameConstants().SPACE_JUNK_ENABLED,
-            SPACE_JUNK_LIMIT: gameConstants().SPACE_JUNK_LIMIT,
-            PLANET_LEVEL_JUNK: gameConstants().PLANET_LEVEL_JUNK,   
-            ABANDON_SPEED_CHANGE_PERCENT: gameConstants().ABANDON_SPEED_CHANGE_PERCENT,
-            ABANDON_RANGE_CHANGE_PERCENT: gameConstants().ABANDON_RANGE_CHANGE_PERCENT,
-            // Capture Zones
-            CAPTURE_ZONES_ENABLED: gameConstants().CAPTURE_ZONES_ENABLED,       
-            CAPTURE_ZONE_COUNT: gameConstants().CAPTURE_ZONE_COUNT,    
-            CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL:  gameConstants().CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL,
-            CAPTURE_ZONE_RADIUS: gameConstants().CAPTURE_ZONE_RADIUS,     
-            CAPTURE_ZONE_PLANET_LEVEL_SCORE: gameConstants().CAPTURE_ZONE_PLANET_LEVEL_SCORE,
-            CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED: gameConstants().CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED,
-            CAPTURE_ZONES_PER_5000_WORLD_RADIUS: gameConstants().CAPTURE_ZONES_PER_5000_WORLD_RADIUS,
-            // Game Storage 
-            TOKEN_MINT_END_TIMESTAMP: gs().TOKEN_MINT_END_TIMESTAMP,
-            TARGET_PLANETS: arenaConstants().TARGET_PLANETS,
-            CLAIM_VICTORY_ENERGY_PERCENT: arenaConstants().CLAIM_VICTORY_ENERGY_PERCENT,
-            MANUAL_SPAWN: arenaConstants().MANUAL_SPAWN,
-            MODIFIERS: arenaConstants().MODIFIERS,
-            SPACESHIPS: arenaConstants().SPACESHIPS,
-            CONFIG_HASH: arenaConstants().CONFIG_HASH,
-            NO_ADMIN: arenaConstants().NO_ADMIN,
-            INIT_PLANET_HASHES: arenaConstants().INIT_PLANET_HASHES
+        AllConstants memory constants = AllConstants({
+            gc: gameConstants(),
+            sc: snarkConstants(),
+            ac: arenaConstants(),
+            TOKEN_MINT_END_TIMESTAMP: gs().TOKEN_MINT_END_TIMESTAMP
         });
-
-        return a;
-
+        return constants;
     }
 }

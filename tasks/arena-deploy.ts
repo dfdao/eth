@@ -90,7 +90,6 @@ async function deploy(
   }
 
   if (args.faucet) {
-    console.log('calling faucet');
     await hre.run('faucet:deploy', { value: args.fund });
     console.log('deployed faucet');
   }

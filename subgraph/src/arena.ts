@@ -25,7 +25,7 @@ export function handleLobbyCreated(event: LobbyCreated): void {
   arena.gameOver = false;
   arena.creator = event.params.ownerAddress.toHexString();
   arena.winners = new Array<string>();
- 
+  
   const contract = DarkForest.bind(event.params.lobbyAddress);
 
   let arenaOwnerResult = contract.try_owner();
@@ -76,7 +76,7 @@ export function handleGameover(event: Gameover): void {
   arena.endTime = event.block.timestamp.toI32();
 
   // Edge case: If you win a match, but haven't made a move, duration is creationTime - endTime.
-  const start = arena.startTime == 0 ? arena.creationTime : arena.startTime;
+  const start = arena.startTime ? arena.creationTime : arena.startTime;
   arena.duration = arena.endTime - start;
 
   arena.save();
@@ -122,6 +122,7 @@ export function handlePlayerInitialized(event: PlayerInitialized): void {
   player.initTimestamp = event.block.timestamp.toI32();
   player.address = playerAddress;
   player.winner = false;
+  player.moves = 0;
   let arena = Arena.load(dataSource.address().toHexString());
   if (!arena) {
     log.error('attempting to attach player to unkown arena: {}', [

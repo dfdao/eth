@@ -48,7 +48,7 @@ templates:
           handler: handlePlayerInitialized
         - event: Gameover(uint256,address)
           handler: handleGameover
-        - event: GameStarted(address)
+        - event: GameStarted(address,uint256)
           handler: handleGameStarted
         - event: AdminPlanetCreated(uint256)
           handler: handleAdminPlanetCreated
