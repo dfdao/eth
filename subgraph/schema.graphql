@@ -10,7 +10,7 @@ type Arena @entity {
   duration: Int
   creationTime: Int!
   creationBlock: Int!
-  startTime: Int, # might not exist right away
+  startTime: Int!, # might not exist right away
   endTime: Int # might not exist right away
   winners: [ArenaPlayer!]!
   players: [ArenaPlayer!]! @derivedFrom(field: "arena")

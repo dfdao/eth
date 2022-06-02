@@ -23,9 +23,11 @@ export function handleLobbyCreated(event: LobbyCreated): void {
   arena.ownerAddress = event.params.ownerAddress.toHexString();
   arena.lobbyAddress = event.params.lobbyAddress.toHexString();
   arena.gameOver = false;
+  // arena.duration = 0;
+  arena.startTime = event.block.timestamp.toI32();
   arena.creator = event.params.ownerAddress.toHexString();
   arena.winners = new Array<string>();
-  
+
   const contract = DarkForest.bind(event.params.lobbyAddress);
 
   let arenaOwnerResult = contract.try_owner();
@@ -74,10 +76,8 @@ export function handleGameover(event: Gameover): void {
   arena.winners = winners;
   arena.gameOver = true;
   arena.endTime = event.block.timestamp.toI32();
-
-  // Edge case: If you win a match, but haven't made a move, duration is creationTime - endTime.
-  const start = arena.startTime ? arena.creationTime : arena.startTime;
-  arena.duration = arena.endTime - start;
+  // Edge case: If you win a match, but haven't made a move, duration is startTime is creationTime.
+  if(arena.startTime) arena.duration = arena.endTime - arena.startTime;
 
   arena.save();
 
@@ -96,6 +96,7 @@ export function handleGameover(event: Gameover): void {
 
   aggregatePlayer.wins = aggregatePlayer.wins + 1;
   aggregatePlayer.save();
+
 
   player.winner = true;
   player.save();
@@ -116,8 +117,6 @@ export function handlePlayerInitialized(event: PlayerInitialized): void {
   const locationId = hexStringToPaddedUnprefixed(locationDec);
   const playerAddress = event.params.player.toHexString();
 
-  // const id = makeArenaId(dataSource.address().toHexString(), playerAddress)
-  // addresses gets 0x prefixed and 0 padded in toHexString
   const player = new ArenaPlayer(arenaId(playerAddress));
   player.initTimestamp = event.block.timestamp.toI32();
   player.address = playerAddress;
