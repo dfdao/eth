@@ -9,7 +9,7 @@ import {
   writeToContractsPackage,
 } from '../utils/deploy';
 import { DiamondChanges } from '../utils/diamond';
-import { deployAndCut } from '../tasks/deploy';
+import { deployAndCut, deployLibraries } from '../tasks/deploy';
 
 task('arena:deploy', 'deploy all arena contracts')
   .addOptionalParam('whitelist', 'override the whitelist', false, types.boolean)
@@ -90,7 +90,6 @@ async function deploy(
   }
 
   if (args.faucet) {
-    console.log('calling faucet');
     await hre.run('faucet:deploy', { value: args.fund });
     console.log('deployed faucet');
   }
@@ -106,6 +105,18 @@ async function deploy(
   }
 
   console.log('Deployed successfully. Godspeed cadet.');
+}
+
+task('arena:deploy:initializer', 'deploy arena initializer').setAction(deployInitializer)
+
+async function deployInitializer({}, hre: HardhatRuntimeEnvironment) {
+  await hre.run('utils:assertChainId');
+
+  const libraries = await deployLibraries({}, hre);
+  const LibGameUtils = libraries.LibGameUtils
+
+  const diamondInit = await deployContract('DFArenaInitialize', { LibGameUtils } , hre);
+  console.log(`deployed initializer to ${diamondInit.address}. COPY ME TO @darkforest_eth/contracts. !!`)
 }
 
 export async function deployAndCutArena(

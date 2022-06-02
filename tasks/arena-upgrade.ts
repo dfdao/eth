@@ -16,6 +16,7 @@ import {
 } from './deploy';
 import * as fs from "fs";
 import * as path from "path";
+import { remove } from 'lodash';
 
 const DEPLOY_PATH = './facets.json';
 
@@ -99,15 +100,16 @@ async function upgrade(args: { load: boolean }, hre: HardhatRuntimeEnvironment) 
     toCut = [...darkForestCuts, ...arenaDiamondCuts];
 
   }
-  
+
+  fs.writeFileSync(DEPLOY_PATH, JSON.stringify(toCut));
+  console.log(`wrote cuts to ${DEPLOY_PATH}`);
+
   const shouldUpgrade = await changes.verify();
   if (!shouldUpgrade) {
     console.log('Upgrade aborted');
     return;
   }
 
-  fs.writeFileSync(DEPLOY_PATH, JSON.stringify(toCut));
-  console.log(`wrote cuts to ${DEPLOY_PATH}`);
 
 
   // As mentioned in the `deploy` task, EIP-2535 specifies that the `diamondCut`
@@ -124,7 +126,7 @@ async function upgrade(args: { load: boolean }, hre: HardhatRuntimeEnvironment) 
   if (!upgradeReceipt.status) {
     throw Error(`Diamond cut failed: ${upgradeTx.hash}`);
   }
-  console.log('Completed diamond cut');
+  console.log(`Completed diamond cut with ${upgradeReceipt.gasUsed}`);
 
   // TODO: Upstream change to update task name from `hardhat-4byte-uploader`
   if (!isDev) {

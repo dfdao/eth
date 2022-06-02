@@ -16,7 +16,7 @@ import {IDiamondLoupe} from "../vendor/interfaces/IDiamondLoupe.sol";
 import {IERC173} from "../vendor/interfaces/IERC173.sol";
 
 // Storage imports
-import {WithStorage} from "../libraries/LibStorage.sol";
+import {WithStorage, GameConstants, SnarkConstants} from "../libraries/LibStorage.sol";
 import {WithArenaStorage, ArenaStorage, ArenaConstants, TournamentStorage} from "../libraries/LibArenaStorage.sol";
 
 import {
@@ -32,8 +32,80 @@ import {
     PlanetExtendedInfo2,
     ArenaPlanetInfo,
     ArenaPlayerInfo
-    ArenaCreateRevealPlanetArgs
 } from "../DFTypes.sol";
+
+struct AllConstants {
+    GameConstants gc;
+    SnarkConstants sc;
+    ArenaConstants ac;
+    // Additional values from storage
+    uint256 TOKEN_MINT_END_TIMESTAMP;
+}
+
+struct GraphGameConstants {
+    bool ADMIN_CAN_ADD_PLANETS;
+    uint256 TOKEN_MINT_END_TIMESTAMP;
+    bool WORLD_RADIUS_LOCKED;
+    uint256 WORLD_RADIUS_MIN;
+    uint256 MAX_NATURAL_PLANET_LEVEL;
+    uint256 TIME_FACTOR_HUNDREDTHS; // speedup/slowdown game
+    uint256 PERLIN_THRESHOLD_1;
+    uint256 PERLIN_THRESHOLD_2;
+    uint256 PERLIN_THRESHOLD_3;
+    uint256 INIT_PERLIN_MIN;
+    uint256 INIT_PERLIN_MAX;
+    uint256 SPAWN_RIM_AREA;
+    uint256 BIOME_THRESHOLD_1;
+    uint256 BIOME_THRESHOLD_2;
+    uint256[10] PLANET_LEVEL_THRESHOLDS;
+    uint256 PLANET_RARITY;
+    bool PLANET_TRANSFER_ENABLED;
+    uint256 PHOTOID_ACTIVATION_DELAY;
+    uint256 LOCATION_REVEAL_COOLDOWN;
+    uint8[200] PLANET_TYPE_WEIGHTS; // spaceType (enum 0-3) -> planetLevel (0-9) -> planetType (enum 0-4)
+    uint256 SILVER_SCORE_VALUE;
+    uint256[6] ARTIFACT_POINT_VALUES;
+    // Space Junk
+    bool SPACE_JUNK_ENABLED;
+    /**
+      Total amount of space junk a player can take on.
+      This can be overridden at runtime by updating
+      this value for a specific player in storage.
+    */
+    uint256 SPACE_JUNK_LIMIT;
+    /**
+      The amount of junk that each level of planet
+      gives the player when moving to it for the
+      first time.
+    */
+    uint256[10] PLANET_LEVEL_JUNK;
+    /**
+      The speed boost a movement receives when abandoning
+      a planet.
+    */
+    uint256 ABANDON_SPEED_CHANGE_PERCENT;
+    /**
+      The range boost a movement receives when abandoning
+      a planet.
+    */
+    uint256 ABANDON_RANGE_CHANGE_PERCENT;
+    // Capture Zones
+    uint256 GAME_START_BLOCK;
+    bool CAPTURE_ZONES_ENABLED;
+    uint256 CAPTURE_ZONE_COUNT;
+    uint256 CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL;
+    uint256 CAPTURE_ZONE_RADIUS;
+    uint256[10] CAPTURE_ZONE_PLANET_LEVEL_SCORE;
+    uint256 CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED;
+    uint256 CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
+
+}
+
+struct GraphConstants {
+    GraphGameConstants gc;
+    SnarkConstants sc;
+    ArenaConstants ac;
+}
 
 contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
 
@@ -92,7 +164,6 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
             ret[i - startIdx] = arenaStorage().spawnPlanetIds[i];
         }
     }
-
 
     function arenaPlayers(address key) public view returns (ArenaPlayerInfo memory) {
         return arenaStorage().arenaPlayerInfo[key];
@@ -155,5 +226,91 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
     function getInitPlanetHashes() public view returns (bytes32[] memory) {
         bytes32[] memory initPlanetIds = arenaConstants().INIT_PLANET_HASHES;
         return initPlanetIds;
+    }
+
+    function getGraphGameConstants() public view returns (GraphGameConstants memory) {
+        GameConstants memory gc = gameConstants();
+        uint8 a = 4;
+        uint8 b = 10;
+        uint8 c = 5;
+        uint8[5*10*4] memory weights;
+        uint256 count = 0;
+        for(uint8 i = 0; i < a; i++) {
+            for(uint8 j = 0; j < b; j++) {
+                for(uint8 k = 0; k < c; k++) {
+                    weights[count++] = gc.PLANET_TYPE_WEIGHTS[i][j][k];
+                }     
+            }   
+        }
+
+        GraphGameConstants memory g = GraphGameConstants({
+            ADMIN_CAN_ADD_PLANETS: gc.ADMIN_CAN_ADD_PLANETS,
+            TOKEN_MINT_END_TIMESTAMP: gs().TOKEN_MINT_END_TIMESTAMP,
+            WORLD_RADIUS_LOCKED: gc.WORLD_RADIUS_LOCKED,
+            WORLD_RADIUS_MIN: gc.WORLD_RADIUS_MIN,
+            MAX_NATURAL_PLANET_LEVEL: gc.MAX_NATURAL_PLANET_LEVEL,
+            TIME_FACTOR_HUNDREDTHS: gc.TIME_FACTOR_HUNDREDTHS, // speedup/slowdown game
+            PERLIN_THRESHOLD_1: gc.PERLIN_THRESHOLD_1,
+            PERLIN_THRESHOLD_2: gc.PERLIN_THRESHOLD_2,
+            PERLIN_THRESHOLD_3: gc.PERLIN_THRESHOLD_3,
+            INIT_PERLIN_MIN: gc.INIT_PERLIN_MIN,
+            INIT_PERLIN_MAX: gc.INIT_PERLIN_MAX,
+            SPAWN_RIM_AREA: gc.SPAWN_RIM_AREA,
+            BIOME_THRESHOLD_1: gc.BIOME_THRESHOLD_1,
+            BIOME_THRESHOLD_2: gc.BIOME_THRESHOLD_2,
+            PLANET_LEVEL_THRESHOLDS: gc.PLANET_LEVEL_THRESHOLDS,
+            PLANET_RARITY: gc.PLANET_RARITY,
+            PLANET_TRANSFER_ENABLED: gc.PLANET_TRANSFER_ENABLED,
+            PHOTOID_ACTIVATION_DELAY: gc.PHOTOID_ACTIVATION_DELAY,
+            LOCATION_REVEAL_COOLDOWN: gc.LOCATION_REVEAL_COOLDOWN,
+            PLANET_TYPE_WEIGHTS: weights, // uint[8] 200 spaceType (enum 0-3) -> planetLevel (0-9) -> planetType (enum 0-4)
+            SILVER_SCORE_VALUE: gc.SILVER_SCORE_VALUE,
+            ARTIFACT_POINT_VALUES: gc.ARTIFACT_POINT_VALUES,
+            // Space Junk
+            SPACE_JUNK_ENABLED: gc.SPACE_JUNK_ENABLED,
+            /**
+            Total amount of space junk a player can take on.
+            This can be overridden at runtime by updating
+            this value for a specific player in storage.
+            */
+            SPACE_JUNK_LIMIT: gc.SPACE_JUNK_LIMIT,
+            /**
+            The amount of junk that each level of planet
+            gives the player when moving to it for the
+            first time.
+            */
+            PLANET_LEVEL_JUNK: gc.PLANET_LEVEL_JUNK,
+            /**
+            The speed boost a movement receives when abandoning
+            a planet.
+            */
+            ABANDON_SPEED_CHANGE_PERCENT: gc.ABANDON_SPEED_CHANGE_PERCENT,
+            /**
+            The range boost a movement receives when abandoning
+            a planet.
+            */
+            ABANDON_RANGE_CHANGE_PERCENT: gc.ABANDON_RANGE_CHANGE_PERCENT,
+            // Capture Zones
+            GAME_START_BLOCK: gc.GAME_START_BLOCK,
+            CAPTURE_ZONES_ENABLED: gc.CAPTURE_ZONES_ENABLED,
+            CAPTURE_ZONE_COUNT: gc.CAPTURE_ZONE_COUNT,
+            CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL: gc.CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL,
+            CAPTURE_ZONE_RADIUS: gc.CAPTURE_ZONE_RADIUS,
+            CAPTURE_ZONE_PLANET_LEVEL_SCORE: gc.CAPTURE_ZONE_PLANET_LEVEL_SCORE,
+            CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED: gc.CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED,
+            CAPTURE_ZONES_PER_5000_WORLD_RADIUS: gc.CAPTURE_ZONES_PER_5000_WORLD_RADIUS
+        });
+
+        return g;
+    }
+
+    // Constants for the Graph (no multi-dimensional arrays)
+    function getGraphConstants() public view returns (GraphConstants memory) {
+        GraphConstants memory constants = GraphConstants({
+            gc: getGraphGameConstants(),
+            sc: snarkConstants(),
+            ac: arenaConstants()
+        });
+        return constants;
     }
 }
