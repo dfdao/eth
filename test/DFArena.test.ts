@@ -1080,7 +1080,10 @@ describe('Arena Functions', function () {
       expect((await world.user1Core.getStartTime()).toNumber()).to.be.greaterThan(50);
     });
 
-    it('game cannot start unless all players mark Ready', async function () {});
+    it('Player Ready is emitted on Ready with 1 player', async function () {
+      await world.user1Core.initializePlayer(...makeInitArgs(planets[0]));
+      await expect(world.user1Core.ready()).to.emit(world.contract, 'PlayerReady');
+    });
   });
 
   describe('Confirm Start 2 Player', function () {
@@ -1153,7 +1156,7 @@ describe('Arena Functions', function () {
 
       expect(await world.contract.paused()).to.equal(true);
 
-      var tx = await world.user1Core.notReady();
+      await expect(world.user1Core.notReady()).to.emit(world.contract, 'PlayerNotReady');
       await tx.wait();
 
       expect(await world.contract.paused()).to.equal(true);
@@ -1165,9 +1168,9 @@ describe('Arena Functions', function () {
     });
   });
 
-  describe('Allow Players on Init', function (){
+  describe('Allow Players on Init', function () {
     let world: World;
-    
+
     beforeEach('load fixture', async function () {
       world = await fixtureLoader(allowListOnInitFixture);
     });
@@ -1175,7 +1178,7 @@ describe('Arena Functions', function () {
     it('has allow list enabled', async function () {
       const [deployer, user1, user2, rando] = await hre.ethers.getSigners();
 
-      expect (await world.contract.allowListEnabled()).to.equal(true);
+      expect(await world.contract.allowListEnabled()).to.equal(true);
     });
     it('an approved player isWhitelisted', async function () {
       const [deployer, user1, user2, rando] = await hre.ethers.getSigners();
@@ -1183,10 +1186,9 @@ describe('Arena Functions', function () {
       expect(await world.contract.isWhitelisted(user1.address)).to.equal(true);
     });
     it('a random player is not whitelisted', async function () {
-      const randomAddress = '0x8ba1f109551bd432803012645ac136ddd64dba72'
+      const randomAddress = '0x8ba1f109551bd432803012645ac136ddd64dba72';
 
       expect(await world.contract.isWhitelisted(randomAddress)).to.equal(false);
-      
-    })
+    });
   });
 });

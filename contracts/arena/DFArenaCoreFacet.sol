@@ -41,6 +41,9 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     event PlayerInitialized(address player, uint256 loc);
     event LocationRevealed(address revealer, uint256 loc, uint256 x, uint256 y);
     event GameStarted(address startPlayer, uint256 startTime);
+    event PlayerReady(address player, uint256 time);
+    event PlayerNotReady(address player, uint256 time);
+
 
     modifier onlyAdmin() {
         LibDiamond.enforceIsContractOwner();
@@ -245,9 +248,12 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     }
 
     function ready() public {
+        require(gs().players[msg.sender].isInitialized, "player does not exist");
+
         arenaStorage().arenaPlayerInfo[msg.sender].ready = true;
         arenaStorage().arenaPlayerInfo[msg.sender].lastReadyTime = block.timestamp;
-
+        
+        emit PlayerReady(msg.sender, block.timestamp);
         // Players only initialize if they have a spawn planet
         uint256 numSpawnPlanets = arenaStorage().spawnPlanetIds.length;
         address[] memory playerIds = gs().playerIds; 
@@ -268,9 +274,9 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         emit GameStarted(msg.sender, block.timestamp);
     }
 
-
     function notReady() public {
         arenaStorage().arenaPlayerInfo[msg.sender].ready = false;
+        emit PlayerNotReady(msg.sender, block.timestamp);
     }
 
 }
