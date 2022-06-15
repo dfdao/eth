@@ -117,6 +117,7 @@ struct InitArgs {
     bool RANDOM_ARTIFACTS;
     bool NO_ADMIN;
     ArenaCreateRevealPlanetArgs[] INIT_PLANETS;
+    bool CONFIRM_START;
 }
 
 contract DFArenaInitialize is WithStorage, WithArenaStorage {
@@ -204,7 +205,7 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
 
         gs().worldRadius = initArgs.WORLD_RADIUS_MIN; // will be overridden by `LibGameUtils.updateWorldRadius()` if !WORLD_RADIUS_LOCKED
 
-        gs().paused = initArgs.START_PAUSED;
+        gs().paused = initArgs.START_PAUSED || initArgs.CONFIRM_START;
         gs().TOKEN_MINT_END_TIMESTAMP = initArgs.TOKEN_MINT_END_TIMESTAMP;
 
         gs().initializedPlanetCountByLevel = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -240,6 +241,7 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
 
         arenaConstants().NO_ADMIN = initArgs.NO_ADMIN;
         arenaConstants().CONFIG_HASH = keccak256(abi.encode(initArgs));
+        arenaConstants().CONFIRM_START = initArgs.CONFIRM_START;
 
         uint256 initLength = initArgs.INIT_PLANETS.length;
 
@@ -267,7 +269,7 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
 
     function initializeDefaults() public {
         PlanetDefaultStats[] storage planetDefaultStats = planetDefaultStats();
-        require ((75* arenaConstants().MODIFIERS.speed / 100) > 0, "cannot initialize planets with 0 speed");
+        require ((75 * arenaConstants().MODIFIERS.speed / 100) > 0, "cannot initialize planets with 0 speed");
 
         planetDefaultStats.push(
             PlanetDefaultStats({

@@ -246,6 +246,8 @@ struct ArenaPlanetInfo {
 
 struct ArenaPlayerInfo {
     uint256 moves;
+    bool ready;
+    uint256 lastReadyTime;
 }
 
 struct ArenaCreateRevealPlanetArgs {

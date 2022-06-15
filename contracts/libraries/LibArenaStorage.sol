@@ -56,6 +56,7 @@ struct ArenaConstants {
 
     bool NO_ADMIN;
     bytes32 [] INIT_PLANET_HASHES; // This won't mess up Diamond storage
+    bool CONFIRM_START;
 }
 
 library LibArenaStorage {

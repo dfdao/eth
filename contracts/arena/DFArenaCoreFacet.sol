@@ -40,6 +40,7 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     event Gameover(uint256 loc, address winner);
     event PlayerInitialized(address player, uint256 loc);
     event LocationRevealed(address revealer, uint256 loc, uint256 x, uint256 y);
+    event GameStarted(address startPlayer, uint256 startTime);
 
     modifier onlyAdmin() {
         LibDiamond.enforceIsContractOwner();
@@ -241,6 +242,35 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         for (uint256 i = 0; i < createArgsList.length; i++) {
             createAndReveal(createArgsList[i]);
         }
+    }
+
+    function ready() public {
+        arenaStorage().arenaPlayerInfo[msg.sender].ready = true;
+        arenaStorage().arenaPlayerInfo[msg.sender].lastReadyTime = block.timestamp;
+
+        // Players only initialize if they have a spawn planet
+        uint256 numSpawnPlanets = arenaStorage().spawnPlanetIds.length;
+        address[] memory playerIds = gs().playerIds; 
+        uint256 numPlayerIds = playerIds.length;
+
+        // If all spawnPlanets are not occupied, return.
+        if(numPlayerIds != numSpawnPlanets) return;
+
+        // If any player is not ready, return.
+        for(uint256 i = 0; i < numPlayerIds; i++) {
+            if(!arenaStorage().arenaPlayerInfo[playerIds[i]].ready) return;
+        }
+
+        // If code execution arrives here, all players are ready.
+        arenaStorage().startTime = block.timestamp; 
+        gs().paused = false;
+        // Will be player who was the last to signal ready
+        emit GameStarted(msg.sender, block.timestamp);
+    }
+
+
+    function notReady() public {
+        arenaStorage().arenaPlayerInfo[msg.sender].ready = false;
     }
 
 }

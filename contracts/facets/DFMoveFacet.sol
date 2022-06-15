@@ -114,10 +114,12 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
 
         _executeMove(args);
         
-        if(arenaStorage().startTime == 0) {
+        
+        if(!(arenaConstants().CONFIRM_START) && arenaStorage().startTime == 0) {
            arenaStorage().startTime = block.timestamp; 
            emit GameStarted(msg.sender, block.timestamp);
         }
+
         arenaStorage().arenaPlayerInfo[msg.sender].moves++;
 
         LibGameUtils.updateWorldRadius();
