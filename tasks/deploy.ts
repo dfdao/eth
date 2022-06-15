@@ -475,7 +475,7 @@ export async function deployCaptureFacet(
   return contract;
 }
 
-async function deployDiamondCutFacet({}, libraries: Libraries, hre: HardhatRuntimeEnvironment) {
+export async function deployDiamondCutFacet({}, libraries: Libraries, hre: HardhatRuntimeEnvironment) {
   const factory = await hre.ethers.getContractFactory('DiamondCutFacet');
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
@@ -483,7 +483,7 @@ async function deployDiamondCutFacet({}, libraries: Libraries, hre: HardhatRunti
   return contract;
 }
 
-async function deployDiamond(
+export async function deployDiamond(
   {
     ownerAddress,
     diamondCutAddress,
@@ -513,7 +513,7 @@ async function deployDiamondInit({}, { LibGameUtils }: Libraries, hre: HardhatRu
   return contract;
 }
 
-async function deployDiamondLoupeFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
+export async function deployDiamondLoupeFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
   const factory = await hre.ethers.getContractFactory('DiamondLoupeFacet');
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
@@ -521,7 +521,7 @@ async function deployDiamondLoupeFacet({}, {}: Libraries, hre: HardhatRuntimeEnv
   return contract;
 }
 
-async function deployOwnershipFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
+export async function deployOwnershipFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
   const factory = await hre.ethers.getContractFactory('OwnershipFacet');
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();

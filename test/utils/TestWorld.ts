@@ -7,6 +7,7 @@ import { deployAndCutArena } from '../../tasks/arena-deploy';
 import { deployAndCut } from '../../tasks/deploy';
 import {
   arenaWorldInitializers,
+  confirmStartInitializers,
   deterministicArtifactInitializers,
   initializers,
   initPlanetsInitializers,
@@ -76,7 +77,7 @@ export function planetLevelThresholdFixture(): Promise<World> {
   return initializeWorld({
     initializers: planetLevelThresholdInitializer,
     whitelistEnabled: false,
-    arena: false,
+    arena: true,
   });
 }
 
@@ -145,7 +146,14 @@ export function deterministicArtifactFixture(): Promise<World> {
     whitelistEnabled: false,
     arena: true
   });
-  
+}
+
+export function confirmStartFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: confirmStartInitializers,
+    whitelistEnabled: false,
+    arena: true
+  });
 }
 
 export async function initializeWorld({

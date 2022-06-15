@@ -42,26 +42,24 @@ const { DEPLOYER_MNEMONIC, ADMIN_PUBLIC_ADDRESS } = process.env;
 const AbiItemsToIgnore = [
   {
     facet: 'DFCoreFacet',
-    functions: ['initializePlayer', 'giveSpaceShips'],
-    events: ['PlayerInitialized', 'ArtifactFound', 'LocationRevealed'],
+    functions: ['initializePlayer', 'giveceShips'],
+    events: ['PlayerInitialized', 'LocationRevealed'],
   },
   {
     facet: 'DFAdminFacet',
     events: ['AdminPlanetCreated'],
   },
-  {
-    facet: 'DFLobbyFacet',
-    functions: ['createLobby'],
-    events: ['LobbyCreated'],
-  },
-  {
-    facet: 'DFArenaGetterFacet',
-    functions: ['getArenaConstants']
-  },
+  // {
+  //   facet: 'DFArenaGetterFacet',
+  //   functions: ['getArenaConstants']
+  // },
   {
     facet: 'DFArtifactFacet',
     events: ['ArtifactFound'],
-    functions: ['giveSpaceShips']
+  },
+  {
+    facet: 'DFMoveFacet',
+    events: ['GameStarted'],
   }
 ];
 

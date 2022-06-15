@@ -16,6 +16,7 @@ import {
 } from './utils/TestUtils';
 import {
   arenaWorldFixture,
+  confirmStartFixture,
   deterministicArtifactFixture,
   initializeWorld,
   initPlanetsArenaFixture,
@@ -952,7 +953,7 @@ describe('Arena Functions', function () {
 
       expect(artifact1Id).to.be.equal(artifact2Id);
     });
-    it.only('confirms artifact seed is same as js calculation', async function () {
+    it('confirms artifact seed is same as js calculation', async function () {
       // this.timeout(1000 * 60);
 
       /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -997,8 +998,11 @@ describe('Arena Functions', function () {
       const artifactOnPlanet1 = (await getArtifactsOnPlanet(world1, planetWithArtifactLoc.id))[0];
 
       const artifact1Id = artifactOnPlanet1.id;
-      
-      const {type, rarity} = getDeterministicArtifact(planetWithArtifactLoc, deterministicArtifactInitializers);
+
+      const { type, rarity } = getDeterministicArtifact(
+        planetWithArtifactLoc,
+        deterministicArtifactInitializers
+      );
 
       expect(artifactOnPlanet1.rarity).to.equal(rarity);
       expect(artifactOnPlanet1.artifactType).to.equal(type);
@@ -1013,8 +1017,150 @@ describe('Arena Functions', function () {
     });
 
     it('gets planet type weights from Graph constants', async function () {
-      const weights = (await world.contract.getGraphConstants()).gc.PLANET_TYPE_WEIGHTS
+      const weights = (await world.contract.getGraphConstants()).gc.PLANET_TYPE_WEIGHTS;
       expect(weights.length).to.equal(200);
+    });
+  });
+
+  describe('Confirm Start 1 Player', function () {
+    let world: World;
+    const planets = [ADMIN_PLANET];
+
+    async function worldFixture() {
+      const world = await fixtureLoader(confirmStartFixture);
+
+      const perlin = 20;
+      const level = 5;
+      const planetType = 1; // asteroid field
+
+      var planetArgList: any = [];
+
+      planets.map((p) => {
+        const planetArgs = {
+          location: p.id,
+          x: Math.floor(Math.random() * 100),
+          y: Math.floor(Math.random() * 100),
+          perlin,
+          level,
+          planetType,
+          requireValidLocationId: false,
+          isTargetPlanet: false,
+          isSpawnPlanet: true,
+        };
+
+        planetArgList.push(planetArgs);
+      });
+
+      const tx = await world.contract.bulkCreateAndReveal(planetArgList);
+      const rct = await tx.wait();
+      console.log(`created and revealed ${planets.length} planets with ${rct.gasUsed} gas`);
+
+      return world;
+    }
+
+    beforeEach('load fixture', async function () {
+      world = await fixtureLoader(worldFixture);
+    });
+
+    it('Game is paused if CONFIRM_START ', async function () {
+      expect((await world.contract.getArenaConstants()).CONFIRM_START).to.equal(true);
+      expect(await world.contract.paused()).to.equal(true);
+    });
+
+    it('game started is emitted on Ready with 1 player', async function () {
+      await world.user1Core.initializePlayer(...makeInitArgs(planets[0]));
+
+      expect(await world.user1Core.getStartTime()).to.be.equal(0);
+
+      await increaseBlockchainTime(50);
+
+      await expect(world.user1Core.ready()).to.emit(world.contract, 'GameStarted');
+      expect(await world.contract.paused()).to.equal(false);
+      expect((await world.user1Core.getStartTime()).toNumber()).to.be.greaterThan(50);
+    });
+
+    it('game cannot start unless all players mark Ready', async function () {});
+  });
+
+  describe('Confirm Start 2 Player', function () {
+    let world: World;
+    const planets = [ADMIN_PLANET, ADMIN_PLANET_CLOAKED];
+
+    async function worldFixture() {
+      const world = await fixtureLoader(confirmStartFixture);
+
+      const perlin = 20;
+      const level = 5;
+      const planetType = 1; // asteroid field
+
+      var planetArgList: any = [];
+
+      planets.map((p) => {
+        const planetArgs = {
+          location: p.id,
+          x: Math.floor(Math.random() * 100),
+          y: Math.floor(Math.random() * 100),
+          perlin,
+          level,
+          planetType,
+          requireValidLocationId: false,
+          isTargetPlanet: false,
+          isSpawnPlanet: true,
+        };
+
+        planetArgList.push(planetArgs);
+      });
+
+      const tx = await world.contract.bulkCreateAndReveal(planetArgList);
+      const rct = await tx.wait();
+
+      await world.user1Core.initializePlayer(...makeInitArgs(planets[0]));
+      await world.user2Core.initializePlayer(...makeInitArgs(planets[1]));
+
+      return world;
+    }
+
+    beforeEach('load fixture', async function () {
+      world = await fixtureLoader(worldFixture);
+    });
+
+    it('game cannot start if only 1 player is ready', async function () {
+      const tx = await world.user1Core.ready();
+      await tx.wait();
+
+      expect(await world.contract.paused()).to.equal(true);
+    });
+
+    it('game can start if 2 players are ready', async function () {
+      const tx = await world.user2Core.ready();
+      await tx.wait();
+
+      expect(await world.contract.paused()).to.equal(true);
+
+      expect(await world.user1Core.getStartTime()).to.be.equal(0);
+
+      await increaseBlockchainTime(50);
+
+      await expect(world.user1Core.ready()).to.emit(world.contract, 'GameStarted');
+      expect(await world.contract.paused()).to.equal(false);
+      expect((await world.user1Core.getStartTime()).toNumber()).to.be.greaterThan(50);
+    });
+
+    it('game cannot start if one player rescinds ready', async function () {
+      var tx = await world.user1Core.ready();
+      await tx.wait();
+
+      expect(await world.contract.paused()).to.equal(true);
+
+      var tx = await world.user1Core.notReady();
+      await tx.wait();
+
+      expect(await world.contract.paused()).to.equal(true);
+
+      var tx = await world.user2Core.ready();
+      await tx.wait();
+
+      expect(await world.contract.paused()).to.equal(true);
     });
   });
 });

@@ -57,6 +57,17 @@ export const arenaWorldInitializers = settings.parse(decodeInitializers, {
   CLAIM_VICTORY_ENERGY_PERCENT: 50,
 });
 
+export const confirmStartInitializers = settings.parse(decodeInitializers, {
+  ...defaultInitializerValues,
+  MANUAL_SPAWN: true,
+  INIT_PERLIN_MIN: 0,
+  INIT_PERLIN_MAX: 31,
+  TARGET_PLANETS: true,
+  CLAIM_VICTORY_ENERGY_PERCENT: 50,
+  CONFIRM_START: true
+});
+
+
 export const noAdminInitializers = settings.parse(decodeInitializers, {
   ...defaultInitializerValues,
   NO_ADMIN: true,
