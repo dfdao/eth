@@ -43,7 +43,7 @@ async function deploy(
 ) {
   const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
 
-  let whitelistEnabled = false;
+  let allowListEnabled = false;
 
   // Ensure we have required keys in our initializers
   settings.required(hre.initializers, ['PLANETHASH_KEY', 'SPACETYPE_KEY', 'BIOMEBASE_KEY']);
@@ -68,11 +68,11 @@ async function deploy(
     );
   }
   const [diamond, diamondInit, initReceipt] = await deployAndCutArena(
-    { ownerAddress: deployer.address, whitelistEnabled, initializers: hre.initializers },
+    { ownerAddress: deployer.address, allowListEnabled, initializers: hre.initializers },
     hre
   );
 
-  if (whitelistEnabled && args.fund > 0) {
+  if (allowListEnabled && args.fund > 0) {
     // Note Ive seen `ProviderError: Internal error` when not enough money...
     console.log(`funding whitelist with ${args.fund}`);
 
@@ -140,12 +140,14 @@ async function deployInitializer({}, hre: HardhatRuntimeEnvironment) {
 export async function deployAndCutArena(
   {
     ownerAddress,
-    whitelistEnabled,
+    allowListEnabled,
+    allowedAddresses=[],
     initializers,
     save = true,
   }: {
     ownerAddress: string;
-    whitelistEnabled: boolean;
+    allowListEnabled: boolean;
+    allowedAddresses?: string[];
     initializers: HardhatRuntimeEnvironment['initializers'];
     save?: boolean;
   },
@@ -249,9 +251,12 @@ export async function deployAndCutArena(
   // More info here: https://eips.ethereum.org/EIPS/eip-2535#diamond-interface
   const initAddress = diamondInit.address;
   const initFunctionCall = diamondInit.interface.encodeFunctionData('init', [
-    whitelistEnabled,
-    tokenBaseUri,
     initializers,
+    {
+      allowListEnabled,
+      artifactBaseURI: tokenBaseUri,
+      allowedAddresses
+    },
   ]);
 
   const cutTx = await diamondCut.diamondCut(toCut, initAddress, initFunctionCall);

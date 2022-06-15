@@ -12,7 +12,7 @@ import { Contract } from 'ethers';
 import { deployContract } from '../utils/deploy';
 import { DiamondChanges } from '../utils/diamond';
 
-describe('Arena Upgrade', function () {
+describe.skip('Arena Upgrade', function () {
   describe('Lobby with Initializer', async function () {
     let world: World;
     let lobby: DarkForest;

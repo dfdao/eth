@@ -40,14 +40,15 @@ export interface Player {
 
 export interface InitializeWorldArgs {
   initializers: HardhatRuntimeEnvironment['initializers'];
-  whitelistEnabled: boolean;
+  allowListEnabled: boolean;
+  allowedAddresses?: string[]
   arena?: boolean;
 }
 
 export function defaultWorldFixture(): Promise<World> {
   return initializeWorld({
     initializers,
-    whitelistEnabled: false,
+    allowListEnabled: false,
   });
 }
 
@@ -55,28 +56,28 @@ export function defaultWorldFixture(): Promise<World> {
 export function growingWorldFixture(): Promise<World> {
   return initializeWorld({
     initializers: target4Initializers,
-    whitelistEnabled: false,
+    allowListEnabled: false,
   });
 }
 
 export function whilelistWorldFixture(): Promise<World> {
   return initializeWorld({
     initializers,
-    whitelistEnabled: true,
+    allowListEnabled: true,
   });
 }
 
 export function noPlanetTransferFixture(): Promise<World> {
   return initializeWorld({
     initializers: noPlanetTransferInitializers,
-    whitelistEnabled: false,
+    allowListEnabled: false,
   });
 }
 
 export function planetLevelThresholdFixture(): Promise<World> {
   return initializeWorld({
     initializers: planetLevelThresholdInitializer,
-    whitelistEnabled: false,
+    allowListEnabled: false,
     arena: true,
   });
 }
@@ -87,7 +88,7 @@ Identical to defaultWorldFixture but with arena facets cut in
 export function arenaWorldFixture(): Promise<World> {
   return initializeWorld({
     initializers: arenaWorldInitializers,
-    whitelistEnabled: false,
+    allowListEnabled: false,
     arena: true,
   });
 }
@@ -95,7 +96,7 @@ export function arenaWorldFixture(): Promise<World> {
 export function noAdminWorldFixture(): Promise<World> {
   return initializeWorld({
     initializers: noAdminInitializers,
-    whitelistEnabled: false,
+    allowListEnabled: false,
     arena: true,
   });
 }
@@ -103,7 +104,7 @@ export function noAdminWorldFixture(): Promise<World> {
 export function initPlanetsArenaFixture(): Promise<World> {
   return initializeWorld({
     initializers: initPlanetsInitializers,
-    whitelistEnabled: false,
+    allowListEnabled: false,
     arena: true,
   });
 }
@@ -111,7 +112,7 @@ export function initPlanetsArenaFixture(): Promise<World> {
 export function manualSpawnFixture(): Promise<World> {
   return initializeWorld({
     initializers: manualSpawnInitializers,
-    whitelistEnabled: false,
+    allowListEnabled: false,
     arena: true
   });
 }
@@ -119,7 +120,7 @@ export function manualSpawnFixture(): Promise<World> {
 export function targetPlanetFixture(): Promise<World> {
   return initializeWorld({
     initializers: targetPlanetInitializers,
-    whitelistEnabled: false,
+    allowListEnabled: false,
     arena: true
   });
 }
@@ -127,7 +128,7 @@ export function targetPlanetFixture(): Promise<World> {
 export function modifiedWorldFixture(mod: number): Promise<World> {
   return initializeWorld({
     initializers: { ...initializers, MODIFIERS: [mod, mod, mod, mod, mod, mod, mod, mod] },
-    whitelistEnabled: false,
+    allowListEnabled: false,
     arena: true
   });
 }
@@ -135,7 +136,7 @@ export function modifiedWorldFixture(mod: number): Promise<World> {
 export function spaceshipWorldFixture(spaceships: [boolean, boolean, boolean, boolean, boolean]): Promise<World> {
   return initializeWorld({
     initializers: { ...initializers, SPACESHIPS: spaceships },
-    whitelistEnabled: false,
+    allowListEnabled: false,
     arena: true
   });
 }
@@ -143,7 +144,7 @@ export function spaceshipWorldFixture(spaceships: [boolean, boolean, boolean, bo
 export function deterministicArtifactFixture(): Promise<World> {
   return initializeWorld({
     initializers: deterministicArtifactInitializers,
-    whitelistEnabled: false,
+    allowListEnabled: false,
     arena: true
   });
 }
@@ -151,14 +152,23 @@ export function deterministicArtifactFixture(): Promise<World> {
 export function confirmStartFixture(): Promise<World> {
   return initializeWorld({
     initializers: confirmStartInitializers,
-    whitelistEnabled: false,
+    allowListEnabled: true,
+    arena: true
+  });
+}
+
+export async function allowListOnInitFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: arenaWorldInitializers,
+    allowListEnabled: true,
     arena: true
   });
 }
 
 export async function initializeWorld({
   initializers,
-  whitelistEnabled,
+  allowListEnabled,
+  allowedAddresses = [],
   arena = false,
 }: InitializeWorldArgs): Promise<World> {
   const [deployer, user1, user2] = await hre.ethers.getSigners();
@@ -170,10 +180,13 @@ export async function initializeWorld({
 
   let contract: DarkForest;
 
-  let deploy = arena ? deployAndCutArena : deployAndCut;
+  // let deploy = arena ? deployAndCutArena : deployAndCut;
+  let deploy = deployAndCutArena;
+  
+  if(allowListEnabled) allowedAddresses = [deployer.address, user1.address, user2.address];
 
   const [diamond, diamondInit] = await deploy(
-    { ownerAddress: deployer.address, whitelistEnabled, initializers, save: false },
+    { ownerAddress: deployer.address, allowListEnabled, allowedAddresses, initializers, save: false },
     hre
   );
   contract = diamond;

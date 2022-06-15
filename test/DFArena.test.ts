@@ -15,6 +15,7 @@ import {
   makeRevealArgs,
 } from './utils/TestUtils';
 import {
+  allowListOnInitFixture,
   arenaWorldFixture,
   confirmStartFixture,
   deterministicArtifactFixture,
@@ -48,7 +49,7 @@ import {
   VALID_INIT_PERLIN,
   deterministicArtifactInitializers,
 } from './utils/WorldConstants';
-import hre from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { TestLocation } from './utils/TestLocation';
 
 describe('Arena Functions', function () {
@@ -802,7 +803,7 @@ describe('Arena Functions', function () {
       /* When I load this as a fixture, Hardhat bugs out. Perhaps because deterministic contract address? */
       const world1 = await initializeWorld({
         initializers: arenaWorldInitializers,
-        whitelistEnabled: false,
+        allowListEnabled: false,
         arena: true,
       });
       const worldConfig = (await world.contract.getArenaConstants()).CONFIG_HASH;
@@ -1162,5 +1163,30 @@ describe('Arena Functions', function () {
 
       expect(await world.contract.paused()).to.equal(true);
     });
+  });
+
+  describe('Allow Players on Init', function (){
+    let world: World;
+    
+    beforeEach('load fixture', async function () {
+      world = await fixtureLoader(allowListOnInitFixture);
+    });
+
+    it('has allow list enabled', async function () {
+      const [deployer, user1, user2, rando] = await hre.ethers.getSigners();
+
+      expect (await world.contract.allowListEnabled()).to.equal(true);
+    });
+    it('an approved player isWhitelisted', async function () {
+      const [deployer, user1, user2, rando] = await hre.ethers.getSigners();
+
+      expect(await world.contract.isWhitelisted(user1.address)).to.equal(true);
+    });
+    it('a random player is not whitelisted', async function () {
+      const randomAddress = '0x8ba1f109551bd432803012645ac136ddd64dba72'
+
+      expect(await world.contract.isWhitelisted(randomAddress)).to.equal(false);
+      
+    })
   });
 });

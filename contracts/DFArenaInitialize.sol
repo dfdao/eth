@@ -35,11 +35,14 @@ import {LibDiamond} from "./vendor/libraries/LibDiamond.sol";
 import {WithStorage} from "./libraries/LibStorage.sol";
 import {WithArenaStorage} from "./libraries/LibArenaStorage.sol";
 import {LibGameUtils} from "./libraries/LibGameUtils.sol";
-import "hardhat/console.sol";
+
+// Contract imports 
+import {DFWhitelistFacet} from "./facets/DFWhitelistFacet.sol";
 
 // Type imports
 import {PlanetDefaultStats, Upgrade, UpgradeBranch, Modifiers, Mod, ArenaCreateRevealPlanetArgs, Spaceships} from "./DFTypes.sol";
 
+// Values that are critical for determining if a match is valid. 
 struct InitArgs {
     bool START_PAUSED;
     bool ADMIN_CAN_ADD_PLANETS;
@@ -120,15 +123,21 @@ struct InitArgs {
     bool CONFIRM_START;
 }
 
+// Values that are useful but not constant across arenas (whitelisted players, which planet goes to which team)
+struct AuxiliaryArgs {
+    bool allowListEnabled;
+    string artifactBaseURI;
+    address[] allowedAddresses;
+}
+
 contract DFArenaInitialize is WithStorage, WithArenaStorage {
     using ERC721MetadataStorage for ERC721MetadataStorage.Layout;
 
     // You can add parameters to this function in order to pass in
     // data to set initialize state variables
     function init(
-        bool whitelistEnabled,
-        string memory artifactBaseURI,
-        InitArgs calldata initArgs
+        InitArgs calldata initArgs,
+        AuxiliaryArgs calldata auxArgs
     ) external {        
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -144,11 +153,19 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
         // TODO(#1925): Add name and symbol for the artifact tokens
         ERC721MetadataStorage.layout().name = "";
         ERC721MetadataStorage.layout().symbol = "";
-        ERC721MetadataStorage.layout().baseURI = artifactBaseURI;
+        ERC721MetadataStorage.layout().baseURI = auxArgs.artifactBaseURI;
 
         gs().diamondAddress = address(this);
 
-        ws().enabled = whitelistEnabled;
+        ws().enabled = auxArgs.allowListEnabled;
+        uint256 allowedAddressesLength = auxArgs.allowedAddresses.length;
+
+        if(ws().enabled && allowedAddressesLength > 0) {
+            // delegating call here because msg.sender must remain intact.
+            (bool success, bytes memory returndata) = (address(this)).delegatecall(abi.encodeWithSignature("bulkAddToWhitelist(address[])", auxArgs.allowedAddresses));
+            require(success, "whitelisting ownership did not succeed");
+        }
+
         ws().drip = 0.05 ether;
 
         gs().planetLevelsCount = 10;

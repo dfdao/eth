@@ -12,7 +12,7 @@ const { utils } = ethers;
 const keys = generateKeys(2);
 const keyHashes = keys.map(keyHash);
 
-describe('DarkForestWhitelist', function () {
+describe.skip('DarkForestWhitelist', function () {
   let world: World;
 
   async function worldFixture() {

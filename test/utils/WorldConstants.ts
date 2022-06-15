@@ -67,6 +67,16 @@ export const confirmStartInitializers = settings.parse(decodeInitializers, {
   CONFIRM_START: true
 });
 
+export const allowListInitializers = settings.parse(decodeInitializers, {
+  ...defaultInitializerValues,
+  MANUAL_SPAWN: true,
+  INIT_PERLIN_MIN: 0,
+  INIT_PERLIN_MAX: 31,
+  TARGET_PLANETS: true,
+  CLAIM_VICTORY_ENERGY_PERCENT: 50,
+  CONFIRM_START: true
+});
+
 
 export const noAdminInitializers = settings.parse(decodeInitializers, {
   ...defaultInitializerValues,
