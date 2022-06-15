@@ -5,6 +5,7 @@ import { BigNumber, BigNumberish, constants } from 'ethers';
 import {
   conquerUnownedPlanet,
   fixtureLoader,
+  getDeterministicArtifact,
   getInitPlanetHash,
   increaseBlockchainTime,
   increaseBlocks,
@@ -44,6 +45,7 @@ import {
   SPAWN_PLANET_1,
   SPAWN_PLANET_2,
   VALID_INIT_PERLIN,
+  deterministicArtifactInitializers,
 } from './utils/WorldConstants';
 import hre from 'hardhat';
 import { TestLocation } from './utils/TestLocation';
@@ -950,6 +952,57 @@ describe('Arena Functions', function () {
 
       expect(artifact1Id).to.be.equal(artifact2Id);
     });
+    it.only('confirms artifact seed is same as js calculation', async function () {
+      // this.timeout(1000 * 60);
+
+      /* eslint-disable @typescript-eslint/no-explicit-any */
+      let artifacts: any;
+      let prevLocation = SPAWN_PLANET_1;
+
+      const randomHex =
+        `00007c2512896efb182d462faee0000fb33d58930eb9e6b4fbae6d048e9c44` + 0 + '' + (0 % 10);
+      const planetWithArtifactLoc = new TestLocation({
+        hex: randomHex,
+        perlin: SPACE_PERLIN,
+        distFromOrigin: 1998,
+      });
+
+      await world1.contract.adminInitializePlanet(
+        planetWithArtifactLoc.id,
+        planetWithArtifactLoc.perlin
+      );
+
+      await world1.contract.adminGiveSpaceShip(
+        planetWithArtifactLoc.id,
+        world1.user1.address,
+        ArtifactType.ShipGear
+      );
+
+      await increaseBlockchainTime();
+
+      await world1.user1Core.move(
+        ...makeMoveArgs(prevLocation, planetWithArtifactLoc, 0, 80000, 0)
+      ); // move 80000 from asteroids but 160000 from ruins since ruins are higher level
+
+      await increaseBlockchainTime();
+
+      await world1.user1Core.prospectPlanet(planetWithArtifactLoc.id);
+
+      await increaseBlockchainTime(10);
+
+      await world1.user1Core.findArtifact(...makeFindArtifactArgs(planetWithArtifactLoc));
+
+      await increaseBlockchainTime();
+
+      const artifactOnPlanet1 = (await getArtifactsOnPlanet(world1, planetWithArtifactLoc.id))[0];
+
+      const artifact1Id = artifactOnPlanet1.id;
+      
+      const {type, rarity} = getDeterministicArtifact(planetWithArtifactLoc, deterministicArtifactInitializers);
+
+      expect(artifactOnPlanet1.rarity).to.equal(rarity);
+      expect(artifactOnPlanet1.artifactType).to.equal(type);
+    });
   });
 
   describe('Graph Getter', function () {
@@ -959,7 +1012,7 @@ describe('Arena Functions', function () {
       world = await fixtureLoader(arenaWorldFixture);
     });
 
-    it.only('gets planet type weights from Graph constants', async function () {
+    it('gets planet type weights from Graph constants', async function () {
       const weights = (await world.contract.getGraphConstants()).gc.PLANET_TYPE_WEIGHTS
       expect(weights.length).to.equal(200);
     });
