@@ -199,6 +199,7 @@ export async function deployAndCutArena(
   const arenaGetterFacet = await deployArenaGetterFacet({}, libraries, hre);
   const spaceshipConfigFacet = await deployArenaSpaceShipFacet({}, libraries, hre);
   const tournamentFacet = await deployArenaTournamentFacet({}, libraries, hre);
+  const startFacet = await deployArenaStarterFacet({}, libraries, hre);
 
   // The `cuts` to perform for Dark Forest facets
   const darkForestFacetCuts = [
@@ -216,6 +217,7 @@ export async function deployAndCutArena(
     ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
     ...changes.getFacetCuts('DFSpaceshipConfigFacet', spaceshipConfigFacet),
     ...changes.getFacetCuts('DFArenaTournamentFacet', tournamentFacet),
+    ...changes.getFacetCuts('DFStartFacet', startFacet),
   ];
 
   if (isDev) {
@@ -240,7 +242,7 @@ export async function deployAndCutArena(
 
   const diamondInit = await deployContract(
     'DFArenaInitialize',
-    { LibGameUtils: libraries.LibGameUtils },
+    { },
     hre
   );
 
@@ -271,7 +273,6 @@ export async function deployAndCutArena(
   const rc = await tx.wait();
   if (!rc.events) throw Error('No event occurred');
 
-
   const event = rc.events.find((event: any) => event.event === 'LobbyCreated');
   if (!event || !event.args) throw Error('No event found');
 
@@ -282,6 +283,11 @@ export async function deployAndCutArena(
   const arena = await hre.ethers.getContractAt('DarkForest', lobbyAddress);
 
   console.log(`Created & initialized Arena with ${rc.gasUsed} gas`);
+
+  const startTx = await arena.start();
+  const startRct = await startTx.wait();
+
+  console.log(`start occurred with ${startRct.gasUsed} gas`);
 
   // const initTx = await arena.diamondCut([], initAddress, initFunctionCall);
   // const initRct = await initTx.wait();
@@ -354,5 +360,21 @@ export async function deployArenaTournamentFacet(
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
   console.log(`DFArenaTournamentFacet deployed to: ${contract.address}`);
+  return contract;
+}
+
+export async function deployArenaStarterFacet(
+  {},
+  { LibGameUtils }: Libraries,
+  hre: HardhatRuntimeEnvironment
+) {
+  const factory = await hre.ethers.getContractFactory('DFStartFacet', {
+    libraries: {
+      LibGameUtils,
+    },
+  });
+  const contract = await factory.deploy();
+  await contract.deployTransaction.wait();
+  console.log(`DFStartFacet deployed to: ${contract.address}`);
   return contract;
 }

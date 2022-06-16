@@ -17,7 +17,9 @@ import {
     ArenaPlayerInfo,
     Modifiers,
     ArenaCreateRevealPlanetArgs,
-    Spaceships
+    Spaceships,
+    InitArgs,
+    AuxiliaryArgs
 } from "../DFTypes.sol";
 
 /* Remember! Only add new storage variables at the end of structs !! */
@@ -27,6 +29,10 @@ struct TournamentStorage {
     uint256 numMatches;
 }
 
+struct Initializers {
+    InitArgs initArgs;
+    AuxiliaryArgs auxArgs;
+}
 
 struct ArenaStorage {
     address[] winners;
@@ -61,6 +67,7 @@ struct ArenaConstants {
 
 library LibArenaStorage {
     // Storage are structs where the data gets updated throughout the lifespan of the game
+    bytes32 constant ARENA_INITIALIZERS_POSITION = keccak256("darkforest.initializers.arena");
     bytes32 constant ARENA_STORAGE_POSITION = keccak256("darkforest.storage.arena");
     bytes32 constant ARENA_CONSTANTS_POSITION = keccak256("darkforest.constants.arena");
     bytes32 constant TOURNAMENT_STORAGE_POSITION = keccak256("darkforest.storage.tournament");
@@ -86,6 +93,14 @@ library LibArenaStorage {
             ts.slot := position
         }
     }
+
+
+     function arenaInitializers() internal pure returns (Initializers storage ai) {
+        bytes32 position = ARENA_INITIALIZERS_POSITION;
+        assembly {
+            ai.slot := position
+        }
+    }
 }
 
 contract WithArenaStorage {
@@ -98,5 +113,9 @@ contract WithArenaStorage {
     
     function tournamentStorage() internal pure returns (TournamentStorage storage) {
         return LibArenaStorage.tournamentStorage();
+    }
+
+    function ai() internal pure returns (Initializers storage) {
+        return LibArenaStorage.arenaInitializers();
     }
 }

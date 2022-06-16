@@ -1194,11 +1194,11 @@ describe('Arena Functions', function () {
   });
 
 
-  describe.only('Test max planet and player size', function () {
+  describe('Test max planet and player size', function () {
     let world: World;
 
     beforeEach('load fixture', async function () {
-      world = await fixtureLoader(testGasLimitInitFixture);
+      world = await fixtureLoader(arenaWorldFixture);
     });
 
     it('works?', async function () {
