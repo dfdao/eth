@@ -27,6 +27,7 @@ import {
   planetLevelThresholdFixture,
   spaceshipWorldFixture,
   targetPlanetFixture,
+  testGasLimitInitFixture,
   World,
 } from './utils/TestWorld';
 import {
@@ -1191,4 +1192,17 @@ describe('Arena Functions', function () {
       expect(await world.contract.isWhitelisted(randomAddress)).to.equal(false);
     });
   });
+
+
+  describe.only('Test max planet and player size', function () {
+    let world: World;
+
+    beforeEach('load fixture', async function () {
+      world = await fixtureLoader(testGasLimitInitFixture);
+    });
+
+    it('works?', async function () {
+    });
+  });
+
 });

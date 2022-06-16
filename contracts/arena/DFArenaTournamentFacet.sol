@@ -39,7 +39,9 @@ contract DFArenaTournamentFacet is WithStorage, WithArenaStorage {
 
         IDiamondCut(address(lobby)).diamondCut(facetCut, initAddress, initData);
 
-        IERC173(address(lobby)).transferOwnership(msg.sender);
+        if(IERC173(address(lobby)).owner() == diamondAddress) {
+           IERC173(address(lobby)).transferOwnership(msg.sender);
+        }
 
         emit LobbyCreated(msg.sender, address(lobby));
 

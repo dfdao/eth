@@ -267,7 +267,7 @@ export async function deployAndCutArena(
   }
   console.log(`Completed diamond cut with ${cutRct.gasUsed} gas`);
 
-  const tx = await diamondCut.createLobby(noInit.address, noInit.calldata);
+  const tx = await diamondCut.createLobby(initAddress, initFunctionCall);
   const rc = await tx.wait();
   if (!rc.events) throw Error('No event occurred');
 
@@ -281,17 +281,17 @@ export async function deployAndCutArena(
 
   const arena = await hre.ethers.getContractAt('DarkForest', lobbyAddress);
 
-  console.log(`Created Arena with ${rc.gasUsed} gas`);
+  console.log(`Created & initialized Arena with ${rc.gasUsed} gas`);
 
-  const initTx = await arena.diamondCut([], initAddress, initFunctionCall);
-  const initRct = await initTx.wait();
+  // const initTx = await arena.diamondCut([], initAddress, initFunctionCall);
+  // const initRct = await initTx.wait();
 
-  console.log(`Initialized Arena with ${initRct.gasUsed} gas`);
+  // console.log(`Initialized Arena with ${initRct.gasUsed} gas`);
 
   if (save) {
     await saveDeploy(
       {
-        coreBlockNumber: initRct.blockNumber,
+        coreBlockNumber: rc.blockNumber,
         diamondAddress: arena.address,
         initAddress: diamondInit.address,
         libraries,
@@ -300,7 +300,7 @@ export async function deployAndCutArena(
     );
   }
 
-  return [arena, diamondInit, initRct, libraries] as const;
+  return [arena, diamondInit, rc, libraries] as const;
 }
 
 export async function deployArenaCoreFacet(

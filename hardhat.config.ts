@@ -152,6 +152,7 @@ const config: HardhatUserConfig = {
         // Same mnemonic used in the .env.example
         mnemonic: 'change typical hire slam amateur loan grid fix drama electric seed label',
       },
+      blockGasLimit: 15000000,
       chainId: 31337,
     },
     // Used when you dont specify a network on command line, like in tests
