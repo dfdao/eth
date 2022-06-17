@@ -43,6 +43,7 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     event GameStarted(address startPlayer, uint256 startTime);
     event PlayerReady(address player, uint256 time);
     event PlayerNotReady(address player, uint256 time);
+    event PauseStateChanged(bool paused);
 
 
     modifier onlyAdmin() {
@@ -262,6 +263,7 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         arenaStorage().arenaPlayerInfo[msg.sender].lastReadyTime = block.timestamp;
         
         emit PlayerReady(msg.sender, block.timestamp);
+
         // Players only initialize if they have a spawn planet
         uint256 numSpawnPlanets = arenaStorage().spawnPlanetIds.length;
         address[] memory playerIds = gs().playerIds; 
@@ -278,6 +280,7 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         // If code execution arrives here, all players are ready.
         arenaStorage().startTime = block.timestamp; 
         gs().paused = false;
+        emit PauseStateChanged(false);
         // Will be player who was the last to signal ready
         emit GameStarted(msg.sender, block.timestamp);
     }

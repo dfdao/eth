@@ -161,7 +161,6 @@ contract DFStartFacet is WithStorage, WithArenaStorage {
                     gs().blocklist[targetId][planetBlock[j]] = true;
                 }
             }
-
         }
 
         arenaConstants().TARGETS_REQUIRED_FOR_VICTORY = ai().initArgs.TARGETS_REQUIRED_FOR_VICTORY;
