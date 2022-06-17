@@ -58,6 +58,7 @@ import {
 import hre, { ethers } from 'hardhat';
 import { TestLocation } from './utils/TestLocation';
 import { ArenaPlanets } from '@darkforest_eth/settings';
+import { locationIdFromEthersBN } from '@darkforest_eth/serde';
 
 describe('Arena Functions', function () {
   describe('Create Planets', function () {
@@ -1261,6 +1262,13 @@ describe('Arena Functions', function () {
             world.contract.setOwner(p.location, world.user1.address);
         })
       );
+    });
+    it.only('Logs blocklist', async function () {
+      const blocklist = (await world.contract.getGameConstants()).BLOCKLIST;
+      const cleanList = blocklist.map(b => b.map(p => {
+        return locationIdFromEthersBN(p)
+      }))
+      console.log(cleanList);
     });
 
     it('Confirms that move from spawn to target SHOULD be blocked', async function () {
