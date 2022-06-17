@@ -155,11 +155,19 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
             "planet energy must be greater than victory threshold"
         );
 
-        arenaStorage().gameover = true;
-        arenaStorage().winners.push(msg.sender);
-        arenaStorage().endTime = block.timestamp;
-        gs().paused = true;
-        emit Gameover(locationId, msg.sender);
+        if(arenaConstants().BLOCK_CAPTURE) {
+            require(!_captureBlocked(locationId), "you cannot capture a blocked planet");
+        }
+        
+        arenaStorage().arenaPlanetInfo[locationId].captured = true;
+
+        if(_checkGameOver()) {
+            arenaStorage().gameover = true;
+            arenaStorage().winners.push(msg.sender);
+            arenaStorage().endTime = block.timestamp;
+            gs().paused = true;
+            emit Gameover(locationId, msg.sender);
+        }
     }
 
     function createArenaPlanet(ArenaCreateRevealPlanetArgs memory args) public {
@@ -178,12 +186,12 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
             require(arenaConstants().MANUAL_SPAWN, "admin cannot create spawn planets");
             arenaStorage().spawnPlanetIds.push(args.location);
         }
-            
 
         if (args.isTargetPlanet || args.isSpawnPlanet) {
             arenaStorage().arenaPlanetInfo[args.location] = ArenaPlanetInfo(
                 args.isSpawnPlanet,
-                args.isTargetPlanet
+                args.isTargetPlanet,
+                false // captured
             );
         }
 
@@ -279,4 +287,25 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         emit PlayerNotReady(msg.sender, block.timestamp);
     }
 
+    function _checkGameOver() private view returns (bool) {
+        uint256 numTargetPlanets = arenaStorage().targetPlanetIds.length;
+
+        uint256 [] memory targetPlanetIds = arenaStorage().targetPlanetIds;
+
+        uint256 captured = 0;
+
+        for(uint256 i = 0; i < numTargetPlanets; i++) {
+            if((arenaStorage().arenaPlanetInfo[targetPlanetIds[i]]).captured) {
+                captured += 1;
+            }
+        }
+
+        return (captured == arenaConstants().TARGETS_REQUIRED_FOR_VICTORY);
+    } 
+
+    function _captureBlocked(uint256 targetLocationId) private view returns (bool) {
+        // If player home planet is on blocklist, cannot capture
+        uint256 playerHomePlanetId = gs().players[msg.sender].homePlanetId;
+        return LibGameUtils.isBlocked(targetLocationId,playerHomePlanetId);
+    }
 }

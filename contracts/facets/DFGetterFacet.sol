@@ -500,4 +500,15 @@ contract DFGetterFacet is WithStorage {
             });
         }
     }
+
+    function getBlocklist() public view returns (uint256[][] memory) {
+        return gameConstants().BLOCKLIST;
+    }
+    
+    /**
+     * Check if move from src to dest is blocked
+     */
+    function isBlocked(uint256 dest, uint256 src) public view returns (bool) {
+        return LibGameUtils.isBlocked(dest,src);
+    }
 }

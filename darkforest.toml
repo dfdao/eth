@@ -155,6 +155,10 @@ SPACESHIPS = [true, true, true, true, true]
 NO_ADMIN = false
 
 INIT_PLANETS = []
+
+CONFIRM_START = false
+
+TARGETS_REQUIRED_FOR_VICTORY = 1
 ##########################
 # Planets to add to game #
 ##########################

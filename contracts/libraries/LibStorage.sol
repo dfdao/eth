@@ -64,6 +64,8 @@ struct GameStorage {
     mapping(uint256 => Artifact) artifacts;
     // Capture Zones
     uint256 nextChangeBlock;
+    mapping(uint256 => mapping(uint256 => bool)) blocklist;
+
 }
 
 // Game config
@@ -122,6 +124,7 @@ struct GameConstants {
     uint256[10] CAPTURE_ZONE_PLANET_LEVEL_SCORE;
     uint256 CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED;
     uint256 CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
+    uint256 [][] BLOCKLIST; // Have to parse this for Graph :((
 }
 
 // SNARK keys and perlin params

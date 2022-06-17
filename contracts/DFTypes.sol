@@ -242,6 +242,7 @@ enum Biome {
 struct ArenaPlanetInfo {
     bool spawnPlanet;
     bool targetPlanet;
+    bool captured;
 }
 
 struct ArenaPlayerInfo {
@@ -297,6 +298,11 @@ struct RevealProofArgs {
     uint256[2][2] _b;
     uint256[2] _c;
     uint256[9] _input;
+}
+
+struct Blocklist {
+    /* targetPlanetId => srcPlanetId => Y/N */
+    mapping(uint256 => mapping (uint256 => bool)) blockList;
 }
 
 // THIS NEEDS TO BE UPDATED ANY TIME A CONSTANT IS ADDED
@@ -456,6 +462,10 @@ struct InitArgs {
     bool NO_ADMIN;
     ArenaCreateRevealPlanetArgs[] INIT_PLANETS;
     bool CONFIRM_START;
+    uint256 TARGETS_REQUIRED_FOR_VICTORY;
+    uint256 [][] BLOCKLIST; // [destPlanetId, srcPlanetId1, srcPlanetId2, ... ][num target planets]
+    bool BLOCK_MOVES;
+    bool BLOCK_CAPTURE;
 }
 
 // Values that are useful but not constant across arenas (whitelisted players, which planet goes to which team)

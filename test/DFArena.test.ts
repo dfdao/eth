@@ -17,12 +17,14 @@ import {
 import {
   allowListOnInitFixture,
   arenaWorldFixture,
+  blockListFixture,
   confirmStartFixture,
   deterministicArtifactFixture,
   initializeWorld,
   initPlanetsArenaFixture,
   manualSpawnFixture,
   modifiedWorldFixture,
+  multipleTargetPlanetVictoryFixture,
   noAdminWorldFixture,
   planetLevelThresholdFixture,
   spaceshipWorldFixture,
@@ -49,9 +51,13 @@ import {
   SPAWN_PLANET_2,
   VALID_INIT_PERLIN,
   deterministicArtifactInitializers,
+  multipleTargetPlanetVictoryInitializers,
+  blockListInitializers,
+  LVL1_ASTEROID_2,
 } from './utils/WorldConstants';
 import hre, { ethers } from 'hardhat';
 import { TestLocation } from './utils/TestLocation';
+import { ArenaPlanets } from '@darkforest_eth/settings';
 
 describe('Arena Functions', function () {
   describe('Create Planets', function () {
@@ -1193,16 +1199,96 @@ describe('Arena Functions', function () {
     });
   });
 
-
-  describe('Test max planet and player size', function () {
+  describe.only('Multiple target planet victory', function () {
     let world: World;
+    let planets: ArenaPlanets;
 
     beforeEach('load fixture', async function () {
-      world = await fixtureLoader(arenaWorldFixture);
+      world = await fixtureLoader(multipleTargetPlanetVictoryFixture);
+
+      planets = multipleTargetPlanetVictoryInitializers.INIT_PLANETS;
+      const tx = await world.contract.bulkCreateAndReveal(planets);
+      const rct = await tx.wait();
+
+      await Promise.all(
+        planets.map((p) => {
+          world.contract.setOwner(p.location, world.user1.address);
+        })
+      );
     });
 
-    it('works?', async function () {
+    it('TARGET_PLANET_VICTORY is correct', async function () {
+      expect((await world.contract.getArenaConstants()).TARGETS_REQUIRED_FOR_VICTORY).to.equal(
+        multipleTargetPlanetVictoryInitializers.TARGETS_REQUIRED_FOR_VICTORY
+      );
+    });
+
+    it('can claim victory on one planet but game is not over', async function () {
+      const targets = planets.filter((p) => p.isTargetPlanet);
+      const claim1Tx = await world.user1Core.claimTargetPlanetVictory(targets[0].location);
+      const claim1Rct = await claim1Tx.wait();
+
+      expect((await world.user1Core.planetsArenaInfo(targets[0].location)).captured).to.equal(true);
+      expect(await world.contract.getGameover()).to.equal(false);
+    });
+    it('can claim victory on two planets and game is  over', async function () {
+      const targets = planets.filter((p) => p.isTargetPlanet);
+      const claim1Tx = await world.user1Core.claimTargetPlanetVictory(targets[0].location);
+      const claim1Rct = await claim1Tx.wait();
+      const claim2Tx = await world.user1Core.claimTargetPlanetVictory(targets[1].location);
+      const claim2Rct = await claim1Tx.wait();
+
+      expect((await world.user1Core.planetsArenaInfo(targets[0].location)).captured).to.equal(true);
+      expect((await world.user1Core.planetsArenaInfo(targets[1].location)).captured).to.equal(true);
+      expect(await world.contract.getGameover()).to.equal(true);
     });
   });
 
+  describe.only('Blocklist', function () {
+    let world: World;
+    let planets: ArenaPlanets;
+
+    beforeEach('load fixture', async function () {
+      world = await fixtureLoader(blockListFixture);
+
+      planets = blockListInitializers.INIT_PLANETS;
+      const tx = await world.contract.bulkCreateAndReveal(planets);
+      const rct = await tx.wait();
+
+      await Promise.all(
+        planets.map((p) => {
+          if (p.location != planets[0].location)
+            world.contract.setOwner(p.location, world.user1.address);
+        })
+      );
+    });
+
+    it('Confirms that move from spawn to target SHOULD be blocked', async function () {
+      const targets = planets.filter((p) => p.isTargetPlanet);
+      const spawns = planets.filter((p) => p.isSpawnPlanet);
+      expect(await world.contract.isBlocked(targets[0].location, spawns[0].location));
+    });
+    it('Confirms that capture of target IS blocked', async function () {
+      // HARD CODED LMAO.
+      await world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED));
+      const targets = planets.filter((p) => p.isTargetPlanet);
+      const spawns = planets.filter((p) => p.isSpawnPlanet);
+      await expect(
+        world.user1Core.claimTargetPlanetVictory(targets[0].location)
+      ).to.be.revertedWith('you cannot capture a blocked planet');
+    });
+    it('Confirms that move to target IS blocked', async function () {
+      // HARD CODED LMAO.
+      await world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED));
+      
+      const dist = 1;
+      const shipsSent = 30000;
+      const silverSent = 0;
+      await expect(
+        world.user1Core.move(
+          ...makeMoveArgs(ADMIN_PLANET_CLOAKED, LVL1_ASTEROID_2, dist, shipsSent, silverSent)
+        )
+      ).to.be.revertedWith('you cannot move to a blocked planet');
+    });
+  });
 });

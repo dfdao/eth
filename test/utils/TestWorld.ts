@@ -7,11 +7,13 @@ import { deployAndCutArena } from '../../tasks/arena-deploy';
 import { deployAndCut } from '../../tasks/deploy';
 import {
   arenaWorldInitializers,
+  blockListInitializers,
   confirmStartInitializers,
   deterministicArtifactInitializers,
   initializers,
   initPlanetsInitializers,
   manualSpawnInitializers,
+  multipleTargetPlanetVictoryInitializers,
   noAdminInitializers,
   noPlanetTransferInitializers,
   planetLevelThresholdInitializer,
@@ -182,6 +184,22 @@ export async function allowListOnInitFixture(): Promise<World> {
   return initializeWorld({
     initializers: arenaWorldInitializers,
     allowListEnabled: true,
+    arena: true,
+  });
+}
+
+export async function multipleTargetPlanetVictoryFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: multipleTargetPlanetVictoryInitializers,
+    allowListEnabled: false,
+    arena: true,
+  });
+}
+
+export async function blockListFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: blockListInitializers,
+    allowListEnabled: false,
     arena: true,
   });
 }

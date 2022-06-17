@@ -146,6 +146,27 @@ contract DFStartFacet is WithStorage, WithArenaStorage {
             /* Store planet ids for retrieval later */
             arenaConstants().INIT_PLANET_HASHES.push(initHash);
         }
+
+        /* Load Target blocklist into GameConstants and GameStorage*/
+        gameConstants().BLOCKLIST = ai().initArgs.BLOCKLIST;
+
+        uint256 blockLength = ai().initArgs.BLOCKLIST.length;
+
+        for(uint i = 0; i < blockLength; i++) {
+            uint256 [] memory planetBlock = ai().initArgs.BLOCKLIST[i];
+            uint256 targetId = planetBlock[0];
+
+            for(uint j = 0; j < planetBlock.length; j++) {
+                if(j != 0) {
+                    gs().blocklist[targetId][planetBlock[j]] = true;
+                }
+            }
+
+        }
+
+        arenaConstants().TARGETS_REQUIRED_FOR_VICTORY = ai().initArgs.TARGETS_REQUIRED_FOR_VICTORY;
+        arenaConstants().BLOCK_MOVES = ai().initArgs.BLOCK_MOVES;
+        arenaConstants().BLOCK_CAPTURE = ai().initArgs.BLOCK_CAPTURE;
     
         initializeDefaults();
         initializeUpgrades();

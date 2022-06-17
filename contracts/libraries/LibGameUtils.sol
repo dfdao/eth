@@ -745,4 +745,8 @@ library LibGameUtils {
         _planet.populationGrowth = (_planet.populationGrowth * TIME_FACTOR_HUNDREDTHS) / 100;
         _planet.silverGrowth = (_planet.silverGrowth * TIME_FACTOR_HUNDREDTHS) / 100;
     }
+
+    function isBlocked(uint256 dest, uint256 src) public view returns (bool) {
+        return gs().blocklist[dest][src];
+    }
 }

@@ -247,10 +247,19 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
             );
         }
 
+        if(arenaConstants().BLOCK_MOVES) {
+            require(
+                !LibGameUtils.isBlocked(args.newLoc, args.oldLoc),
+                "you cannot move to a blocked planet"
+            );
+        }
+
         require(
             gs().planets[args.oldLoc].silver >= args.silverMoved,
             "Tried to move more silver than what exists"
         );
+
+
 
         if (args.movedArtifactId != 0) {
             require(
