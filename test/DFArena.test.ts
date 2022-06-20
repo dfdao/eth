@@ -1263,21 +1263,24 @@ describe('Arena Functions', function () {
         })
       );
     });
-    it.only('Logs blocklist', async function () {
+    it('Logs blocklist', async function () {
       const blocklist = (await world.contract.getGameConstants()).BLOCKLIST;
-      const cleanList = blocklist.map(b => b.map(p => {
-        return locationIdFromEthersBN(p)
-      }))
+      const cleanList = blocklist.map((b) =>
+        b.map((p) => {
+          return locationIdFromEthersBN(p);
+        })
+      );
       console.log(cleanList);
     });
 
     it('Confirms that move from spawn to target SHOULD be blocked', async function () {
       const targets = planets.filter((p) => p.isTargetPlanet);
       const spawns = planets.filter((p) => p.isSpawnPlanet);
-      expect(await world.contract.isBlocked(targets[0].location, spawns[0].location));
+      expect(await world.user1Core.inBlocklist(targets[0].location, spawns[0].location));
     });
+
     it('Confirms that capture of target IS blocked', async function () {
-      // HARD CODED LMAO.
+      // HARD CODED based on INIT PLANET list in constnats LMAO.
       await world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED));
       const targets = planets.filter((p) => p.isTargetPlanet);
       const spawns = planets.filter((p) => p.isSpawnPlanet);
@@ -1285,16 +1288,31 @@ describe('Arena Functions', function () {
         world.user1Core.claimTargetPlanetVictory(targets[0].location)
       ).to.be.revertedWith('you cannot capture a blocked planet');
     });
-    it('Confirms that move to target IS blocked', async function () {
+    it('Confirms that move to target from spawn IS blocked', async function () {
       // HARD CODED LMAO.
       await world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED));
-      
+
       const dist = 1;
       const shipsSent = 30000;
       const silverSent = 0;
       await expect(
         world.user1Core.move(
           ...makeMoveArgs(ADMIN_PLANET_CLOAKED, LVL1_ASTEROID_2, dist, shipsSent, silverSent)
+        )
+      ).to.be.revertedWith('you cannot move to a blocked planet');
+    });
+    it('Confirms that move to target from non-spawn IS blocked', async function () {
+      // HARD CODED LMAO.
+      await world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED));
+
+      await increaseBlockchainTime();
+
+      const dist = 1;
+      const shipsSent = 30000;
+      const silverSent = 0;
+      await expect(
+        world.user1Core.move(
+          ...makeMoveArgs(LVL0_PLANET_DEEP_SPACE, LVL1_ASTEROID_2, dist, shipsSent, silverSent)
         )
       ).to.be.revertedWith('you cannot move to a blocked planet');
     });

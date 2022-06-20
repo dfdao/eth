@@ -506,9 +506,9 @@ contract DFGetterFacet is WithStorage {
     }
     
     /**
-     * Check if move from src to dest is blocked
+     * Check if src is in blocklist for dest
      */
-    function isBlocked(uint256 dest, uint256 src) public view returns (bool) {
-        return LibGameUtils.isBlocked(dest,src);
+    function inBlocklist(uint256 dest, uint256 src) public view returns (bool) {
+        return gs().blocklist[dest][src];
     }
 }

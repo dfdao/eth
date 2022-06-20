@@ -157,7 +157,7 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         );
 
         if(arenaConstants().BLOCK_CAPTURE) {
-            require(!_captureBlocked(locationId), "you cannot capture a blocked planet");
+            require(!LibGameUtils.playerBlocked(locationId), "you cannot capture a blocked planet");
         }
         
         arenaStorage().arenaPlanetInfo[locationId].captured = true;
@@ -302,13 +302,6 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
                 captured += 1;
             }
         }
-
         return (captured == arenaConstants().TARGETS_REQUIRED_FOR_VICTORY);
     } 
-
-    function _captureBlocked(uint256 targetLocationId) private view returns (bool) {
-        // If player home planet is on blocklist, cannot capture
-        uint256 playerHomePlanetId = gs().players[msg.sender].homePlanetId;
-        return LibGameUtils.isBlocked(targetLocationId,playerHomePlanetId);
-    }
 }
