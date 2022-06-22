@@ -2,18 +2,18 @@ type Arena @entity {
   id: ID!
   creator: ID!
   firstMover: ArenaPlayer # might not exist right away
-  ownerAddress: ID!
-  configHash: Bytes # doesn't exist on old Diamonds
-  config: ArenaConfig # doesn't exist on old diamonds
+  owner: String
+  configHash: Bytes! # default: 0, set on ArenaInitialize
+  config: ArenaConfig # set on ArenaInitialize
   lobbyAddress: ID!
   gameOver: Boolean!
-  duration: Int
+  duration: Int # Set on Gameover
   creationTime: Int!
   creationBlock: Int!
-  startTime: Int!, # might not exist right away
-  endTime: Int # might not exist right away
+  startTime: Int!, # set to creation time by default
+  endTime: Int # Set on Gameover
   winners: [ArenaPlayer!]!
-  players: [ArenaPlayer!]! @derivedFrom(field: "arena")
+  players: [ArenaPlayer!]! # @derivedFrom(field: "arena") # derived fields can't be accessed in the mapping
   planets: [ArenaPlanet!]! @derivedFrom(field: "arena")
 }
 
@@ -22,6 +22,8 @@ type Player @entity {
   wins: Int!
   matches: Int!
   arenaPlayers: [ArenaPlayer!]! @derivedFrom(field: "player")
+  configPlayers: [ConfigPlayer!]! @derivedFrom(field: "player")
+
 }
 
 type ArenaPlayer @entity {
@@ -33,6 +35,21 @@ type ArenaPlayer @entity {
   winner: Boolean!
   arena: Arena!
   moves: Int!
+  ready: Boolean!
+  lastMoveTime: Int!
+  lastReadyTime: Int
+}
+
+type ConfigPlayer @entity {
+  id: ID! # config
+  address: ID!
+  configHash: Bytes!
+  player: Player!
+  gamesStarted: Int!
+  gamesFinished: Int!
+  wins: Int!
+  losses: Int!
+  elo: Int!
 }
 
 type ArenaConfig @entity {

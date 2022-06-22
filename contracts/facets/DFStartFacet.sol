@@ -19,13 +19,14 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 import {WithArenaStorage} from "../libraries/LibArenaStorage.sol";
 import {LibGameUtils} from "../libraries/LibGameUtils.sol";
 
-// Contract imports 
+// Contract imports
 import {DFWhitelistFacet} from "./DFWhitelistFacet.sol";
 
 // Type imports
 import {PlanetDefaultStats, Upgrade, UpgradeBranch, Modifiers, Mod, ArenaCreateRevealPlanetArgs, Spaceships} from "../DFTypes.sol";
 
 contract DFStartFacet is WithStorage, WithArenaStorage {
+    event ArenaInitialized(address ownerAddress, address lobbyAddress);
 
     function start() public {
         gs().diamondAddress = address(this);
@@ -33,9 +34,14 @@ contract DFStartFacet is WithStorage, WithArenaStorage {
         ws().enabled = ai().auxArgs.allowListEnabled;
         uint256 allowedAddressesLength = ai().auxArgs.allowedAddresses.length;
 
-        if(ws().enabled && allowedAddressesLength > 0) {
+        if (ws().enabled && allowedAddressesLength > 0) {
             // delegating call here because msg.sender must remain intact.
-            (bool success, bytes memory returndata) = (address(this)).delegatecall(abi.encodeWithSignature("bulkAddToWhitelist(address[])", ai().auxArgs.allowedAddresses));
+            (bool success, bytes memory returndata) = (address(this)).delegatecall(
+                abi.encodeWithSignature(
+                    "bulkAddToWhitelist(address[])",
+                    ai().auxArgs.allowedAddresses
+                )
+            );
             require(success, "whitelisting ownership did not succeed");
         }
 
@@ -82,13 +88,18 @@ contract DFStartFacet is WithStorage, WithArenaStorage {
         gameConstants().GAME_START_BLOCK = block.number;
         gameConstants().CAPTURE_ZONES_ENABLED = ai().initArgs.CAPTURE_ZONES_ENABLED;
         gameConstants().CAPTURE_ZONE_COUNT = ai().initArgs.CAPTURE_ZONE_COUNT;
-        gameConstants().CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL = ai().initArgs
+        gameConstants().CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL = ai()
+            .initArgs
             .CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL;
         gameConstants().CAPTURE_ZONE_RADIUS = ai().initArgs.CAPTURE_ZONE_RADIUS;
-        gameConstants().CAPTURE_ZONE_PLANET_LEVEL_SCORE = ai().initArgs.CAPTURE_ZONE_PLANET_LEVEL_SCORE;
-        gameConstants().CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED = ai().initArgs
+        gameConstants().CAPTURE_ZONE_PLANET_LEVEL_SCORE = ai()
+            .initArgs
+            .CAPTURE_ZONE_PLANET_LEVEL_SCORE;
+        gameConstants().CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED = ai()
+            .initArgs
             .CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED;
-        gameConstants().CAPTURE_ZONES_PER_5000_WORLD_RADIUS = ai().initArgs
+        gameConstants().CAPTURE_ZONES_PER_5000_WORLD_RADIUS = ai()
+            .initArgs
             .CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
 
         gs().nextChangeBlock = block.number + ai().initArgs.CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL;
@@ -115,11 +126,15 @@ contract DFStartFacet is WithStorage, WithArenaStorage {
         arenaConstants().MODIFIERS.popCap = ai().initArgs.MODIFIERS[uint256(Mod.popCap)];
         arenaConstants().MODIFIERS.popGrowth = ai().initArgs.MODIFIERS[uint256(Mod.popGrowth)];
         arenaConstants().MODIFIERS.silverCap = ai().initArgs.MODIFIERS[uint256(Mod.silverCap)];
-        arenaConstants().MODIFIERS.silverGrowth = ai().initArgs.MODIFIERS[uint256(Mod.silverGrowth)];
+        arenaConstants().MODIFIERS.silverGrowth = ai().initArgs.MODIFIERS[
+            uint256(Mod.silverGrowth)
+        ];
         arenaConstants().MODIFIERS.range = ai().initArgs.MODIFIERS[uint256(Mod.range)];
         arenaConstants().MODIFIERS.speed = ai().initArgs.MODIFIERS[uint256(Mod.speed)];
         arenaConstants().MODIFIERS.defense = ai().initArgs.MODIFIERS[uint256(Mod.defense)];
-        arenaConstants().MODIFIERS.barbarianPercentage = ai().initArgs.MODIFIERS[uint256(Mod.barbarianPercentage)];
+        arenaConstants().MODIFIERS.barbarianPercentage = ai().initArgs.MODIFIERS[
+            uint256(Mod.barbarianPercentage)
+        ];
 
         arenaConstants().SPACESHIPS = Spaceships(
             ai().initArgs.SPACESHIPS[0],
@@ -136,7 +151,7 @@ contract DFStartFacet is WithStorage, WithArenaStorage {
         uint256 initLength = ai().initArgs.INIT_PLANETS.length;
 
         /* each planet costs about 50k gas */
-        for(uint i = 0; i < initLength; i++) {
+        for (uint256 i = 0; i < initLength; i++) {
             ArenaCreateRevealPlanetArgs memory initPlanet = ai().initArgs.INIT_PLANETS[i];
 
             bytes32 initHash = LibGameUtils._hashInitPlanet(initPlanet);
@@ -152,12 +167,12 @@ contract DFStartFacet is WithStorage, WithArenaStorage {
 
         uint256 blockLength = ai().initArgs.BLOCKLIST.length;
 
-        for(uint i = 0; i < blockLength; i++) {
-            uint256 [] memory planetBlock = ai().initArgs.BLOCKLIST[i];
+        for (uint256 i = 0; i < blockLength; i++) {
+            uint256[] memory planetBlock = ai().initArgs.BLOCKLIST[i];
             uint256 targetId = planetBlock[0];
 
-            for(uint j = 0; j < planetBlock.length; j++) {
-                if(j != 0) {
+            for (uint256 j = 0; j < planetBlock.length; j++) {
+                if (j != 0) {
                     gs().blocklist[targetId][planetBlock[j]] = true;
                 }
             }
@@ -166,16 +181,20 @@ contract DFStartFacet is WithStorage, WithArenaStorage {
         arenaConstants().TARGETS_REQUIRED_FOR_VICTORY = ai().initArgs.TARGETS_REQUIRED_FOR_VICTORY;
         arenaConstants().BLOCK_MOVES = ai().initArgs.BLOCK_MOVES;
         arenaConstants().BLOCK_CAPTURE = ai().initArgs.BLOCK_CAPTURE;
-    
+
         initializeDefaults();
         initializeUpgrades();
         LibGameUtils.updateWorldRadius();
-    }
 
+        emit ArenaInitialized(IERC173(address(this)).owner(), address(this));
+    }
 
     function initializeDefaults() public {
         PlanetDefaultStats[] storage planetDefaultStats = planetDefaultStats();
-        require ((75 * arenaConstants().MODIFIERS.speed / 100) > 0, "cannot initialize planets with 0 speed");
+        require(
+            ((75 * arenaConstants().MODIFIERS.speed) / 100) > 0,
+            "cannot initialize planets with 0 speed"
+        );
 
         planetDefaultStats.push(
             PlanetDefaultStats({
@@ -411,5 +430,4 @@ contract DFStartFacet is WithStorage, WithArenaStorage {
             defMultiplier: 100
         });
     }
-
 }

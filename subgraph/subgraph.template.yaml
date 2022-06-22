@@ -54,4 +54,10 @@ templates:
           handler: handleAdminPlanetCreated
         - event: ArrivalQueued(address,uint256,uint256,uint256,uint256,uint256)
           handler: handleArrivalQueued
+        - event: ArenaInitialized(address,address)
+          handler: handleArenaInitialized
+        - event: PlayerReady(address,uint256)
+          handler: handlePlayerReady
+        - event: PlayerNotReady(address,uint256)
+          handler: handlePlayerNotReady
       file: ./src/arena.ts

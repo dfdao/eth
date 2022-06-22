@@ -1200,7 +1200,7 @@ describe('Arena Functions', function () {
     });
   });
 
-  describe.only('Multiple target planet victory', function () {
+  describe('Multiple target planet victory', function () {
     let world: World;
     let planets: ArenaPlanets;
 
@@ -1245,7 +1245,7 @@ describe('Arena Functions', function () {
     });
   });
 
-  describe.only('Blocklist', function () {
+  describe('Blocklist', function () {
     let world: World;
     let planets: ArenaPlanets;
 

@@ -19,20 +19,7 @@ import {IERC173} from "../vendor/interfaces/IERC173.sol";
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
 import {WithArenaStorage, ArenaStorage, ArenaPlanetInfo, ArenaConstants} from "../libraries/LibArenaStorage.sol";
-import {
-    Planet, 
-    PlanetExtendedInfo, 
-    PlanetExtendedInfo2, 
-    PlanetEventMetadata, 
-    PlanetDefaultStats, 
-    Player, 
-    SpaceType,
-    Artifact,
-    ArtifactType,
-    DFPInitPlanetArgs,
-    ArenaPlanetInfo,
-    ArenaCreateRevealPlanetArgs
-} from "../DFTypes.sol";
+import {Planet, PlanetExtendedInfo, PlanetExtendedInfo2, PlanetEventMetadata, PlanetDefaultStats, Player, SpaceType, Artifact, ArtifactType, DFPInitPlanetArgs, ArenaPlanetInfo, ArenaCreateRevealPlanetArgs} from "../DFTypes.sol";
 
 contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     event AdminPlanetCreated(uint256 loc);
@@ -44,7 +31,6 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     event PlayerReady(address player, uint256 time);
     event PlayerNotReady(address player, uint256 time);
     event PauseStateChanged(bool paused);
-
 
     modifier onlyAdmin() {
         LibDiamond.enforceIsContractOwner();
@@ -71,8 +57,11 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     }
 
     // True if init planet
-    function isInitPlanet(ArenaCreateRevealPlanetArgs memory _initPlanetArgs) public view returns (bool) {
-
+    function isInitPlanet(ArenaCreateRevealPlanetArgs memory _initPlanetArgs)
+        public
+        view
+        returns (bool)
+    {
         return arenaStorage().initPlanetHashes[LibGameUtils._hashInitPlanet(_initPlanetArgs)];
     }
 
@@ -87,8 +76,11 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         uint256 _perlin = _input[1];
         uint256 _radius = _input[2];
 
-        if (arenaConstants().MANUAL_SPAWN) {            
-            require(arenaStorage().arenaPlanetInfo[_location].spawnPlanet, "Planet is not a spawn planet");
+        if (arenaConstants().MANUAL_SPAWN) {
+            require(
+                arenaStorage().arenaPlanetInfo[_location].spawnPlanet,
+                "Planet is not a spawn planet"
+            );
 
             Planet storage _planet = gs().planets[_location];
             PlanetExtendedInfo storage _planetExtendedInfo = gs().planetsExtendedInfo[_location];
@@ -99,14 +91,11 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
 
             _planet.isHomePlanet = true;
             _planet.owner = msg.sender;
-            _planet.population = _planet.populationCap * 25 / 100;
+            _planet.population = (_planet.populationCap * 25) / 100;
             _planetExtendedInfo.lastUpdated = block.timestamp;
-
-
         } else {
             LibPlanet.initializePlanet(_a, _b, _c, _input, true);
         }
-
 
         // Checks player hasn't already initialized and confirms PERLIN.
         require(LibPlanet.checkPlayerInit(_location, _perlin, _radius));
@@ -156,13 +145,13 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
             "planet energy must be greater than victory threshold"
         );
 
-        if(arenaConstants().BLOCK_CAPTURE) {
+        if (arenaConstants().BLOCK_CAPTURE) {
             require(!LibGameUtils.playerBlocked(locationId), "you cannot capture a blocked planet");
         }
-        
+
         arenaStorage().arenaPlanetInfo[locationId].captured = true;
 
-        if(_checkGameOver()) {
+        if (_checkGameOver()) {
             arenaStorage().gameover = true;
             arenaStorage().winners.push(msg.sender);
             arenaStorage().endTime = block.timestamp;
@@ -173,7 +162,10 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
 
     function createArenaPlanet(ArenaCreateRevealPlanetArgs memory args) public {
         require(gameConstants().ADMIN_CAN_ADD_PLANETS, "admin can no longer add planets");
-        require(msg.sender == LibDiamond.contractOwner() || isInitPlanet(args), "must be admin or init planet");
+        require(
+            msg.sender == LibDiamond.contractOwner() || isInitPlanet(args),
+            "must be admin or init planet"
+        );
 
         if (args.requireValidLocationId) {
             require(LibGameUtils._locationIdValid(args.location), "Not a valid planet location");
@@ -215,10 +207,11 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         emit AdminPlanetCreated(args.location);
     }
 
-    function arenaRevealLocation(
-        ArenaCreateRevealPlanetArgs memory args
-    ) public onlyWhitelisted returns (uint256) {
-
+    function arenaRevealLocation(ArenaCreateRevealPlanetArgs memory args)
+        public
+        onlyWhitelisted
+        returns (uint256)
+    {
         if (!gs().planetsExtendedInfo[args.location].isInitialized) {
             LibPlanet.initializePlanetWithDefaults(args.location, args.perlin, false);
         }
@@ -228,29 +221,25 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
             args.perlin,
             args.x,
             args.y,
-             /* if this is true, check timestamp for reveal. We want false for admin / init planets */
+            /* if this is true, check timestamp for reveal. We want false for admin / init planets */
             !(msg.sender == LibDiamond.contractOwner() || isInitPlanet(args)) // !initPlanetExistsOrAdmin(location)
         );
         emit LocationRevealed(msg.sender, args.location, args.x, args.y);
     }
 
     function bulkCreatePlanet(ArenaCreateRevealPlanetArgs[] memory planets) public onlyAdmin {
-        for(uint i = 0; i < planets.length; i++) {
+        for (uint256 i = 0; i < planets.length; i++) {
             createArenaPlanet(planets[i]);
         }
     }
 
     /* should be only admin or init planet*/
-    function createAndReveal(
-        ArenaCreateRevealPlanetArgs memory createPlanetArgs
-    ) public {
+    function createAndReveal(ArenaCreateRevealPlanetArgs memory createPlanetArgs) public {
         createArenaPlanet(createPlanetArgs);
         arenaRevealLocation(createPlanetArgs);
     }
 
-    function bulkCreateAndReveal(
-        ArenaCreateRevealPlanetArgs [] calldata createArgsList
-    ) public {
+    function bulkCreateAndReveal(ArenaCreateRevealPlanetArgs[] calldata createArgsList) public {
         for (uint256 i = 0; i < createArgsList.length; i++) {
             createAndReveal(createArgsList[i]);
         }
@@ -261,24 +250,24 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
 
         arenaStorage().arenaPlayerInfo[msg.sender].ready = true;
         arenaStorage().arenaPlayerInfo[msg.sender].lastReadyTime = block.timestamp;
-        
+
         emit PlayerReady(msg.sender, block.timestamp);
 
         // Players only initialize if they have a spawn planet
         uint256 numSpawnPlanets = arenaStorage().spawnPlanetIds.length;
-        address[] memory playerIds = gs().playerIds; 
+        address[] memory playerIds = gs().playerIds;
         uint256 numPlayerIds = playerIds.length;
 
         // If all spawnPlanets are not occupied, return.
-        if(numPlayerIds != numSpawnPlanets) return;
+        if (numPlayerIds != numSpawnPlanets) return;
 
         // If any player is not ready, return.
-        for(uint256 i = 0; i < numPlayerIds; i++) {
-            if(!arenaStorage().arenaPlayerInfo[playerIds[i]].ready) return;
+        for (uint256 i = 0; i < numPlayerIds; i++) {
+            if (!arenaStorage().arenaPlayerInfo[playerIds[i]].ready) return;
         }
 
         // If code execution arrives here, all players are ready.
-        arenaStorage().startTime = block.timestamp; 
+        arenaStorage().startTime = block.timestamp;
         gs().paused = false;
         emit PauseStateChanged(false);
         // Will be player who was the last to signal ready
@@ -293,15 +282,15 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     function _checkGameOver() private view returns (bool) {
         uint256 numTargetPlanets = arenaStorage().targetPlanetIds.length;
 
-        uint256 [] memory targetPlanetIds = arenaStorage().targetPlanetIds;
+        uint256[] memory targetPlanetIds = arenaStorage().targetPlanetIds;
 
         uint256 captured = 0;
 
-        for(uint256 i = 0; i < numTargetPlanets; i++) {
-            if((arenaStorage().arenaPlanetInfo[targetPlanetIds[i]]).captured) {
+        for (uint256 i = 0; i < numTargetPlanets; i++) {
+            if ((arenaStorage().arenaPlanetInfo[targetPlanetIds[i]]).captured) {
                 captured += 1;
             }
         }
         return (captured == arenaConstants().TARGETS_REQUIRED_FOR_VICTORY);
-    } 
+    }
 }

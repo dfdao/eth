@@ -228,7 +228,7 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
         return initPlanetIds;
     }
 
-    function getGraphGameConstants() public view returns (GraphGameConstants memory) {
+    function getPlanetWeights1DArray() private pure returns(uint8[200] memory) {
         GameConstants memory gc = gameConstants();
         uint8 a = 4;
         uint8 b = 10;
@@ -242,6 +242,16 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
                 }     
             }   
         }
+        return weights;
+    }
+
+    function getBlockList1DArray() public view returns(uint256[] memory) {
+        blocklist memory gc = gameConstants().blocklist;
+        gc.blocklist
+    }
+
+    function getGraphGameConstants() public view returns (GraphGameConstants memory) {
+        GameConstants memory gc = gameConstants();
 
         GraphGameConstants memory g = GraphGameConstants({
             ADMIN_CAN_ADD_PLANETS: gc.ADMIN_CAN_ADD_PLANETS,
@@ -263,7 +273,7 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
             PLANET_TRANSFER_ENABLED: gc.PLANET_TRANSFER_ENABLED,
             PHOTOID_ACTIVATION_DELAY: gc.PHOTOID_ACTIVATION_DELAY,
             LOCATION_REVEAL_COOLDOWN: gc.LOCATION_REVEAL_COOLDOWN,
-            PLANET_TYPE_WEIGHTS: weights, // uint[8] 200 spaceType (enum 0-3) -> planetLevel (0-9) -> planetType (enum 0-4)
+            PLANET_TYPE_WEIGHTS: getPlanetWeights1DArray(), // uint[8] 200 spaceType (enum 0-3) -> planetLevel (0-9) -> planetType (enum 0-4)
             SILVER_SCORE_VALUE: gc.SILVER_SCORE_VALUE,
             ARTIFACT_POINT_VALUES: gc.ARTIFACT_POINT_VALUES,
             // Space Junk
