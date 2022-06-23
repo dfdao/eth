@@ -65,6 +65,7 @@ export function buildConfig(
   config.PLANET_LEVEL_THRESHOLDS = constants.gc.PLANET_LEVEL_THRESHOLDS.map<i32>((x) => x.toI32());
   config.PLANET_RARITY = constants.gc.PLANET_RARITY.toI32();
   config.PLANET_TRANSFER_ENABLED = constants.gc.PLANET_TRANSFER_ENABLED;
+  config.PLANET_TYPE_WEIGHTS = constants.gc.PLANET_TYPE_WEIGHTS;
   config.SILVER_SCORE_VALUE = constants.gc.SILVER_SCORE_VALUE.toI32();
   config.SPACESHIPS = [
     constants.ac.SPACESHIPS.mothership,

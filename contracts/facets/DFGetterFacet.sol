@@ -22,6 +22,7 @@ import {
     PlanetEventMetadata,
     PlanetDefaultStats,
     PlanetData,
+    InitBlocklist,
     Player,
     ArtifactWithMetadata,
     Upgrade,
@@ -501,8 +502,8 @@ contract DFGetterFacet is WithStorage {
         }
     }
 
-    function getBlocklist() public view returns (uint256[][] memory) {
-        return gameConstants().BLOCKLIST;
+    function getBlocklist() public view returns (InitBlocklist[] memory) {
+        return gameConstants().INIT_BLOCKLIST;
     }
     
     /**

@@ -31,16 +31,11 @@ import {
     PlanetExtendedInfo, 
     PlanetExtendedInfo2,
     ArenaPlanetInfo,
+    InitBlocklist,
     ArenaPlayerInfo
 } from "../DFTypes.sol";
 
-struct AllConstants {
-    GameConstants gc;
-    SnarkConstants sc;
-    ArenaConstants ac;
-    // Additional values from storage
-    uint256 TOKEN_MINT_END_TIMESTAMP;
-}
+
 
 struct GraphGameConstants {
     bool ADMIN_CAN_ADD_PLANETS;
@@ -98,6 +93,7 @@ struct GraphGameConstants {
     uint256[10] CAPTURE_ZONE_PLANET_LEVEL_SCORE;
     uint256 CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED;
     uint256 CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
+    InitBlocklist[] INIT_BLOCKLIST;
 
 }
 
@@ -245,10 +241,6 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
         return weights;
     }
 
-    function getBlockList1DArray() public view returns(uint256[] memory) {
-        blocklist memory gc = gameConstants().blocklist;
-        gc.blocklist
-    }
 
     function getGraphGameConstants() public view returns (GraphGameConstants memory) {
         GameConstants memory gc = gameConstants();
@@ -308,7 +300,8 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
             CAPTURE_ZONE_RADIUS: gc.CAPTURE_ZONE_RADIUS,
             CAPTURE_ZONE_PLANET_LEVEL_SCORE: gc.CAPTURE_ZONE_PLANET_LEVEL_SCORE,
             CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED: gc.CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED,
-            CAPTURE_ZONES_PER_5000_WORLD_RADIUS: gc.CAPTURE_ZONES_PER_5000_WORLD_RADIUS
+            CAPTURE_ZONES_PER_5000_WORLD_RADIUS: gc.CAPTURE_ZONES_PER_5000_WORLD_RADIUS,
+            INIT_BLOCKLIST: gc.INIT_BLOCKLIST
         });
 
         return g;

@@ -23,7 +23,7 @@ import {LibGameUtils} from "../libraries/LibGameUtils.sol";
 import {DFWhitelistFacet} from "./DFWhitelistFacet.sol";
 
 // Type imports
-import {PlanetDefaultStats, Upgrade, UpgradeBranch, Modifiers, Mod, ArenaCreateRevealPlanetArgs, Spaceships} from "../DFTypes.sol";
+import {PlanetDefaultStats, Upgrade, UpgradeBranch, Modifiers, Mod, ArenaCreateRevealPlanetArgs, InitBlocklist, Spaceships} from "../DFTypes.sol";
 
 contract DFStartFacet is WithStorage, WithArenaStorage {
     event ArenaInitialized(address ownerAddress, address lobbyAddress);
@@ -107,6 +107,7 @@ contract DFStartFacet is WithStorage, WithArenaStorage {
         gs().worldRadius = ai().initArgs.WORLD_RADIUS_MIN; // will be overridden by `LibGameUtils.updateWorldRadius()` if !WORLD_RADIUS_LOCKED
 
         gs().paused = ai().initArgs.START_PAUSED || ai().initArgs.CONFIRM_START;
+
         gs().TOKEN_MINT_END_TIMESTAMP = ai().initArgs.TOKEN_MINT_END_TIMESTAMP;
 
         gs().initializedPlanetCountByLevel = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -147,6 +148,7 @@ contract DFStartFacet is WithStorage, WithArenaStorage {
         arenaConstants().NO_ADMIN = ai().initArgs.NO_ADMIN;
         arenaConstants().CONFIG_HASH = keccak256(abi.encode(ai().initArgs));
         arenaConstants().CONFIRM_START = ai().initArgs.CONFIRM_START;
+        arenaConstants().START_PAUSED = ai().initArgs.START_PAUSED;
 
         uint256 initLength = ai().initArgs.INIT_PLANETS.length;
 
@@ -163,19 +165,15 @@ contract DFStartFacet is WithStorage, WithArenaStorage {
         }
 
         /* Load Target blocklist into GameConstants and GameStorage*/
-        gameConstants().BLOCKLIST = ai().initArgs.BLOCKLIST;
+        gameConstants().INIT_BLOCKLIST = ai().initArgs.INIT_BLOCKLIST;
 
-        uint256 blockLength = ai().initArgs.BLOCKLIST.length;
+        uint256 blockLength = ai().initArgs.INIT_BLOCKLIST.length;
+
+        InitBlocklist[] memory tempBlocklist = ai().initArgs.INIT_BLOCKLIST;
 
         for (uint256 i = 0; i < blockLength; i++) {
-            uint256[] memory planetBlock = ai().initArgs.BLOCKLIST[i];
-            uint256 targetId = planetBlock[0];
-
-            for (uint256 j = 0; j < planetBlock.length; j++) {
-                if (j != 0) {
-                    gs().blocklist[targetId][planetBlock[j]] = true;
-                }
-            }
+            InitBlocklist memory blockItem = tempBlocklist[i];
+            gs().blocklist[blockItem.destId][blockItem.srcId] = true;    
         }
 
         arenaConstants().TARGETS_REQUIRED_FOR_VICTORY = ai().initArgs.TARGETS_REQUIRED_FOR_VICTORY;

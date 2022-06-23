@@ -525,10 +525,11 @@ export const blockListInitializers = settings.parse(decodeInitializers, {
   MANUAL_SPAWN: true,
   TARGET_PLANETS: true,
   INIT_PLANETS: INIT_PLANETS.slice(0,5),
-  BLOCKLIST: [
-    [
-      INIT_PLANETS[2].location, INIT_PLANETS[0].location
-    ]
+  INIT_BLOCKLIST: [
+    {
+      destId: INIT_PLANETS[2].location, 
+      srcId: INIT_PLANETS[0].location
+    }
   ],
   BLOCK_MOVES: true,
   BLOCK_CAPTURE: true,

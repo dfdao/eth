@@ -66,6 +66,7 @@ struct ArenaConstants {
     uint256 TARGETS_REQUIRED_FOR_VICTORY;
     bool BLOCK_MOVES;
     bool BLOCK_CAPTURE;
+    bool START_PAUSED;
 }
 
 library LibArenaStorage {

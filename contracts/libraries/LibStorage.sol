@@ -10,6 +10,7 @@ import {
     PlanetDefaultStats,
     Upgrade,
     RevealedCoords,
+    InitBlocklist,
     Player,
     ArrivalData,
     Artifact
@@ -124,7 +125,7 @@ struct GameConstants {
     uint256[10] CAPTURE_ZONE_PLANET_LEVEL_SCORE;
     uint256 CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED;
     uint256 CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
-    uint256 [][] BLOCKLIST; // Have to parse this for Graph :((
+    InitBlocklist[] INIT_BLOCKLIST;
 }
 
 // SNARK keys and perlin params
