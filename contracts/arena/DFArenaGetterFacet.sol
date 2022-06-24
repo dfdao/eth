@@ -17,7 +17,7 @@ import {IERC173} from "../vendor/interfaces/IERC173.sol";
 
 // Storage imports
 import {WithStorage, GameConstants, SnarkConstants} from "../libraries/LibStorage.sol";
-import {WithArenaStorage, ArenaStorage, ArenaConstants, TournamentStorage} from "../libraries/LibArenaStorage.sol";
+import {WithArenaStorage, ArenaStorage, ArenaConstants, TournamentStorage, Initializers} from "../libraries/LibArenaStorage.sol";
 
 import {
     SpaceType, 
@@ -30,6 +30,7 @@ import {
     PlanetType, 
     PlanetExtendedInfo, 
     PlanetExtendedInfo2,
+    AuxiliaryArgs,
     ArenaPlanetInfo,
     InitBlocklist,
     ArenaPlayerInfo
@@ -101,6 +102,7 @@ struct GraphConstants {
     GraphGameConstants gc;
     SnarkConstants sc;
     ArenaConstants ac;
+    AuxiliaryArgs ai;
 }
 
 contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
@@ -312,8 +314,16 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
         GraphConstants memory constants = GraphConstants({
             gc: getGraphGameConstants(),
             sc: snarkConstants(),
-            ac: arenaConstants()
+            ac: arenaConstants(),
+            ai: ai().auxArgs
         });
         return constants;
+    }
+
+    function getInitializers() public view returns (Initializers memory) {
+        return Initializers({
+            initArgs: ai().initArgs,
+            auxArgs: ai().auxArgs
+        });
     }
 }

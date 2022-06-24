@@ -52,7 +52,8 @@ type ConfigPlayer @entity {
   elo: Int!
 }
 
-type Blocklist {
+type Blocklist @entity {
+  id: ID!
   destId: String!
   srcId: String!
 }
@@ -111,7 +112,8 @@ type ArenaConfig @entity {
     CONFIG_HASH: Bytes!  
     START_PAUSED: Boolean!,
     RANDOM_ARTIFACTS: Boolean!,
-    WHITELIST: [],
+    WHITELIST: [Bytes!]!,
+    WHITELIST_ENABLED: Boolean!,
     CONFIRM_START: Boolean!,
     TARGETS_REQUIRED_FOR_VICTORY: Int!,
     INIT_BLOCKLIST: [Blocklist!]!,
@@ -123,6 +125,7 @@ type ArenaPlanet @entity {
   id: ID!
   arena: Arena!
   locationDec: BigInt!
+  locationId: String!
   x: Int
   y: Int
   perlin: Int!

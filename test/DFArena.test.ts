@@ -375,10 +375,12 @@ describe('Arena Functions', function () {
       const spawnPlanetInfo = await world.contract.planets(LVL2_PLANET_DEEP_SPACE.id);
       const spawnPlanetArenaInfo = await world.contract.planetsArenaInfo(LVL2_PLANET_DEEP_SPACE.id);
 
+      const popCap = spawnPlanetInfo.populationCap.toNumber()
+
       expect(spawnPlanetArenaInfo.spawnPlanet).to.be.equal(true);
       expect(spawnPlanetInfo.isHomePlanet).to.be.equal(true);
       expect(spawnPlanetInfo.owner).to.be.equal(world.user1.address);
-      expect(spawnPlanetInfo.population).to.be.equal(Number(spawnPlanetInfo.populationCap) / 4);
+      expect(spawnPlanetInfo.population.toNumber()).to.be.approximately(Math.floor(popCap * 0.99), 10);
     });
 
     it('reverts if target planet is made', async function () {
@@ -1245,7 +1247,7 @@ describe('Arena Functions', function () {
     });
   });
 
-  describe.only('Blocklist', function () {
+  describe('Blocklist', function () {
     let world: World;
     let planets: ArenaPlanets;
 
@@ -1263,7 +1265,7 @@ describe('Arena Functions', function () {
         })
       );
     });
-    it('Logs blocklist', async function () {
+    it.skip('Logs blocklist', async function () {
       const blocklist = (await world.contract.getGameConstants()).INIT_BLOCKLIST;
       console.log(blocklist);
     });
@@ -1310,6 +1312,20 @@ describe('Arena Functions', function () {
           ...makeMoveArgs(LVL0_PLANET_DEEP_SPACE, LVL1_ASTEROID_2, dist, shipsSent, silverSent)
         )
       ).to.be.revertedWith('you cannot move to a blocked planet');
+    });
+  });
+
+  describe.skip('Fetch initializers', function () {
+    let world: World;
+
+    beforeEach('load fixture', async function () {
+      world = await fixtureLoader(initPlanetsArenaFixture);
+    });
+
+    it('Logs All Initializers', async function () {
+      const inits = await world.contract.getInitializers();
+      // console.log(inits);
+      console.log(inits.initArgs.INIT_PLANETS);
     });
   });
 });

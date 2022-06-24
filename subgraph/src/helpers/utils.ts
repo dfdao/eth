@@ -1,7 +1,21 @@
-import { DarkForest, DarkForest__getGraphConstantsResultValue0Struct } from '../../generated/DarkForest/DarkForest';
-import { Arena, ArenaConfig, ArenaPlanet } from '../../generated/schema';
-import { BigInt, dataSource, log } from '@graphprotocol/graph-ts';
-import { bjjFieldElementToSignedInt, hexStringToPaddedUnprefixed, isDefenseBoosted, isEnergyCapBoosted, isEnergyGrowthBoosted, isRangeBoosted, isSpaceJunkHalved, isSpeedBoosted, toPlanetType, toSpaceType } from './converters';
+import {
+  DarkForest,
+  DarkForest__getGraphConstantsResultValue0Struct,
+} from '../../generated/DarkForest/DarkForest';
+import { Arena, ArenaConfig, ArenaPlanet, Blocklist } from '../../generated/schema';
+import { BigInt, Bytes, dataSource, log } from '@graphprotocol/graph-ts';
+import {
+  bjjFieldElementToSignedInt,
+  hexStringToPaddedUnprefixed,
+  isDefenseBoosted,
+  isEnergyCapBoosted,
+  isEnergyGrowthBoosted,
+  isRangeBoosted,
+  isSpaceJunkHalved,
+  isSpeedBoosted,
+  toPlanetType,
+  toSpaceType,
+} from './converters';
 
 /* 
   Standard id for arena: contract-id 
@@ -27,10 +41,13 @@ export function buildConfig(
   config.CAPTURE_ZONES_ENABLED = constants.gc.CAPTURE_ZONES_ENABLED;
   config.CAPTURE_ZONES_PER_5000_WORLD_RADIUS =
     constants.gc.CAPTURE_ZONES_PER_5000_WORLD_RADIUS.toI32();
-  config.CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL = constants.gc.CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL.toI32();
+  config.CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL =
+    constants.gc.CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL.toI32();
   config.CAPTURE_ZONE_COUNT = constants.gc.CAPTURE_ZONE_COUNT.toI32();
   config.CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED = constants.gc.CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED.toI32();
-  config.CAPTURE_ZONE_PLANET_LEVEL_SCORE = constants.gc.CAPTURE_ZONE_PLANET_LEVEL_SCORE.map<i32>((x) => x.toI32());
+  config.CAPTURE_ZONE_PLANET_LEVEL_SCORE = constants.gc.CAPTURE_ZONE_PLANET_LEVEL_SCORE.map<i32>(
+    (x) => x.toI32()
+  );
   config.CAPTURE_ZONE_RADIUS = constants.gc.CAPTURE_ZONE_RADIUS.toI32();
   config.CLAIM_VICTORY_ENERGY_PERCENT = constants.ac.CLAIM_VICTORY_ENERGY_PERCENT.toI32();
   config.CONFIG_HASH = constants.ac.CONFIG_HASH;
@@ -83,18 +100,36 @@ export function buildConfig(
   config.TOKEN_MINT_END_TIMESTAMP = constants.gc.TOKEN_MINT_END_TIMESTAMP; // Might be BigInt
   config.WORLD_RADIUS_LOCKED = constants.gc.WORLD_RADIUS_LOCKED;
   config.WORLD_RADIUS_MIN = constants.gc.WORLD_RADIUS_MIN.toI32();
+  config.START_PAUSED = constants.ac.START_PAUSED;
+  config.RANDOM_ARTIFACTS = constants.ac.RANDOM_ARTIFACTS;
+  // Map Address => hexString => Bytes
+  config.WHITELIST = constants.ai.allowedAddresses.map<Bytes>(x => Bytes.fromHexString(x.toHexString()));
+  config.WHITELIST_ENABLED = constants.ai.allowListEnabled;
+  config.CONFIRM_START = constants.ac.CONFIRM_START;
+  config.TARGETS_REQUIRED_FOR_VICTORY = constants.ac.TARGETS_REQUIRED_FOR_VICTORY.toI32();
+  config.INIT_BLOCKLIST = constants.gc.INIT_BLOCKLIST.map<string>((v) => {
+    const destId = hexStringToPaddedUnprefixed(v.destId);
+    const srcId = hexStringToPaddedUnprefixed(v.srcId);
+    const b = new Blocklist(`${destId}-${srcId}`);
+    b.destId = destId;
+    b.srcId = srcId;
+    b.save();
+    return b.id
+  }),
+  config.BLOCK_CAPTURE = constants.ac.BLOCK_CAPTURE;
+  config.BLOCK_MOVES = constants.ac.BLOCK_MOVES;
 
   return config;
 }
 
 export function buildPlanet(contract: DarkForest, id: string, locationDec: BigInt): ArenaPlanet {
-
   const planetData = contract.bulkGetPlanetsDataByIds([locationDec])[0];
   const arenaData = contract.planetsArenaInfo(locationDec);
   const locationId = hexStringToPaddedUnprefixed(locationDec);
-  
+
   const planet = new ArenaPlanet(id);
   planet.locationDec = locationDec;
+  planet.locationId = locationId;
 
   // Init planet might not always be revealed planet
   if (planetData.revealedCoords.x && planetData.revealedCoords.y) {
@@ -119,12 +154,10 @@ export function buildPlanet(contract: DarkForest, id: string, locationDec: BigIn
   let arena = Arena.load(contract._address.toHexString());
 
   if (!arena) {
-    log.error('attempting to attach player to unkown arena: {}', [
-      contract._address.toHexString(),
-    ]);
+    log.error('attempting to attach planet to unkown arena: {}', [contract._address.toHexString()]);
     throw new Error();
   }
-    
+
   planet.arena = arena.id;
 
   return planet;
