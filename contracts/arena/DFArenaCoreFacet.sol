@@ -91,7 +91,7 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
 
             _planet.isHomePlanet = true;
             _planet.owner = msg.sender;
-            _planet.population = (_planet.populationCap * 25) / 100;
+            _planet.population = (_planet.populationCap * 99) / 100;
             _planetExtendedInfo.lastUpdated = block.timestamp;
         } else {
             LibPlanet.initializePlanet(_a, _b, _c, _input, true);
