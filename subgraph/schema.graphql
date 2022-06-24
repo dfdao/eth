@@ -143,7 +143,8 @@ type ArenaPlanet @entity {
   isSpeedBoosted: Boolean!
   isDefenseBoosted: Boolean!
   isSpaceJunkHalved: Boolean!
-  winner: ArenaPlayer
+  captured: Boolean!
+  capturer: ArenaPlayer
 }
 
 enum PlanetType {

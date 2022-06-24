@@ -24,7 +24,8 @@ import {Planet, PlanetExtendedInfo, PlanetExtendedInfo2, PlanetEventMetadata, Pl
 contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     event AdminPlanetCreated(uint256 loc);
     event TargetPlanetInvaded(address player, uint256 loc);
-    event Gameover(uint256 loc, address[] winners);
+    event Gameover(uint256 loc, address winner);
+    event TargetCaptured(uint256 loc, address player);
     event PlayerInitialized(address player, uint256 loc);
     event LocationRevealed(address revealer, uint256 loc, uint256 x, uint256 y);
     event GameStarted(address startPlayer, uint256 startTime);
@@ -159,6 +160,7 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         }
 
         arenaStorage().arenaPlanetInfo[locationId].captured = true;
+        emit TargetCaptured(locationId, msg.sender);
 
         if (_checkGameOver()) {
             if (arenaConstants().TEAMS_ENABLED) {
@@ -171,7 +173,7 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
             arenaStorage().gameover = true;
             arenaStorage().endTime = block.timestamp;
             gs().paused = true;
-            emit Gameover(locationId, arenaStorage().winners);
+            emit Gameover(locationId, msg.sender);
         }
     }
 

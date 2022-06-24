@@ -610,7 +610,7 @@ describe('Arena Functions', function () {
         await increaseBlockchainTime(600);
         await expect(world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id))
           .to.emit(world.contract, 'Gameover')
-          .withArgs(LVL0_PLANET_DEEP_SPACE.id, [world.user1.address]);
+          .withArgs(LVL0_PLANET_DEEP_SPACE.id, world.user1.address);
 
         expect((await world.contract.getRoundDuration()).toNumber()).to.be.greaterThan(600);
       });
@@ -1421,7 +1421,7 @@ describe('Arena Functions', function () {
         await increaseBlockchainTime();
         await expect(world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id))
           .to.emit(world.contract, 'Gameover')
-          .withArgs(LVL0_PLANET_DEEP_SPACE.id, [world.user1.address, world.user2.address]);
+          .withArgs(LVL0_PLANET_DEEP_SPACE.id, world.user1.address);
         const winners = await world.contract.getWinners();
         expect(winners[0]).to.equal(world.user1.address);
         expect(winners[1]).to.equal(world.user2.address);

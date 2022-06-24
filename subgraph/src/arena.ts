@@ -184,6 +184,8 @@ export function handleGameover(event: Gameover): void {
   const winnerAddress = event.params.winner.toHexString();
   const targetId = hexStringToPaddedUnprefixed(event.params.loc);
 
+  // Every ArenaPlayer and Player is a winner
+  // ArenaPlanet is only one that gets updated.
   let winners = arena.winners;
   winners.push(arenaId(winnerAddress));
   arena.winners = winners;

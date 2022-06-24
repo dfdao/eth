@@ -71,6 +71,7 @@ struct ArenaConstants {
     bool START_PAUSED;
     bool TEAMS_ENABLED;
     uint256 NUM_TEAMS;
+    bool RANKED;
 }
 
 library LibArenaStorage {

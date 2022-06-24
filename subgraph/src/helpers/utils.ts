@@ -161,7 +161,7 @@ export function buildPlanet(contract: DarkForest, id: string, locationDec: BigIn
   planet.planetType = toPlanetType(planetData.planet.planetType);
   planet.targetPlanet = arenaData.targetPlanet;
   planet.spawnPlanet = arenaData.spawnPlanet;
-  planet.winner = null;
+  planet.capturer = null;
   // These are useful for confirming that spawn planets are fair.
   planet.isEnergyCapBoosted = isEnergyCapBoosted(locationId);
   planet.isEnergyGrowthBoosted = isEnergyGrowthBoosted(locationId);
@@ -170,6 +170,7 @@ export function buildPlanet(contract: DarkForest, id: string, locationDec: BigIn
   planet.isDefenseBoosted = isDefenseBoosted(locationId);
   planet.isSpaceJunkHalved = isSpaceJunkHalved(locationId);
   planet.spaceType = toSpaceType(planetData.info.spaceType);
+  planet.captured = false;
 
   let arena = Arena.load(contract._address.toHexString());
 
