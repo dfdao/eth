@@ -15,19 +15,21 @@ type Arena @entity {
   winners: [ArenaPlayer!]!
   players: [ArenaPlayer!]! # @derivedFrom(field: "arena") # derived fields can't be accessed in the mapping
   planets: [ArenaPlanet!]! @derivedFrom(field: "arena")
+  teams: [ArenaTeam!] @derivedFrom(field: "arena")
 }
 
+# A unique player entity across all arenas
 type Player @entity {
   id: ID!
   wins: Int!
   matches: Int!
   arenaPlayers: [ArenaPlayer!]! @derivedFrom(field: "player")
   configPlayers: [ConfigPlayer!]! @derivedFrom(field: "player")
-
 }
 
+# A unique player entity for each Arena
 type ArenaPlayer @entity {
-  id: ID!
+  id: ID! # <arena_address>-<player_address>
   player: Player!
   address: ID!
   homePlanet: ArenaPlanet
@@ -38,11 +40,30 @@ type ArenaPlayer @entity {
   ready: Boolean!
   lastMoveTime: Int!
   lastReadyTime: Int
-  team: Int
+  team: ArenaTeam # Only created + assigned if team != 0
 }
 
+type ArenaTeam @entity {
+  id: ID! #<arena_address>-<team#>
+  arena: Arena!
+  teamId: Int! #number
+  players: [ArenaPlayer!]!
+  playerAddresses: [String!]!
+}
+type ConfigTeam @entity {
+  id: ID! # <config_hash>-<player1Address>-<player2>...
+  configHash: Bytes!
+  players: [Player!]!
+  gamesStarted: Int!
+  gamesFinished: Int!
+  wins: Int!
+  losses: Int!
+  elo: Int!
+}
+
+# A unique player entity across arenas w same config
 type ConfigPlayer @entity {
-  id: ID! # config
+  id: ID! # <player_address>-<config_hash>
   address: ID!
   configHash: Bytes!
   player: Player!

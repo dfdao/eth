@@ -40,6 +40,9 @@ templates:
         - ArenaConfig
         - ArenaPlayer
         - ArenaPlanet
+        - ConfigPlayer
+        - ConfigTeam
+        - Player
       abis:
         - name: DarkForest
           file: '{{{DARKFOREST_ABI_PATH}}}'

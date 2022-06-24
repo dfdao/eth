@@ -16,15 +16,18 @@ import {
   ArenaConfig,
   ArenaPlanet,
   ArenaPlayer,
+  ArenaTeam,
   ConfigPlayer,
+  ConfigTeam,
   Player,
 } from '../generated/schema';
 import { hexStringToPaddedUnprefixed } from './helpers/converters';
-import { Address, Bytes, dataSource, log } from '@graphprotocol/graph-ts';
+import { Bytes, dataSource, log } from '@graphprotocol/graph-ts';
 import {
   arenaId,
   buildPlanet,
   configPlayerId,
+  configTeamId,
   loadArena,
   loadArenaConfig,
   loadArenaConstants,
@@ -38,7 +41,7 @@ import {
 import { DarkForest as DFDiamond } from '../generated/templates';
 import { buildConfig } from './helpers/utils';
 import { updateElo } from './helpers/elo';
-import { DEFAULT_ELO } from './helpers/constants';
+import { DEFAULT_ELO, NO_TEAM } from './helpers/constants';
 
 function updatePlayerElo(configHash: string, p1Id: string, p2Id: string, winner: string): void {
   let p1 = ConfigPlayer.load(configPlayerId(p1Id, configHash));
@@ -65,6 +68,35 @@ function updatePlayerElo(configHash: string, p1Id: string, p2Id: string, winner:
   }
 }
 
+function updateTeamElo(
+  configHash: string,
+  team1Id: string[],
+  team2Id: string[],
+  winner: string
+): void {
+  let p1 = ConfigTeam.load(configTeamId(team1Id, configHash));
+  let p2 = ConfigTeam.load(configTeamId(team2Id, configHash));
+  if (p1 && p2) {
+    const p1Win = p1.players.includes(winner);
+    const newElo = updateElo(p1.elo, p2.elo, p1Win);
+    const p1NewRating = newElo[0];
+    const p2NewRating = newElo[1];
+    p1.elo = p1NewRating as i32;
+    p2.elo = p2NewRating as i32;
+    p1.gamesFinished += p1.gamesFinished + 1;
+    p2.gamesFinished += p2.gamesFinished + 1;
+
+    if (p1Win) {
+      p1.wins = p1.wins + 1;
+      p2.losses = p2.losses + 1;
+    } else {
+      p1.losses = p1.losses + 1;
+      p2.wins = p2.wins + 1;
+    }
+    p1.save();
+    p2.save();
+  }
+}
 /**
  * @param event LobbyCreated
  * Creates or updates:
@@ -132,8 +164,54 @@ export function handlePlayerInitialized(event: PlayerInitialized): void {
   player.lastMoveTime = event.block.timestamp.toI32();
 
   const info = loadArenaPlayerInfo(event.params.player);
-  player.team = info.team.toI32();
-  let arena = loadArena(dataSource.address().toHexString());
+  const arena = loadArena(dataSource.address().toHexString());
+
+  // if TEAMS_ENABLED, create or load the ArenaTeam & ConfigTeam
+  const config = loadArenaConfig(arena.id);
+  const teamNum = info.team.toI32();
+  const teamId = arenaId(teamNum.toString());
+  let arenaTeam = ArenaTeam.load(teamId);
+  if (config.TEAMS_ENABLED && teamNum != NO_TEAM) {
+    if (!arenaTeam) {
+      arenaTeam = new ArenaTeam(teamId);
+      arenaTeam.arena = arena.id;
+      arenaTeam.teamId = teamNum;
+      arenaTeam.players = new Array<string>();
+      arenaTeam.playerAddresses = new Array<string>();
+    }
+    player.team = arenaTeam.id;
+
+    // Add ArenaPlayer to the team
+    const teamPlayers = arenaTeam.players.map<string>((x) => x);
+    teamPlayers.push(arenaId(playerAddress));
+    arenaTeam.players = teamPlayers;
+
+    // Add playerAddresses to team
+    const teamAddresses = arenaTeam.playerAddresses.map<string>((x) => x);
+    teamAddresses.push(playerAddress);
+    arenaTeam.playerAddresses = teamAddresses;
+
+    arenaTeam.save();
+
+    // Create or load ConfigTeam
+    const id = configTeamId(arenaTeam.playerAddresses, arena.configHash.toHexString());
+    let configTeam = ConfigTeam.load(id);
+    if (!configTeam) {
+      configTeam = new ConfigTeam(id);
+      configTeam.elo = DEFAULT_ELO;
+      configTeam.gamesFinished = 0;
+      configTeam.gamesStarted = 0;
+      configTeam.wins = 0;
+      configTeam.losses = 0;
+      configTeam.configHash = arena.configHash;
+      arenaTeam.players = new Array<string>();
+    }
+    configTeam.gamesStarted = configTeam.gamesStarted + 1;
+
+    // Add playerAddresses to ConfigTeam
+    configTeam.players = arenaTeam.playerAddresses;
+    configTeam.save();
+  }
 
   // Aggregate Entity
   let aggregatePlayer = Player.load(playerAddress);
@@ -145,23 +223,22 @@ export function handlePlayerInitialized(event: PlayerInitialized): void {
   aggregatePlayer.matches = aggregatePlayer.matches + 1;
   aggregatePlayer.save();
 
-  if (arena.configHash) {
-    const id = configPlayerId(playerAddress, arena.configHash.toHexString());
-    let configPlayer = ConfigPlayer.load(id);
-    if (!configPlayer) {
-      configPlayer = new ConfigPlayer(id);
-      configPlayer.address = playerAddress;
-      configPlayer.elo = DEFAULT_ELO;
-      configPlayer.gamesFinished = 0;
-      configPlayer.gamesStarted = 0;
-      configPlayer.wins = 0;
-      configPlayer.losses = 0;
-      configPlayer.configHash = arena.configHash;
-      configPlayer.player = aggregatePlayer.id;
-    }
-    configPlayer.gamesStarted = configPlayer.gamesStarted + 1;
-    configPlayer.save();
+  // Create or load ConfigPlayer
+  const id = configPlayerId(playerAddress, arena.configHash.toHexString());
+  let configPlayer = ConfigPlayer.load(id);
+  if (!configPlayer) {
+    configPlayer = new ConfigPlayer(id);
+    configPlayer.address = playerAddress;
+    configPlayer.elo = DEFAULT_ELO;
+    configPlayer.gamesFinished = 0;
+    configPlayer.gamesStarted = 0;
+    configPlayer.wins = 0;
+    configPlayer.losses = 0;
+    configPlayer.configHash = arena.configHash;
+    configPlayer.player = aggregatePlayer.id;
   }
+  configPlayer.gamesStarted = configPlayer.gamesStarted + 1;
+  configPlayer.save();
 
   const players = arena.players.map<string>((x) => x);
   players.push(arenaId(playerAddress));
@@ -174,6 +251,21 @@ export function handlePlayerInitialized(event: PlayerInitialized): void {
 }
 
 /**
+ * @param event GameStarted
+ * Creates or updates:
+ * Arena
+ */
+export function handleGameStarted(event: GameStarted): void {
+  const arena = loadArena(dataSource.address().toHexString());
+  const player = loadArenaPlayer(arenaId(event.params.startPlayer.toHexString()));
+
+  arena.startTime = event.block.timestamp.toI32();
+  arena.firstMover = player.id;
+
+  arena.save();
+}
+
+/**
  * @param event TargetCaptured
  * Creates or updates:
  * ArenaPlanet
@@ -181,7 +273,7 @@ export function handlePlayerInitialized(event: PlayerInitialized): void {
 export function handleTargetCaptured(event: TargetCaptured): void {
   const targetId = hexStringToPaddedUnprefixed(event.params.loc);
   const planet = loadArenaPlanet(arenaId(targetId));
-  const player = loadArenaPlayer(arenaId(event.params.player.toHexString()))
+  const player = loadArenaPlayer(arenaId(event.params.player.toHexString()));
   planet.captured = true;
   planet.capturer = player.id;
   planet.save();
@@ -203,8 +295,8 @@ export function handleGameover(event: Gameover): void {
 
   // Every ArenaPlayer and Player gets updated
   // ConfigPlayer or ConfigTeam gets updated with ELO
-  const winners = loadWinners().map<string>(x => x.toHexString());
-  winners.forEach(winner => {
+  const winners = loadWinners().map<string>((x) => x.toHexString());
+  winners.forEach((winner) => {
     const winningPlayer = loadArenaPlayer(arenaId(winner));
     const aggregatePlayer = loadPlayer(winner);
 
@@ -213,41 +305,49 @@ export function handleGameover(event: Gameover): void {
 
     winningPlayer.winner = true;
     winningPlayer.save();
-  })
+  });
 
   arena.gameOver = true;
   arena.endTime = event.block.timestamp.toI32();
   // Edge case: If you win a match, but haven't made a move, duration is startTime is creationTime.
   if (arena.startTime) arena.duration = arena.endTime - arena.startTime;
-  
-  arena.winners = winners.map<string>(playerId => arenaId(playerId));
+
+  arena.winners = winners.map<string>((playerId) => arenaId(playerId));
   arena.save();
 
   //TODO: Add teams here for more general logic
   const config = loadArenaConfig(arena.id);
-  if (config.RANKED && !config.TEAMS_ENABLED && arena.players.length == 2) {
-    const aP1 = ArenaPlayer.load(arena.players[0]);
-    const aP2 = ArenaPlayer.load(arena.players[1]);
-    if (aP1 && aP2) {
+
+  if (config.RANKED) {
+    if (config.TEAMS_ENABLED && config.NUM_TEAMS == 2) {
+      // Get ArenaTeams
+      let arenaTeams: ArenaTeam[] = [];
+      for (var teamId = 1; teamId <= config.NUM_TEAMS; teamId++) {
+        const arenaTeam = ArenaTeam.load(arenaId(teamId.toString()));
+        // Guarantee each team has at least one player.
+        if (arenaTeam && arenaTeam.players.length > 0) arenaTeams.push(arenaTeam);
+      }
+      // Must have two players each with one team.
+      if (arenaTeams.length == 2) {
+        const t1Addresses = arenaTeams[0].playerAddresses;
+        const t2Addresses = arenaTeams[1].playerAddresses;
+        // Winning player must be on one of the teams
+        if(t1Addresses.includes(winnerAddress) || t2Addresses.includes(winnerAddress)) {
+          log.info('updating team elo', []);
+          updateTeamElo(
+            arena.configHash.toHexString(),
+            t1Addresses,
+            t2Addresses,
+            winnerAddress
+          );
+        }
+      }
+    } else if (!config.TEAMS_ENABLED && arena.players.length == 2) {
+      const aP1 = loadArenaPlayer(arena.players[0]);
+      const aP2 = loadArenaPlayer(arena.players[1]);
       updatePlayerElo(arena.configHash.toHexString(), aP1.address, aP2.address, winnerAddress);
     }
   }
-
-}
-
-/**
- * @param event GameStarted
- * Creates or updates:
- * Arena
- */
-export function handleGameStarted(event: GameStarted): void {
-  const arena = loadArena(dataSource.address().toHexString());
-  const player = loadArenaPlayer(arenaId(event.params.startPlayer.toHexString()));
-
-  arena.startTime = event.block.timestamp.toI32();
-  arena.firstMover = player.id;
-
-  arena.save();
 }
 
 /**

@@ -10,7 +10,7 @@ function updateRating(expected: number, actual: number, current: number): number
   return Math.round(current + (K_FACTOR * (actual - expected)));
 }
 
-export function updateElo(p1Rating: number, p2Rating: number, p1Win: boolean): Array<number> {  
+export function updateElo(p1Rating: number, p2Rating: number, p1Win: bool): Array<number> {  
     const expectedProbP1Win = getExpectedProb(p1Rating, p2Rating);
     const expectedProbP2Win = getExpectedProb(p1Rating, p2Rating);
 
