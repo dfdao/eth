@@ -392,6 +392,7 @@ struct InitArgs {
     bool BLOCK_CAPTURE;    
     bool TEAMS_ENABLED;
     uint256 NUM_TEAMS;
+    bool RANKED;
 }
 
 // Values that are useful but not constant across arenas (whitelisted players, which planet goes to which team)

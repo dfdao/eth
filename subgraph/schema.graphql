@@ -119,6 +119,9 @@ type ArenaConfig @entity {
     INIT_BLOCKLIST: [Blocklist!]!,
     BLOCK_CAPTURE: Boolean!,
     BLOCK_MOVES: Boolean!,
+    TEAMS_ENABLED: Boolean!,
+    NUM_TEAMS: Int!
+    RANKED: Boolean!
 }
 
 type ArenaPlanet @entity {

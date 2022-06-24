@@ -10,25 +10,35 @@ import {
   PlayerNotReady,
   PlayerReady,
 } from '../generated/DarkForest/DarkForest';
-import { Arena, ArenaPlanet, ArenaPlayer, ConfigPlayer, Player } from '../generated/schema';
+import {
+  Arena,
+  ArenaConfig,
+  ArenaPlanet,
+  ArenaPlayer,
+  ConfigPlayer,
+  Player,
+} from '../generated/schema';
 import { hexStringToPaddedUnprefixed } from './helpers/converters';
 import { Bytes, dataSource, log } from '@graphprotocol/graph-ts';
-import { buildPlanet, makeArenaId } from './helpers/utils';
+import {
+  arenaId,
+  buildPlanet,
+  configPlayerId,
+  loadArena,
+  loadArenaConfig,
+  loadArenaConstants,
+  loadArenaPlanet,
+  loadArenaPlayer,
+  loadGraphConstants,
+  loadPlayer,
+  loadWinners,
+} from './helpers/utils';
 import { DarkForest as DFDiamond } from '../generated/templates';
 import { buildConfig } from './helpers/utils';
 import { updateElo } from './helpers/elo';
 import { DEFAULT_ELO } from './helpers/constants';
 
-function arenaId(id: string): string {
-  return `${dataSource.address().toHexString()}-${id}`;
-}
-
-function configPlayerId(player: string, configHash: string): string {
-  return `${player}-${configHash}`;
-}
-
 function updatePlayerElo(configHash: string, p1Id: string, p2Id: string, winner: string): void {
-
   let p1 = ConfigPlayer.load(configPlayerId(p1Id, configHash));
   let p2 = ConfigPlayer.load(configPlayerId(p2Id, configHash));
   if (p1 && p2) {
@@ -86,32 +96,17 @@ export function handleLobbyCreated(event: LobbyCreated): void {
  * ArenaConfig
  */
 export function handleArenaInitialized(event: ArenaInitialized): void {
-  let arena = Arena.load(dataSource.address().toHexString());
-  if (!arena) {
-    log.error('attempting to load unkown arena: {}', [dataSource.address().toHexString()]);
-    throw new Error();
-  }
-  const contract = DarkForest.bind(dataSource.address());
+  const arena = loadArena(dataSource.address().toHexString());
 
   arena.owner = event.params.ownerAddress.toHexString();
 
-  let arenaConstantsResult = contract.try_getArenaConstants();
-  if (arenaConstantsResult.reverted) {
-    log.info('Arena Constants reverted', []);
-  } else {
-    const configHash = arenaConstantsResult.value.CONFIG_HASH;
-    arena.configHash = configHash;
-    log.info('config hash {}', [arena.configHash.toHexString()]);
-  }
+  const arenaConstantsResult = loadArenaConstants();
+  arena.configHash = arenaConstantsResult.CONFIG_HASH;
 
-  let allConstantsResult = contract.try_getGraphConstants();
-  if (allConstantsResult.reverted) {
-    log.info('All Constants reverted', []);
-  } else {
-    const config = buildConfig(arena.id, allConstantsResult.value);
-    config.save();
-    arena.config = config.id;
-  }
+  const graphConstants = loadGraphConstants();
+  const config = buildConfig(arena.id, graphConstants);
+  config.save();
+  arena.config = config.id;
   arena.save();
 }
 
@@ -133,13 +128,8 @@ export function handlePlayerInitialized(event: PlayerInitialized): void {
   player.moves = 0;
   player.ready = false;
   player.lastMoveTime = event.block.timestamp.toI32();
-  let arena = Arena.load(dataSource.address().toHexString());
-  if (!arena) {
-    log.error('attempting to attach player to unkown arena: {}', [
-      dataSource.address().toHexString(),
-    ]);
-    throw new Error();
-  }
+
+  let arena = loadArena(dataSource.address().toHexString());
 
   // Aggregate Entity
   let aggregatePlayer = Player.load(playerAddress);
@@ -182,18 +172,15 @@ export function handlePlayerInitialized(event: PlayerInitialized): void {
 /**
  * @param event GameOver
  * Creates or updates:
-  * Arena
-  * ArenaPlayer
-  * ArenaPlanet
-  * Player (aggregate)
-  * ConfigPlayer (aggreagte) elo
+ * Arena
+ * ArenaPlayer
+ * ArenaPlanet
+ * Player (aggregate)
+ * ConfigPlayer (aggreagte) elo
  */
 export function handleGameover(event: Gameover): void {
-  let arena = Arena.load(dataSource.address().toHexString());
-  if (!arena) {
-    log.error('attempting to load unkown arena: {}', [dataSource.address().toHexString()]);
-    throw new Error();
-  }
+  let arena = loadArena(dataSource.address().toHexString());
+
   const winnerAddress = event.params.winner.toHexString();
   const targetId = hexStringToPaddedUnprefixed(event.params.loc);
 
@@ -208,21 +195,9 @@ export function handleGameover(event: Gameover): void {
   arena.save();
 
   // Eventually will be in a for loop for multiple winners
-  const player = ArenaPlayer.load(arenaId(winnerAddress));
-  const planet = ArenaPlanet.load(arenaId(targetId));
-  const aggregatePlayer = Player.load(winnerAddress);
-  if (!player) {
-    log.error('attempting to load unkown ArenaPlayer: {}', [arenaId(targetId)]);
-    throw new Error();
-  }
-  if (!aggregatePlayer) {
-    log.error('attempting to load unkown AggPlayer: {}', [event.params.winner.toHexString()]);
-    throw new Error();
-  }
-  if (!planet) {
-    log.error('attempting to load unkown planet: {}', [targetId]);
-    throw new Error();
-  }
+  const winner = loadArenaPlayer(arenaId(winnerAddress));
+  const planet = loadArenaPlanet(arenaId(targetId));
+  const aggregatePlayer = loadPlayer(winnerAddress);
 
   aggregatePlayer.wins = aggregatePlayer.wins + 1;
   aggregatePlayer.save();
@@ -230,34 +205,30 @@ export function handleGameover(event: Gameover): void {
   player.winner = true;
   player.save();
 
+  planet.winner = player.id;
+  planet.save();
+
   //TODO: Add teams here for more general logic
-  if (arena.players.length == 2) {
+  const config = loadArenaConfig(arena.id);
+  if (config.RANKED && !config.TEAMS_ENABLED && arena.players.length == 2) {
     const aP1 = ArenaPlayer.load(arena.players[0]);
     const aP2 = ArenaPlayer.load(arena.players[1]);
-    if(aP1 && aP2) {
-      updatePlayerElo(arena.configHash.toHexString(), aP1.address, aP2.address, winnerAddress)
+    if (aP1 && aP2) {
+      updatePlayerElo(arena.configHash.toHexString(), aP1.address, aP2.address, winnerAddress);
     }
   }
 
-  planet.winner = player.id;
-  planet.save();
 }
 
-
 /**
- * @param event GameStarted 
+ * @param event GameStarted
  * Creates or updates:
  * Arena
  */
 export function handleGameStarted(event: GameStarted): void {
-  let arena = Arena.load(dataSource.address().toHexString());
-  const player = ArenaPlayer.load(arenaId(event.params.startPlayer.toHexString()));
-  if (!arena || !player) {
-    log.error('attempting to load unkown arena or player: {}', [
-      dataSource.address().toHexString(),
-    ]);
-    throw new Error();
-  }
+  const arena = loadArena(dataSource.address().toHexString());
+  const player = loadArenaPlayer(arenaId(event.params.startPlayer.toHexString()));
+
   arena.startTime = event.block.timestamp.toI32();
   arena.firstMover = player.id;
 
@@ -285,11 +256,7 @@ export function handleAdminPlanetCreated(event: AdminPlanetCreated): void {
 export function handleArrivalQueued(event: ArrivalQueued): void {
   const playerAddress = event.params.player.toHexString();
 
-  const player = ArenaPlayer.load(arenaId(playerAddress));
-  if (!player) {
-    log.error('attempting to load unkown player: {}', [dataSource.address().toHexString()]);
-    throw new Error();
-  }
+  const player = loadArenaPlayer(arenaId(playerAddress));
 
   player.moves = player.moves + 1;
   player.lastMoveTime = event.block.timestamp.toI32();
@@ -301,14 +268,10 @@ export function handleArrivalQueued(event: ArrivalQueued): void {
  * Creates or updates
  * ArenaPlayer
  */
- export function handlePlayerReady(event: PlayerReady): void {
+export function handlePlayerReady(event: PlayerReady): void {
   const playerAddress = event.params.player.toHexString();
 
-  const player = ArenaPlayer.load(arenaId(playerAddress));
-  if (!player) {
-    log.error('attempting to load unkown player: {}', [dataSource.address().toHexString()]);
-    throw new Error();
-  }
+  const player = loadArenaPlayer(arenaId(playerAddress));
 
   player.ready = true;
   player.lastReadyTime = event.block.timestamp.toI32();
@@ -323,11 +286,7 @@ export function handleArrivalQueued(event: ArrivalQueued): void {
 export function handlePlayerNotReady(event: PlayerNotReady): void {
   const playerAddress = event.params.player.toHexString();
 
-  const player = ArenaPlayer.load(arenaId(playerAddress));
-  if (!player) {
-    log.error('attempting to load unkown player: {}', [dataSource.address().toHexString()]);
-    throw new Error();
-  }
+  const player = loadArenaPlayer(arenaId(playerAddress));
 
   player.ready = false;
   player.save();
