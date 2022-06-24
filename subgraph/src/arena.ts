@@ -9,6 +9,7 @@ import {
   PlayerInitialized,
   PlayerNotReady,
   PlayerReady,
+  TargetCaptured,
 } from '../generated/DarkForest/DarkForest';
 import {
   Arena,
@@ -170,6 +171,20 @@ export function handlePlayerInitialized(event: PlayerInitialized): void {
 }
 
 /**
+ * @param event TargetCaptured
+ * Creates or updates:
+ * ArenaPlanet
+ */
+export function handleTargetCaptured(event: TargetCaptured): void {
+  const targetId = hexStringToPaddedUnprefixed(event.params.loc);
+  const planet = loadArenaPlanet(arenaId(targetId));
+  const player = loadArenaPlayer(arenaId(event.params.player.toHexString()))
+  planet.captured = true;
+  planet.capturer = player.id;
+  planet.save();
+}
+
+/**
  * @param event GameOver
  * Creates or updates:
  * Arena
@@ -179,36 +194,31 @@ export function handlePlayerInitialized(event: PlayerInitialized): void {
  * ConfigPlayer (aggreagte) elo
  */
 export function handleGameover(event: Gameover): void {
-  let arena = loadArena(dataSource.address().toHexString());
+  const arena = loadArena(dataSource.address().toHexString());
 
   const winnerAddress = event.params.winner.toHexString();
-  const targetId = hexStringToPaddedUnprefixed(event.params.loc);
 
-  // Every ArenaPlayer and Player is a winner
-  // ArenaPlanet is only one that gets updated.
-  let winners = arena.winners;
-  winners.push(arenaId(winnerAddress));
-  arena.winners = winners;
+  // Every ArenaPlayer and Player gets updated
+  // ConfigPlayer or ConfigTeam gets updated with ELO
+  const winners = loadWinners();
+  winners.forEach(winner => {
+    const winnerId = winner.toHexString();
+    const winningPlayer = loadArenaPlayer(arenaId(winnerId));
+    const aggregatePlayer = loadPlayer(winnerId);
+
+    aggregatePlayer.wins = aggregatePlayer.wins + 1;
+    aggregatePlayer.save();
+
+    winningPlayer.winner = true;
+    winningPlayer.save();
+  })
+
   arena.gameOver = true;
   arena.endTime = event.block.timestamp.toI32();
   // Edge case: If you win a match, but haven't made a move, duration is startTime is creationTime.
   if (arena.startTime) arena.duration = arena.endTime - arena.startTime;
 
   arena.save();
-
-  // Eventually will be in a for loop for multiple winners
-  const winner = loadArenaPlayer(arenaId(winnerAddress));
-  const planet = loadArenaPlanet(arenaId(targetId));
-  const aggregatePlayer = loadPlayer(winnerAddress);
-
-  aggregatePlayer.wins = aggregatePlayer.wins + 1;
-  aggregatePlayer.save();
-
-  player.winner = true;
-  player.save();
-
-  planet.winner = player.id;
-  planet.save();
 
   //TODO: Add teams here for more general logic
   const config = loadArenaConfig(arena.id);
