@@ -1,5 +1,6 @@
 import {
   DarkForest,
+  DarkForest__getArenaConstantsResultValue0Struct,
   DarkForest__getGraphConstantsResultValue0Struct,
 } from '../../generated/DarkForest/DarkForest';
 import {
@@ -11,7 +12,7 @@ import {
   ConfigPlayer,
   Player,
 } from '../../generated/schema';
-import { BigInt, Bytes, dataSource, log } from '@graphprotocol/graph-ts';
+import { Address, BigInt, Bytes, dataSource, log } from '@graphprotocol/graph-ts';
 import {
   bjjFieldElementToSignedInt,
   hexStringToPaddedUnprefixed,
@@ -247,7 +248,7 @@ export function loadArenaPlanet(id: string): ArenaPlanet {
   return entity;
 }
 
-export function loadArenaConstants() {
+export function loadArenaConstants(): DarkForest__getArenaConstantsResultValue0Struct {
   const contract = DarkForest.bind(dataSource.address());
   let result = contract.try_getArenaConstants();
   if (result.reverted) {
@@ -258,7 +259,7 @@ export function loadArenaConstants() {
   }
 }
 
-export function loadGraphConstants() {
+export function loadGraphConstants(): DarkForest__getGraphConstantsResultValue0Struct {
   const contract = DarkForest.bind(dataSource.address());
   let result = contract.try_getGraphConstants();
   if (result.reverted) {
@@ -270,7 +271,7 @@ export function loadGraphConstants() {
 }
 
 
-export function loadWinners() {
+export function loadWinners(): Array<Address> {
   const contract = DarkForest.bind(dataSource.address());
   let result = contract.try_getWinners();
   if (result.reverted) {

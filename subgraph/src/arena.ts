@@ -200,11 +200,10 @@ export function handleGameover(event: Gameover): void {
 
   // Every ArenaPlayer and Player gets updated
   // ConfigPlayer or ConfigTeam gets updated with ELO
-  const winners = loadWinners();
+  const winners = loadWinners().map<string>(x => x.toHexString());
   winners.forEach(winner => {
-    const winnerId = winner.toHexString();
-    const winningPlayer = loadArenaPlayer(arenaId(winnerId));
-    const aggregatePlayer = loadPlayer(winnerId);
+    const winningPlayer = loadArenaPlayer(arenaId(winner));
+    const aggregatePlayer = loadPlayer(winner);
 
     aggregatePlayer.wins = aggregatePlayer.wins + 1;
     aggregatePlayer.save();
@@ -217,7 +216,8 @@ export function handleGameover(event: Gameover): void {
   arena.endTime = event.block.timestamp.toI32();
   // Edge case: If you win a match, but haven't made a move, duration is startTime is creationTime.
   if (arena.startTime) arena.duration = arena.endTime - arena.startTime;
-
+  
+  arena.winners = winners.map<string>(playerId => arenaId(playerId));
   arena.save();
 
   //TODO: Add teams here for more general logic

@@ -61,5 +61,5 @@ templates:
         - event: PlayerNotReady(address,uint256)
           handler: handlePlayerNotReady
         - event: TargetCaptured(uint256,address)
-          handler: TargetCaptured
+          handler: handleTargetCaptured
       file: ./src/arena.ts
