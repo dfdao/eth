@@ -19,6 +19,7 @@ import {
   planetLevelThresholdInitializer,
   target4Initializers,
   targetPlanetInitializers,
+  teamsInitializers,
 } from './WorldConstants';
 
 export interface World {
@@ -201,6 +202,14 @@ export async function blockListFixture(): Promise<World> {
     initializers: blockListInitializers,
     allowListEnabled: false,
     arena: true,
+  });
+}
+
+export function teamsFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: teamsInitializers,
+    allowListEnabled: false,
+    arena: true
   });
 }
 

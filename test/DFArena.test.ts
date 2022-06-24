@@ -29,6 +29,7 @@ import {
   planetLevelThresholdFixture,
   spaceshipWorldFixture,
   targetPlanetFixture,
+  teamsFixture,
   testGasLimitInitFixture,
   World,
 } from './utils/TestWorld';
@@ -54,6 +55,8 @@ import {
   multipleTargetPlanetVictoryInitializers,
   blockListInitializers,
   LVL1_ASTEROID_2,
+  initializers,
+  LVL3_UNOWNED_DEEP_SPACE,
 } from './utils/WorldConstants';
 import hre, { ethers } from 'hardhat';
 import { TestLocation } from './utils/TestLocation';
@@ -375,12 +378,15 @@ describe('Arena Functions', function () {
       const spawnPlanetInfo = await world.contract.planets(LVL2_PLANET_DEEP_SPACE.id);
       const spawnPlanetArenaInfo = await world.contract.planetsArenaInfo(LVL2_PLANET_DEEP_SPACE.id);
 
-      const popCap = spawnPlanetInfo.populationCap.toNumber()
+      const popCap = spawnPlanetInfo.populationCap.toNumber();
 
       expect(spawnPlanetArenaInfo.spawnPlanet).to.be.equal(true);
       expect(spawnPlanetInfo.isHomePlanet).to.be.equal(true);
       expect(spawnPlanetInfo.owner).to.be.equal(world.user1.address);
-      expect(spawnPlanetInfo.population.toNumber()).to.be.approximately(Math.floor(popCap * 0.99), 10);
+      expect(spawnPlanetInfo.population.toNumber()).to.be.approximately(
+        Math.floor(popCap * 0.99),
+        10
+      );
     });
 
     it('reverts if target planet is made', async function () {
@@ -520,7 +526,7 @@ describe('Arena Functions', function () {
           const planet = await world.contract.planetsExtendedInfo2(LVL0_PLANET_DEEP_SPACE.id);
           await expect(world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id))
             .to.emit(world.contract, 'Gameover')
-            .withArgs(LVL0_PLANET_DEEP_SPACE.id, world.user1.address);
+            .withArgs(LVL0_PLANET_DEEP_SPACE.id, [world.user1.address]);
         });
         it('sets gameover to true and winner to msg sender', async function () {
           await increaseBlockchainTime();
@@ -604,7 +610,7 @@ describe('Arena Functions', function () {
         await increaseBlockchainTime(600);
         await expect(world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id))
           .to.emit(world.contract, 'Gameover')
-          .withArgs(LVL0_PLANET_DEEP_SPACE.id, world.user1.address);
+          .withArgs(LVL0_PLANET_DEEP_SPACE.id, [world.user1.address]);
 
         expect((await world.contract.getRoundDuration()).toNumber()).to.be.greaterThan(600);
       });
@@ -1326,6 +1332,100 @@ describe('Arena Functions', function () {
       const inits = await world.contract.getInitializers();
       // console.log(inits);
       console.log(inits.initArgs.INIT_PLANETS);
+    });
+  });
+
+  describe.only('Teams', function () {
+    let world: World;
+    const minRadius = initializers.WORLD_RADIUS_MIN;
+    async function worldFixture() {
+      const world = await fixtureLoader(teamsFixture);
+      return world;
+    }
+
+    this.beforeEach(async function () {
+      world = await fixtureLoader(worldFixture);
+    });
+
+    it('does not allow players to join an invalid team', async function () {
+      await expect(
+        world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1, minRadius, 5))
+      ).to.be.revertedWith('invalid team');
+    });
+
+    it('allows players to join a valid team', async function () {
+      await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1, minRadius, 1));
+      const player = await world.contract.arenaPlayers(world.user1.address);
+      expect(player.team).to.eq(1);
+    });
+
+    describe('sending a move to a team member planet', async function () {
+      let world: World;
+
+      async function worldFixture() {
+        const world = await fixtureLoader(teamsFixture);
+        let initArgs = makeInitArgs(SPAWN_PLANET_1, minRadius, 1);
+        await world.user1Core.initializePlayer(...initArgs);
+        initArgs = makeInitArgs(SPAWN_PLANET_2, minRadius, 1);
+        await world.user2Core.initializePlayer(...initArgs);
+        await increaseBlockchainTime();
+
+        const perlin = 20;
+        const level = 0;
+        const x = 10;
+        const y = 10;
+        const planetType = 1; // asteroid field
+
+        await world.contract.createArenaPlanet({
+          location: LVL0_PLANET_DEEP_SPACE.id,
+          perlin,
+          level,
+          x,
+          y,
+          planetType,
+          requireValidLocationId: true,
+          isTargetPlanet: true,
+          isSpawnPlanet: false,
+        });
+
+        return world;
+      }
+
+      beforeEach(async function () {
+        world = await fixtureLoader(worldFixture);
+      });
+
+      it('team object contains correct data', async function () {
+        const team1 = await world.contract.getTeam(1);
+        expect(team1[0]).to.equal(world.user1.address);
+        expect(team1[1]).to.equal(world.user2.address);
+      });
+
+      it('adds energy to the planet', async function () {
+        await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL3_UNOWNED_DEEP_SPACE);
+        await increaseBlockchainTime();
+
+        // Normally this move would conquer the planet
+        await world.user1Core.move(
+          ...makeMoveArgs(LVL3_UNOWNED_DEEP_SPACE, SPAWN_PLANET_2, 100, 1000000, 0)
+        );
+        await increaseBlockchainTime();
+        await world.contract.refreshPlanet(SPAWN_PLANET_2.id);
+
+        const planetData = await world.contract.planets(SPAWN_PLANET_2.id);
+        expect(planetData.owner).to.eq(world.user2.address);
+      });
+
+      it('claim team victory', async function () {
+        await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL0_PLANET_DEEP_SPACE);
+        await increaseBlockchainTime();
+        await expect(world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id))
+          .to.emit(world.contract, 'Gameover')
+          .withArgs(LVL0_PLANET_DEEP_SPACE.id, [world.user1.address, world.user2.address]);
+        const winners = await world.contract.getWinners();
+        expect(winners[0]).to.equal(world.user1.address);
+        expect(winners[1]).to.equal(world.user2.address);
+      });
     });
   });
 });

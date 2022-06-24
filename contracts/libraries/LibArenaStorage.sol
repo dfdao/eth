@@ -46,6 +46,8 @@ struct ArenaStorage {
     uint256 endTime;
     uint256 startTime;
     mapping(bytes32 => bool) initPlanetHashes;
+    // Teams teamId => playerAddresses
+    mapping(uint256 => address[]) teams;
 }
 
 struct ArenaConstants {
@@ -67,6 +69,8 @@ struct ArenaConstants {
     bool BLOCK_MOVES;
     bool BLOCK_CAPTURE;
     bool START_PAUSED;
+    bool TEAMS_ENABLED;
+    uint256 NUM_TEAMS;
 }
 
 library LibArenaStorage {

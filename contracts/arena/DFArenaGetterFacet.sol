@@ -226,6 +226,10 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
         return initPlanetIds;
     }
 
+    function getTeam(uint256 team) public view returns (address[] memory) {
+        return arenaStorage().teams[team];
+    }
+
     function getPlanetWeights1DArray() private pure returns(uint8[200] memory) {
         GameConstants memory gc = gameConstants();
         uint8 a = 4;

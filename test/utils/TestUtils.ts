@@ -237,7 +237,8 @@ export async function makeWhitelistArgs(key: string, recipient: string) {
 
 export function makeInitArgs(
   planetLoc: TestLocation,
-  spawnRadius: number = initializers.WORLD_RADIUS_MIN
+  spawnRadius: number = initializers.WORLD_RADIUS_MIN,
+  team: number = 0
 ): [
   [BigNumberish, BigNumberish],
   [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]],
@@ -251,7 +252,9 @@ export function makeInitArgs(
     BigNumberish,
     BigNumberish,
     BigNumberish
-  ]
+  ],
+  BigNumberish
+
 ] {
   return [
     [BN_ZERO, BN_ZERO],
@@ -270,6 +273,7 @@ export function makeInitArgs(
       PERLIN_MIRROR_X ? '1' : '0',
       PERLIN_MIRROR_Y ? '1' : '0',
     ],
+    team
   ];
 }
 

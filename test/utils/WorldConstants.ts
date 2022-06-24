@@ -93,6 +93,16 @@ export const deterministicArtifactInitializers = settings.parse(decodeInitialize
   RANDOM_ARTIFACTS: false
 });
 
+export const teamsInitializers = settings.parse(decodeInitializers, {
+  ...defaultInitializerValues,
+  INIT_PERLIN_MIN: 0,
+  INIT_PERLIN_MAX: 31,
+  TARGET_PLANETS: true,
+  CLAIM_VICTORY_ENERGY_PERCENT: 50,
+  TEAMS_ENABLED: true,
+  NUM_TEAMS: 2,
+});
+
 export const VALID_INIT_PERLIN = initializers.INIT_PERLIN_MIN;
 export const NEBULA_PERLIN = initializers.PERLIN_THRESHOLD_1 - 1;
 export const SPACE_PERLIN = initializers.PERLIN_THRESHOLD_1;

@@ -51,7 +51,7 @@ describe.skip('Arena Upgrade', function () {
       if (!rc.events) throw Error('No event occurred');
 
       const event = rc.events.find((event) => event.event === 'LobbyCreated') as LobbyCreatedEvent;
-      expect(event.args.ownerAddress).to.equal(world.user1.address);
+      expect(event.args.creatorAddress).to.equal(world.user1.address);
 
       const lobbyAddress = event.args.lobbyAddress;
 
@@ -160,7 +160,7 @@ describe.skip('Arena Upgrade', function () {
       if (!rc.events) throw Error('No event occurred');
 
       const event = rc.events.find((event) => event.event === 'LobbyCreated') as LobbyCreatedEvent;
-      expect(event.args.ownerAddress).to.equal(world.user1.address);
+      expect(event.args.creatorAddress).to.equal(world.user1.address);
 
       const lobbyAddress = event.args.lobbyAddress;
 

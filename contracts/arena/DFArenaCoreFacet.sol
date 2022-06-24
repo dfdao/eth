@@ -19,12 +19,12 @@ import {IERC173} from "../vendor/interfaces/IERC173.sol";
 // Storage imports
 import {WithStorage} from "../libraries/LibStorage.sol";
 import {WithArenaStorage, ArenaStorage, ArenaPlanetInfo, ArenaConstants} from "../libraries/LibArenaStorage.sol";
-import {Planet, PlanetExtendedInfo, PlanetExtendedInfo2, PlanetEventMetadata, PlanetDefaultStats, Player, SpaceType, Artifact, ArtifactType, DFPInitPlanetArgs, ArenaPlanetInfo, ArenaCreateRevealPlanetArgs} from "../DFTypes.sol";
+import {Planet, PlanetExtendedInfo, PlanetExtendedInfo2, PlanetEventMetadata, PlanetDefaultStats, Player, SpaceType, Artifact, ArtifactType, DFPInitPlanetArgs, ArenaPlanetInfo, ArenaPlayerInfo, ArenaCreateRevealPlanetArgs} from "../DFTypes.sol";
 
 contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     event AdminPlanetCreated(uint256 loc);
     event TargetPlanetInvaded(address player, uint256 loc);
-    event Gameover(uint256 loc, address winner);
+    event Gameover(uint256 loc, address[] winners);
     event PlayerInitialized(address player, uint256 loc);
     event LocationRevealed(address revealer, uint256 loc, uint256 x, uint256 y);
     event GameStarted(address startPlayer, uint256 startTime);
@@ -70,7 +70,8 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         uint256[2] memory _a,
         uint256[2][2] memory _b,
         uint256[2] memory _c,
-        uint256[8] memory _input
+        uint256[8] memory _input,
+        uint256 team
     ) public onlyWhitelisted returns (uint256) {
         uint256 _location = _input[0];
         uint256 _perlin = _input[1];
@@ -95,6 +96,14 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
             _planetExtendedInfo.lastUpdated = block.timestamp;
         } else {
             LibPlanet.initializePlanet(_a, _b, _c, _input, true);
+        }
+
+        if (arenaConstants().TEAMS_ENABLED) {
+            require(team <= arenaConstants().NUM_TEAMS, "invalid team");
+            require(team > 0, "team cannot be 0");
+
+            arenaStorage().arenaPlayerInfo[msg.sender].team = team;
+            arenaStorage().teams[team].push(msg.sender);
         }
 
         // Checks player hasn't already initialized and confirms PERLIN.
@@ -152,11 +161,17 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         arenaStorage().arenaPlanetInfo[locationId].captured = true;
 
         if (_checkGameOver()) {
+            if (arenaConstants().TEAMS_ENABLED) {
+                ArenaPlayerInfo memory player = arenaStorage().arenaPlayerInfo[msg.sender];
+                uint256 winningTeam = player.team;
+                arenaStorage().winners = arenaStorage().teams[winningTeam];
+            } else {
+                arenaStorage().winners.push(msg.sender);
+            }
             arenaStorage().gameover = true;
-            arenaStorage().winners.push(msg.sender);
             arenaStorage().endTime = block.timestamp;
             gs().paused = true;
-            emit Gameover(locationId, msg.sender);
+            emit Gameover(locationId, arenaStorage().winners);
         }
     }
 

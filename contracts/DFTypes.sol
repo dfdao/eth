@@ -249,6 +249,7 @@ struct ArenaPlayerInfo {
     uint256 moves;
     bool ready;
     uint256 lastReadyTime;
+    uint256 team;
 }
 
 struct ArenaCreateRevealPlanetArgs {
@@ -389,6 +390,8 @@ struct InitArgs {
     InitBlocklist[] INIT_BLOCKLIST;
     bool BLOCK_MOVES;
     bool BLOCK_CAPTURE;    
+    bool TEAMS_ENABLED;
+    uint256 NUM_TEAMS;
 }
 
 // Values that are useful but not constant across arenas (whitelisted players, which planet goes to which team)

@@ -173,6 +173,7 @@ export async function createLobby(
   const diamond = await hre.ethers.getContractAt('DarkForest', diamondAddress);
   const diamondInit = await hre.ethers.getContractAt('DFArenaInitialize', diamondInitAddress);
   const diamondInitFunctionCall = diamondInit.interface.encodeFunctionData('init', [
+    // // @ts-expect-error
     initializers,
     {
       allowListEnabled: false,
