@@ -1,5 +1,6 @@
 import {
   DarkForest,
+  DarkForest__arenaPlayersResultValue0Struct,
   DarkForest__getArenaConstantsResultValue0Struct,
   DarkForest__getGraphConstantsResultValue0Struct,
 } from '../../generated/DarkForest/DarkForest';
@@ -253,7 +254,7 @@ export function loadArenaConstants(): DarkForest__getArenaConstantsResultValue0S
   let result = contract.try_getArenaConstants();
   if (result.reverted) {
     log.error('Arena Constants reverted', []);
-    throw new Error()
+    throw new Error();
   } else {
     return result.value;
   }
@@ -264,19 +265,29 @@ export function loadGraphConstants(): DarkForest__getGraphConstantsResultValue0S
   let result = contract.try_getGraphConstants();
   if (result.reverted) {
     log.error('Graph Constants reverted', []);
-    throw new Error()
+    throw new Error();
   } else {
     return result.value;
   }
 }
-
 
 export function loadWinners(): Array<Address> {
   const contract = DarkForest.bind(dataSource.address());
   let result = contract.try_getWinners();
   if (result.reverted) {
     log.error('Winners reverted', []);
-    throw new Error()
+    throw new Error();
+  } else {
+    return result.value;
+  }
+}
+
+export function loadArenaPlayerInfo(key: Address): DarkForest__arenaPlayersResultValue0Struct {
+  const contract = DarkForest.bind(dataSource.address());
+  let result = contract.try_arenaPlayers(key);
+  if (result.reverted) {
+    log.error('Winners reverted', []);
+    throw new Error();
   } else {
     return result.value;
   }

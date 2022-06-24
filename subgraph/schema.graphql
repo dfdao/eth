@@ -38,6 +38,7 @@ type ArenaPlayer @entity {
   ready: Boolean!
   lastMoveTime: Int!
   lastReadyTime: Int
+  team: Int
 }
 
 type ConfigPlayer @entity {

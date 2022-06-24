@@ -20,7 +20,7 @@ import {
   Player,
 } from '../generated/schema';
 import { hexStringToPaddedUnprefixed } from './helpers/converters';
-import { Bytes, dataSource, log } from '@graphprotocol/graph-ts';
+import { Address, Bytes, dataSource, log } from '@graphprotocol/graph-ts';
 import {
   arenaId,
   buildPlanet,
@@ -30,6 +30,7 @@ import {
   loadArenaConstants,
   loadArenaPlanet,
   loadArenaPlayer,
+  loadArenaPlayerInfo,
   loadGraphConstants,
   loadPlayer,
   loadWinners,
@@ -130,6 +131,8 @@ export function handlePlayerInitialized(event: PlayerInitialized): void {
   player.ready = false;
   player.lastMoveTime = event.block.timestamp.toI32();
 
+  const info = loadArenaPlayerInfo(event.params.player);
+  player.team = info.team.toI32();
   let arena = loadArena(dataSource.address().toHexString());
 
   // Aggregate Entity
