@@ -264,7 +264,7 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
 
     function ready() public {
         require(gs().players[msg.sender].isInitialized, "player does not exist");
-
+        require(!arenaStorage().arenaPlayerInfo[msg.sender].ready, "player already marked ready");
         arenaStorage().arenaPlayerInfo[msg.sender].ready = true;
         arenaStorage().arenaPlayerInfo[msg.sender].lastReadyTime = block.timestamp;
 
@@ -292,6 +292,11 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     }
 
     function notReady() public {
+        require(
+            arenaStorage().arenaPlayerInfo[msg.sender].ready,
+            "player already marked not ready"
+        );
+
         arenaStorage().arenaPlayerInfo[msg.sender].ready = false;
         emit PlayerNotReady(msg.sender, block.timestamp);
     }
