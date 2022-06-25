@@ -284,11 +284,13 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         }
 
         // If code execution arrives here, all players are ready.
-        arenaStorage().startTime = block.timestamp;
-        gs().paused = false;
-        emit PauseStateChanged(false);
-        // Will be player who was the last to signal ready
-        emit GameStarted(msg.sender, block.timestamp);
+        // Only start once.
+        if(arenaStorage().startTime == 0) {
+            gs().paused = false;
+            emit PauseStateChanged(false);
+            arenaStorage().startTime = block.timestamp; 
+            emit GameStarted(msg.sender, block.timestamp);
+        }
     }
 
     function notReady() public {
