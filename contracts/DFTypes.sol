@@ -242,7 +242,6 @@ enum Biome {
 struct ArenaPlanetInfo {
     bool spawnPlanet;
     bool targetPlanet;
-    bool captured;
 }
 
 struct ArenaPlayerInfo {

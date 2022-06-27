@@ -534,7 +534,7 @@ export const blockListInitializers = settings.parse(decodeInitializers, {
   TARGETS_REQUIRED_FOR_VICTORY: 2,
   MANUAL_SPAWN: true,
   TARGET_PLANETS: true,
-  INIT_PLANETS: INIT_PLANETS.slice(0,5),
+  INIT_PLANETS: [INIT_PLANETS[0], INIT_PLANETS[2],INIT_PLANETS[3]],
   INIT_BLOCKLIST: [
     {
       destId: INIT_PLANETS[2].location, 

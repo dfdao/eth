@@ -23,8 +23,7 @@ import {Planet, PlanetExtendedInfo, PlanetExtendedInfo2, PlanetEventMetadata, Pl
 
 contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     event AdminPlanetCreated(uint256 loc);
-    event TargetPlanetInvaded(address player, uint256 loc);
-    event Gameover(uint256 loc, address winner);
+    event Gameover(address winner);
     event TargetCaptured(uint256 loc, address player);
     event PlayerInitialized(address player, uint256 loc);
     event LocationRevealed(address revealer, uint256 loc, uint256 x, uint256 y);
@@ -129,52 +128,22 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         return _location;
     }
 
-    function claimTargetPlanetVictory(uint256 locationId)
-        public
-        onlyWhitelisted
-        notPaused
-        targetPlanetsActive
-    {
+    function claimVictory() public onlyWhitelisted notPaused {
         require(!arenaStorage().gameover, "cannot claim victory when game is over");
 
-        LibPlanet.refreshPlanet(locationId);
-        Planet memory planet = gs().planets[locationId];
-        PlanetExtendedInfo memory planetExtendedInfo = gs().planetsExtendedInfo[locationId];
+        require(_checkGameOver(), "victory condition not met");
 
-        require(planet.owner == msg.sender, "you can only claim victory with planets you own");
-        require(!planetExtendedInfo.destroyed, "planet is destroyed");
-
-        require(
-            arenaStorage().arenaPlanetInfo[locationId].targetPlanet,
-            "you can only claim victory on a target planet"
-        );
-
-        require(
-            (planet.population * 100) / planet.populationCap >=
-                arenaConstants().CLAIM_VICTORY_ENERGY_PERCENT,
-            "planet energy must be greater than victory threshold"
-        );
-
-        if (arenaConstants().BLOCK_CAPTURE) {
-            require(!LibGameUtils.playerBlocked(locationId), "you cannot capture a blocked planet");
+        if (arenaConstants().TEAMS_ENABLED) {
+            ArenaPlayerInfo memory player = arenaStorage().arenaPlayerInfo[msg.sender];
+            uint256 winningTeam = player.team;
+            arenaStorage().winners = arenaStorage().teams[winningTeam];
+        } else {
+            arenaStorage().winners.push(msg.sender);
         }
-
-        arenaStorage().arenaPlanetInfo[locationId].captured = true;
-        emit TargetCaptured(locationId, msg.sender);
-
-        if (_checkGameOver()) {
-            if (arenaConstants().TEAMS_ENABLED) {
-                ArenaPlayerInfo memory player = arenaStorage().arenaPlayerInfo[msg.sender];
-                uint256 winningTeam = player.team;
-                arenaStorage().winners = arenaStorage().teams[winningTeam];
-            } else {
-                arenaStorage().winners.push(msg.sender);
-            }
-            arenaStorage().gameover = true;
-            arenaStorage().endTime = block.timestamp;
-            gs().paused = true;
-            emit Gameover(locationId, msg.sender);
-        }
+        arenaStorage().gameover = true;
+        arenaStorage().endTime = block.timestamp;
+        gs().paused = true;
+        emit Gameover(msg.sender);
     }
 
     function createArenaPlanet(ArenaCreateRevealPlanetArgs memory args) public {
@@ -200,8 +169,7 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         if (args.isTargetPlanet || args.isSpawnPlanet) {
             arenaStorage().arenaPlanetInfo[args.location] = ArenaPlanetInfo(
                 args.isSpawnPlanet,
-                args.isTargetPlanet,
-                false // captured
+                args.isTargetPlanet
             );
         }
 
@@ -285,10 +253,10 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
 
         // If code execution arrives here, all players are ready.
         // Only start once.
-        if(arenaStorage().startTime == 0) {
+        if (arenaStorage().startTime == 0) {
             gs().paused = false;
             emit PauseStateChanged(false);
-            arenaStorage().startTime = block.timestamp; 
+            arenaStorage().startTime = block.timestamp;
             emit GameStarted(msg.sender, block.timestamp);
         }
     }
@@ -303,18 +271,31 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         emit PlayerNotReady(msg.sender, block.timestamp);
     }
 
-    function _checkGameOver() private view returns (bool) {
-        uint256 numTargetPlanets = arenaStorage().targetPlanetIds.length;
+    function _checkGameOver() public returns (bool) {
+        require(arenaConstants().TARGET_PLANETS, "target planets are disabled");
 
-        uint256[] memory targetPlanetIds = arenaStorage().targetPlanetIds;
-
+        uint256[] memory targetPlanets = arenaStorage().targetPlanetIds;
         uint256 captured = 0;
 
-        for (uint256 i = 0; i < numTargetPlanets; i++) {
-            if ((arenaStorage().arenaPlanetInfo[targetPlanetIds[i]]).captured) {
-                captured += 1;
+        for (uint256 i = 0; i < targetPlanets.length; i++) {
+            uint256 locationId = targetPlanets[i];
+            LibPlanet.refreshPlanet(locationId);
+            Planet memory planet = gs().planets[locationId];
+            PlanetExtendedInfo memory planetExtendedInfo = gs().planetsExtendedInfo[locationId];
+
+            if (
+                planet.owner != msg.sender || 
+                (planet.population * 100) / planet.populationCap <
+                arenaConstants().CLAIM_VICTORY_ENERGY_PERCENT ||
+                (arenaConstants().BLOCK_CAPTURE && LibGameUtils.playerBlocked(locationId))
+            ) {
+                continue;
             }
+
+            captured += 1;
+            if (captured >= arenaConstants().TARGETS_REQUIRED_FOR_VICTORY) return true;
         }
-        return (captured == arenaConstants().TARGETS_REQUIRED_FOR_VICTORY);
+
+        return false;
     }
 }

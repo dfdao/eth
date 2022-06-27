@@ -504,8 +504,8 @@ describe('Arena Functions', function () {
       });
       it('needs to have enough energy', async function () {
         await expect(
-          world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id)
-        ).to.be.revertedWith('planet energy must be greater than victory threshold');
+          world.user1Core.claimVictory()
+        ).to.be.revertedWith('victory condition not met');
       });
       describe('time elapsed', async function () {
         beforeEach(async function () {
@@ -513,24 +513,24 @@ describe('Arena Functions', function () {
         });
         it('cannot claim victory with a non-target planet', async function () {
           await expect(
-            world.user1Core.claimTargetPlanetVictory(SPAWN_PLANET_1.id)
-          ).to.be.revertedWith('you can only claim victory on a target planet');
+            world.user1Core.claimVictory()
+          ).to.be.revertedWith('victory condition not met');
         });
         it('must own planet to claim victory', async function () {
           await expect(
-            world.user2Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id)
-          ).to.be.revertedWith('you can only claim victory with planets you own');
+            world.user2Core.claimVictory()
+          ).to.be.revertedWith('victory condition not met');
         });
         it('gameover event emitted after claim victory', async function () {
           await increaseBlockchainTime();
           const planet = await world.contract.planetsExtendedInfo2(LVL0_PLANET_DEEP_SPACE.id);
-          await expect(world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id))
+          await expect(world.user1Core.claimVictory())
             .to.emit(world.contract, 'Gameover')
-            .withArgs(LVL0_PLANET_DEEP_SPACE.id, [world.user1.address]);
+            .withArgs(world.user1.address);
         });
         it('sets gameover to true and winner to msg sender', async function () {
           await increaseBlockchainTime();
-          await world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id);
+          await world.user1Core.claimVictory();
           const winners = await world.contract.getWinners();
           const gameover = await world.contract.getGameover();
           expect(winners.length).to.equal(1);
@@ -596,8 +596,8 @@ describe('Arena Functions', function () {
         );
 
         await expect(
-          world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id)
-        ).to.be.revertedWith('planet energy must be greater than victory threshold');
+          world.user1Core.claimVictory()
+        ).to.be.revertedWith('victory condition not met');
       });
 
       it('get round duration 0 if round not over', async function () {
@@ -608,9 +608,9 @@ describe('Arena Functions', function () {
 
       it('claim victory succeeds and emits Gameover if target is above energy threshold ', async function () {
         await increaseBlockchainTime(600);
-        await expect(world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id))
+        await expect(world.user1Core.claimVictory())
           .to.emit(world.contract, 'Gameover')
-          .withArgs(LVL0_PLANET_DEEP_SPACE.id, world.user1.address);
+          .withArgs(world.user1.address);
 
         expect((await world.contract.getRoundDuration()).toNumber()).to.be.greaterThan(600);
       });
@@ -1234,23 +1234,12 @@ describe('Arena Functions', function () {
 
     it('can claim victory on one planet but game is not over', async function () {
       const targets = planets.filter((p) => p.isTargetPlanet);
-      const claim1Tx = await world.user1Core.claimTargetPlanetVictory(targets[0].location);
+      const claim1Tx = await world.user1Core.claimVictory();
       const claim1Rct = await claim1Tx.wait();
 
-      expect((await world.user1Core.planetsArenaInfo(targets[0].location)).captured).to.equal(true);
-      expect(await world.contract.getGameover()).to.equal(false);
-    });
-    it('can claim victory on two planets and game is  over', async function () {
-      const targets = planets.filter((p) => p.isTargetPlanet);
-      const claim1Tx = await world.user1Core.claimTargetPlanetVictory(targets[0].location);
-      const claim1Rct = await claim1Tx.wait();
-      const claim2Tx = await world.user1Core.claimTargetPlanetVictory(targets[1].location);
-      const claim2Rct = await claim1Tx.wait();
-
-      expect((await world.user1Core.planetsArenaInfo(targets[0].location)).captured).to.equal(true);
-      expect((await world.user1Core.planetsArenaInfo(targets[1].location)).captured).to.equal(true);
       expect(await world.contract.getGameover()).to.equal(true);
     });
+
   });
 
   describe('Blocklist', function () {
@@ -1279,17 +1268,23 @@ describe('Arena Functions', function () {
     it('Confirms that move from spawn to target SHOULD be blocked', async function () {
       const targets = planets.filter((p) => p.isTargetPlanet);
       const spawns = planets.filter((p) => p.isSpawnPlanet);
-      expect(await world.user1Core.inBlocklist(targets[0].location, spawns[0].location));
+
+      expect(await world.user1Core.inBlocklist(LVL1_ASTEROID_2.id, ADMIN_PLANET_CLOAKED.id));
     });
 
     it('Confirms that capture of target IS blocked', async function () {
       // HARD CODED based on INIT PLANET list in constnats LMAO.
       await world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED));
-      const targets = planets.filter((p) => p.isTargetPlanet);
-      const spawns = planets.filter((p) => p.isSpawnPlanet);
+      const constants = await world.user1Core.getArenaConstants();
+      console.log(constants.BLOCK_CAPTURE);
+      console.log(constants.TARGETS_REQUIRED_FOR_VICTORY);
+
+      // there are three planets owned by the player, a spawn planet and two target planets.
+      // the minimum planet threshold is 2. one target planet has been blocked from the player's spawn location.
+      // we should expect to see that there are  
       await expect(
-        world.user1Core.claimTargetPlanetVictory(targets[0].location)
-      ).to.be.revertedWith('you cannot capture a blocked planet');
+        world.user1Core.claimVictory()
+      ).to.be.revertedWith('victory condition not met');
     });
     it('Confirms that move to target from spawn IS blocked', async function () {
       // HARD CODED LMAO.
@@ -1335,7 +1330,7 @@ describe('Arena Functions', function () {
     });
   });
 
-  describe.only('Teams', function () {
+  describe('Teams', function () {
     let world: World;
     const minRadius = initializers.WORLD_RADIUS_MIN;
     async function worldFixture() {
@@ -1419,9 +1414,9 @@ describe('Arena Functions', function () {
       it('claim team victory', async function () {
         await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL0_PLANET_DEEP_SPACE);
         await increaseBlockchainTime();
-        await expect(world.user1Core.claimTargetPlanetVictory(LVL0_PLANET_DEEP_SPACE.id))
+        await expect(world.user1Core.claimVictory())
           .to.emit(world.contract, 'Gameover')
-          .withArgs(LVL0_PLANET_DEEP_SPACE.id, world.user1.address);
+          .withArgs(world.user1.address);
         const winners = await world.contract.getWinners();
         expect(winners[0]).to.equal(world.user1.address);
         expect(winners[1]).to.equal(world.user2.address);
