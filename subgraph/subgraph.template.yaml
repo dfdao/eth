@@ -49,7 +49,7 @@ templates:
       eventHandlers:
         - event: PlayerInitialized(address,uint256)
           handler: handlePlayerInitialized
-        - event: Gameover(uint256,address)
+        - event: Gameover(address)
           handler: handleGameover
         - event: GameStarted(address,uint256)
           handler: handleGameStarted

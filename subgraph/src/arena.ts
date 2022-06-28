@@ -284,7 +284,6 @@ export function handleTargetCaptured(event: TargetCaptured): void {
  * Creates or updates:
  * Arena
  * ArenaPlayer
- * ArenaPlanet
  * Player (aggregate)
  * ConfigPlayer (aggreagte) elo
  */
