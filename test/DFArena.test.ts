@@ -1,4 +1,4 @@
-import { LobbyCreatedEvent } from '@darkforest_eth/contracts/typechain/DarkForest';
+// import { LobbyCreatedEvent } from '@darkforest_eth/contracts/typechain/DarkForest';
 import { ArtifactType } from '@darkforest_eth/types';
 import { expect } from 'chai';
 import { BigNumber, BigNumberish, constants } from 'ethers';
@@ -772,7 +772,7 @@ describe('Arena Functions', function () {
       const rc = await tx.wait();
       if (!rc.events) throw Error('No event occurred');
 
-      const event = rc.events.find((event) => event.event === 'LobbyCreated') as LobbyCreatedEvent;
+      const event = rc.events.find((event) => event.event === 'LobbyCreated') as any;
       expect(event.args.creatorAddress).to.equal(world.user1.address);
 
       const lobbyAddress = event.args.lobbyAddress;
@@ -1300,7 +1300,6 @@ describe('Arena Functions', function () {
       ).to.be.revertedWith('you cannot move to a blocked planet');
     });
     it('Confirms that move to target from non-spawn IS blocked', async function () {
-      // HARD CODED LMAO.
       await world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED));
 
       await increaseBlockchainTime();
