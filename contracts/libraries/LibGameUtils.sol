@@ -745,17 +745,4 @@ library LibGameUtils {
         _planet.populationGrowth = (_planet.populationGrowth * TIME_FACTOR_HUNDREDTHS) / 100;
         _planet.silverGrowth = (_planet.silverGrowth * TIME_FACTOR_HUNDREDTHS) / 100;
     }
-
-    function isBlocked(uint256 target, address player) public view returns (bool) {
-        require(gs().players[player].isInitialized, "player is not initialized");
-
-        // If player home planet is on blocklist, cannot capture
-        uint256 playerHomePlanet = gs().players[player].homePlanetId;
-        return gs().blocklist[target][playerHomePlanet];
-    }
-
-    function playerBlocked(uint256 target) public view returns (bool) {
-        return isBlocked(target, msg.sender);
-    }
-
 }

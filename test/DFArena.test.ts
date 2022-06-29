@@ -87,6 +87,7 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: true,
+        blockedPlanetIds: []
       });
 
       await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
@@ -115,6 +116,7 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: true,
         isSpawnPlanet: false,
+        blockedPlanetIds: []
       });
 
       await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
@@ -147,6 +149,7 @@ describe('Arena Functions', function () {
           requireValidLocationId: true,
           isTargetPlanet: false,
           isSpawnPlanet: false,
+          blockedPlanetIds: []
         },
         {
           location: ADMIN_PLANET_CLOAKED.id,
@@ -158,6 +161,7 @@ describe('Arena Functions', function () {
           requireValidLocationId: false,
           isTargetPlanet: false,
           isSpawnPlanet: false,
+          blockedPlanetIds: []
         },
         {
           location: LVL1_PLANET_SPACE.id,
@@ -169,6 +173,7 @@ describe('Arena Functions', function () {
           requireValidLocationId: true,
           isTargetPlanet: false,
           isSpawnPlanet: false,
+          blockedPlanetIds: []
         },
       ];
       await world.contract.bulkCreatePlanet(planets);
@@ -205,6 +210,7 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: true,
+        blockedPlanetIds: []
       });
 
       const createRevealReceipt = await createReveal.wait();
@@ -237,6 +243,7 @@ describe('Arena Functions', function () {
           requireValidLocationId: false,
           isTargetPlanet: false,
           isSpawnPlanet: true,
+          blockedPlanetIds: []
         };
 
         planetArgList.push(planetArgs);
@@ -283,6 +290,7 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: true,
+        blockedPlanetIds: []
       });
 
       const toPlanetExtended = await world.contract.planetsExtendedInfo(ADMIN_PLANET_CLOAKED.id);
@@ -311,6 +319,7 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: true,
+        blockedPlanetIds: []
       });
 
       const toPlanetExtended = await world.contract.planetsExtendedInfo(ADMIN_PLANET_CLOAKED.id);
@@ -337,6 +346,7 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: false,
+        blockedPlanetIds: []
       });
 
       await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
@@ -366,6 +376,7 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: true,
+        blockedPlanetIds: []
       });
 
       await world.contract.revealLocation(...makeRevealArgs(LVL2_PLANET_DEEP_SPACE, x, y));
@@ -404,6 +415,7 @@ describe('Arena Functions', function () {
           requireValidLocationId: false,
           isTargetPlanet: true,
           isSpawnPlanet: false,
+          blockedPlanetIds: []
         })
       ).to.be.revertedWith('admin cannot create target planets');
     });
@@ -483,6 +495,7 @@ describe('Arena Functions', function () {
         requireValidLocationId: true,
         isTargetPlanet: true,
         isSpawnPlanet: false,
+        blockedPlanetIds: []
       });
       // await increaseBlockchainTime();
 
@@ -566,6 +579,7 @@ describe('Arena Functions', function () {
         requireValidLocationId: true,
         isTargetPlanet: true,
         isSpawnPlanet: false,
+        blockedPlanetIds: []
       });
       return world;
     }
@@ -637,6 +651,7 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: false,
+        blockedPlanetIds: []
       };
       await defaultWorld.contract.createArenaPlanet(planet);
 
@@ -1063,6 +1078,7 @@ describe('Arena Functions', function () {
           requireValidLocationId: false,
           isTargetPlanet: false,
           isSpawnPlanet: true,
+          blockedPlanetIds: []
         };
 
         planetArgList.push(planetArgs);
@@ -1126,6 +1142,7 @@ describe('Arena Functions', function () {
           requireValidLocationId: false,
           isTargetPlanet: false,
           isSpawnPlanet: true,
+          blockedPlanetIds: []
         };
 
         planetArgList.push(planetArgs);
@@ -1260,24 +1277,19 @@ describe('Arena Functions', function () {
         })
       );
     });
-    it.skip('Logs blocklist', async function () {
-      const blocklist = (await world.contract.getGameConstants()).INIT_BLOCKLIST;
-      console.log(blocklist);
-    });
 
     it('Confirms that move from spawn to target SHOULD be blocked', async function () {
       const targets = planets.filter((p) => p.isTargetPlanet);
       const spawns = planets.filter((p) => p.isSpawnPlanet);
 
-      expect(await world.user1Core.inBlocklist(LVL1_ASTEROID_2.id, ADMIN_PLANET_CLOAKED.id));
+      expect(await world.user1Core.isBlocked(LVL1_ASTEROID_2.id, ADMIN_PLANET_CLOAKED.id));
     });
 
     it('Confirms that capture of target IS blocked', async function () {
       // HARD CODED based on INIT PLANET list in constnats LMAO.
       await world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED));
       const constants = await world.user1Core.getArenaConstants();
-      console.log(constants.BLOCK_CAPTURE);
-      console.log(constants.TARGETS_REQUIRED_FOR_VICTORY);
+
 
       // there are three planets owned by the player, a spawn planet and two target planets.
       // the minimum planet threshold is 2. one target planet has been blocked from the player's spawn location.
@@ -1380,6 +1392,7 @@ describe('Arena Functions', function () {
           requireValidLocationId: true,
           isTargetPlanet: true,
           isSpawnPlanet: false,
+          blockedPlanetIds: []
         });
 
         return world;

@@ -242,6 +242,7 @@ enum Biome {
 struct ArenaPlanetInfo {
     bool spawnPlanet;
     bool targetPlanet;
+    uint256[] blockedPlanetIds;
 }
 
 struct ArenaPlayerInfo {
@@ -261,6 +262,7 @@ struct ArenaCreateRevealPlanetArgs {
     bool requireValidLocationId;
     bool isTargetPlanet;
     bool isSpawnPlanet;
+    uint256[] blockedPlanetIds;
 }
 
 struct Modifiers {
@@ -298,12 +300,6 @@ struct RevealProofArgs {
     uint256[2][2] _b;
     uint256[2] _c;
     uint256[9] _input;
-}
-
-// Eventually, very cool to have dynamic blocking based on ownership.
-struct InitBlocklist {
-    uint256 destId;
-    uint256 srcId;
 }
 
 // Values that are critical for determining if a match is valid. 
@@ -386,7 +382,6 @@ struct InitArgs {
     ArenaCreateRevealPlanetArgs[] INIT_PLANETS;
     bool CONFIRM_START;
     uint256 TARGETS_REQUIRED_FOR_VICTORY;
-    InitBlocklist[] INIT_BLOCKLIST;
     bool BLOCK_MOVES;
     bool BLOCK_CAPTURE;    
     bool TEAMS_ENABLED;

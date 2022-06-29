@@ -400,6 +400,7 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
+    blockedPlanetIds: []
   },
   {
     location: ARTIFACT_PLANET_1.id.toHexString(),
@@ -411,6 +412,7 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
+    blockedPlanetIds: []
   },
   {
     location: LVL1_ASTEROID_2.id.toHexString(),
@@ -422,6 +424,7 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: true,
     isSpawnPlanet: false,
+    blockedPlanetIds: [ADMIN_PLANET_CLOAKED.id.toHexString()]
   },
   {
     location: LVL1_PLANET_SPACE.id.toHexString(),
@@ -433,6 +436,7 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: true,
     isSpawnPlanet: false,
+    blockedPlanetIds: [ADMIN_PLANET_CLOAKED.id.toHexString()]
   },
   {
     location: LVL0_PLANET_DEEP_SPACE.id.toHexString(),
@@ -444,6 +448,7 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: true,
     isSpawnPlanet: false,
+    blockedPlanetIds: [ADMIN_PLANET_CLOAKED.id.toHexString()]
   },
   {
     location: LVL0_PLANET_POPCAP_BOOSTED.id.toHexString(),
@@ -455,6 +460,7 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
+    blockedPlanetIds: []
   },
   {
     location: LVL1_ASTEROID_DEEP_SPACE.id.toHexString(),
@@ -466,6 +472,7 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
+    blockedPlanetIds: []
   },
   {
     location: LVL1_PLANET_DEEP_SPACE.id.toHexString(),
@@ -477,6 +484,7 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
+    blockedPlanetIds: []
   },
   {
     location: LVL0_PLANET_POPCAP_BOOSTED.id.toHexString(),
@@ -488,6 +496,7 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
+    blockedPlanetIds: []
   },
   {
     location: LVL3_UNOWNED_DEEP_SPACE.id.toHexString(),
@@ -499,6 +508,7 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
+    blockedPlanetIds: []
   },
   {
     location: LVL3_SPACETIME_2.id.toHexString(),
@@ -510,6 +520,7 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
+    blockedPlanetIds: []
   },
 ]
 
@@ -535,12 +546,6 @@ export const blockListInitializers = settings.parse(decodeInitializers, {
   MANUAL_SPAWN: true,
   TARGET_PLANETS: true,
   INIT_PLANETS: [INIT_PLANETS[0], INIT_PLANETS[2],INIT_PLANETS[3], INIT_PLANETS[4]],
-  INIT_BLOCKLIST: [
-    {
-      destId: INIT_PLANETS[2].location, 
-      srcId: INIT_PLANETS[0].location
-    }
-  ],
   BLOCK_MOVES: true,
   BLOCK_CAPTURE: true,
 });

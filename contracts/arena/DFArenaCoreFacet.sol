@@ -169,8 +169,13 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         if (args.isTargetPlanet || args.isSpawnPlanet) {
             arenaStorage().arenaPlanetInfo[args.location] = ArenaPlanetInfo(
                 args.isSpawnPlanet,
-                args.isTargetPlanet
+                args.isTargetPlanet,
+                args.blockedPlanetIds
             );
+
+            for(uint i = 0; i < args.blockedPlanetIds.length; i++) {
+                arenaStorage().blocklist[args.location][args.blockedPlanetIds[i]] = true;
+            }           
         }
 
         SpaceType spaceType = LibGameUtils.spaceTypeFromPerlin(args.perlin);
@@ -283,11 +288,22 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
             Planet memory planet = gs().planets[locationId];
             PlanetExtendedInfo memory planetExtendedInfo = gs().planetsExtendedInfo[locationId];
 
+            bool myPlanet = planet.owner == msg.sender;
+
+            if (arenaConstants().TEAMS_ENABLED) {
+                myPlanet =
+                    arenaStorage().arenaPlayerInfo[planet.owner].team ==
+                    arenaStorage().arenaPlayerInfo[msg.sender].team;
+            }
+
+            uint256 playerHomePlanet = gs().players[msg.sender].homePlanetId;
+            bool blocked = arenaStorage().blocklist[locationId][playerHomePlanet];
+
             if (
-                planet.owner != msg.sender || 
+                !myPlanet ||
                 (planet.population * 100) / planet.populationCap <
                 arenaConstants().CLAIM_VICTORY_ENERGY_PERCENT ||
-                (arenaConstants().BLOCK_CAPTURE && LibGameUtils.playerBlocked(locationId))
+                (arenaConstants().BLOCK_CAPTURE && blocked)
             ) {
                 continue;
             }

@@ -22,7 +22,6 @@ import {
     PlanetEventMetadata,
     PlanetDefaultStats,
     PlanetData,
-    InitBlocklist,
     Player,
     ArtifactWithMetadata,
     Upgrade,
@@ -500,16 +499,5 @@ contract DFGetterFacet is WithStorage {
                 voyageId: gs().artifactIdToVoyageId[artifact.id]
             });
         }
-    }
-
-    function getBlocklist() public view returns (InitBlocklist[] memory) {
-        return gameConstants().INIT_BLOCKLIST;
-    }
-    
-    /**
-     * Check if src is in blocklist for dest
-     */
-    function inBlocklist(uint256 dest, uint256 src) public view returns (bool) {
-        return gs().blocklist[dest][src];
     }
 }

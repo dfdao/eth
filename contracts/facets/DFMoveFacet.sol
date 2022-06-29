@@ -248,10 +248,9 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
         }
 
         if(arenaConstants().BLOCK_MOVES) {
-            require(
-                !LibGameUtils.playerBlocked(args.newLoc),
-                "you cannot move to a blocked planet"
-            );
+            uint256 playerHomePlanet = gs().players[msg.sender].homePlanetId;
+            bool blocked = arenaStorage().blocklist[args.newLoc][playerHomePlanet];
+            require(!blocked, "you cannot move to a blocked planet");
         }
 
         require(

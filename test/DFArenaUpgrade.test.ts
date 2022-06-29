@@ -36,6 +36,7 @@ describe.skip('Arena Upgrade', function () {
           requireValidLocationId: false,
           isTargetPlanet: true,
           isSpawnPlanet: false,
+          blockedPlanetIds: []
         })
         ).to.be.revertedWith('Diamond: Function does not exist');
     });
@@ -128,6 +129,7 @@ describe.skip('Arena Upgrade', function () {
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: true,
+        blockedPlanetIds: []
       });
 
       await lobby.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));

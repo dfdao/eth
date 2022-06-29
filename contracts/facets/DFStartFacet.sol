@@ -23,7 +23,7 @@ import {LibGameUtils} from "../libraries/LibGameUtils.sol";
 import {DFWhitelistFacet} from "./DFWhitelistFacet.sol";
 
 // Type imports
-import {PlanetDefaultStats, Upgrade, UpgradeBranch, Modifiers, Mod, ArenaCreateRevealPlanetArgs, InitBlocklist, Spaceships} from "../DFTypes.sol";
+import {PlanetDefaultStats, Upgrade, UpgradeBranch, Modifiers, Mod, ArenaCreateRevealPlanetArgs, Spaceships} from "../DFTypes.sol";
 
 contract DFStartFacet is WithStorage, WithArenaStorage {
   event ArenaInitialized(address ownerAddress, address lobbyAddress);
@@ -194,18 +194,6 @@ contract DFStartFacet is WithStorage, WithArenaStorage {
 
       /* Store planet ids for retrieval later */
       arenaConstants().INIT_PLANET_HASHES.push(initHash);
-    }
-
-    /* Load Target blocklist into GameConstants and GameStorage*/
-    gameConstants().INIT_BLOCKLIST = ai().initArgs.INIT_BLOCKLIST;
-
-    uint256 blockLength = ai().initArgs.INIT_BLOCKLIST.length;
-
-    InitBlocklist[] memory tempBlocklist = ai().initArgs.INIT_BLOCKLIST;
-
-    for (uint256 i = 0; i < blockLength; i++) {
-      InitBlocklist memory blockItem = tempBlocklist[i];
-      gs().blocklist[blockItem.destId][blockItem.srcId] = true;
     }
 
     arenaConstants().TARGETS_REQUIRED_FOR_VICTORY = ai()

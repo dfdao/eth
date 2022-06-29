@@ -32,7 +32,6 @@ import {
     PlanetExtendedInfo2,
     AuxiliaryArgs,
     ArenaPlanetInfo,
-    InitBlocklist,
     ArenaPlayerInfo
 } from "../DFTypes.sol";
 
@@ -94,8 +93,6 @@ struct GraphGameConstants {
     uint256[10] CAPTURE_ZONE_PLANET_LEVEL_SCORE;
     uint256 CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED;
     uint256 CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
-    InitBlocklist[] INIT_BLOCKLIST;
-
 }
 
 struct GraphConstants {
@@ -149,6 +146,10 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
         for (uint256 i = startIdx; i < endIdx; i++) {
             ret[i - startIdx] = arenaStorage().targetPlanetIds[i];
         }
+    }
+
+    function isBlocked(uint256 dest, uint256 src) public view returns (bool) {
+        return arenaStorage().blocklist[dest][src];
     }
 
     function bulkGetSpawnPlanetIds(uint256 startIdx, uint256 endIdx)
@@ -306,8 +307,7 @@ contract DFArenaGetterFacet is WithStorage, WithArenaStorage {
             CAPTURE_ZONE_RADIUS: gc.CAPTURE_ZONE_RADIUS,
             CAPTURE_ZONE_PLANET_LEVEL_SCORE: gc.CAPTURE_ZONE_PLANET_LEVEL_SCORE,
             CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED: gc.CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED,
-            CAPTURE_ZONES_PER_5000_WORLD_RADIUS: gc.CAPTURE_ZONES_PER_5000_WORLD_RADIUS,
-            INIT_BLOCKLIST: gc.INIT_BLOCKLIST
+            CAPTURE_ZONES_PER_5000_WORLD_RADIUS: gc.CAPTURE_ZONES_PER_5000_WORLD_RADIUS
         });
 
         return g;

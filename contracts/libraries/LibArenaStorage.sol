@@ -48,6 +48,7 @@ struct ArenaStorage {
     mapping(bytes32 => bool) initPlanetHashes;
     // Teams teamId => playerAddresses
     mapping(uint256 => address[]) teams;
+    mapping(uint256 => mapping(uint256 => bool)) blocklist;
 }
 
 struct ArenaConstants {
