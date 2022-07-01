@@ -236,6 +236,7 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     }
 
     function ready() public {
+        require(arenaConstants().CONFIRM_START, "confirm start not activated");
         require(gs().players[msg.sender].isInitialized, "player does not exist");
         require(!arenaStorage().arenaPlayerInfo[msg.sender].ready, "player already marked ready");
         arenaStorage().arenaPlayerInfo[msg.sender].ready = true;
@@ -267,6 +268,7 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
     }
 
     function notReady() public {
+        require(arenaConstants().CONFIRM_START, "confirm start not activated");
         require(
             arenaStorage().arenaPlayerInfo[msg.sender].ready,
             "player already marked not ready"
