@@ -79,11 +79,12 @@ export function getInitPlanetHash(initPlanet: {
   perlin: number;
   isTargetPlanet: boolean;
   isSpawnPlanet: boolean;
+  blockedPlanetIds: string[];
 }): string {
   const abiCoder = ethers.utils.defaultAbiCoder;
   return ethers.utils.keccak256(
     abiCoder.encode(
-      ['uint', 'uint', 'uint', 'uint', 'uint', 'bool', 'bool', 'bool'],
+      ['uint', 'uint', 'uint', 'uint', 'uint', 'bool', 'bool', 'bool', 'uint[]'],
       [
         BigInt(initPlanet.location),
         BigInt(initPlanet.x),
@@ -93,6 +94,7 @@ export function getInitPlanetHash(initPlanet: {
         initPlanet.requireValidLocationId,
         initPlanet.isTargetPlanet,
         initPlanet.isSpawnPlanet,
+        initPlanet.blockedPlanetIds.map(x => BigInt(x))
       ]
     )
   );

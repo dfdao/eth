@@ -58,7 +58,8 @@ library LibGameUtils {
                 planet.planetType,
                 planet.requireValidLocationId,
                 planet.isTargetPlanet,
-                planet.isSpawnPlanet
+                planet.isSpawnPlanet,
+                planet.blockedPlanetIds
             ))
         );
     }
