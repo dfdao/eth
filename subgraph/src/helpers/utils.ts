@@ -129,16 +129,7 @@ export function buildConfig(
   config.WHITELIST_ENABLED = constants.ai.allowListEnabled;
   config.CONFIRM_START = constants.ac.CONFIRM_START;
   config.TARGETS_REQUIRED_FOR_VICTORY = constants.ac.TARGETS_REQUIRED_FOR_VICTORY.toI32();
-  (config.INIT_BLOCKLIST = constants.gc.INIT_BLOCKLIST.map<string>((v) => {
-    const destId = hexStringToPaddedUnprefixed(v.destId);
-    const srcId = hexStringToPaddedUnprefixed(v.srcId);
-    const b = new Blocklist(`${destId}-${srcId}`);
-    b.destId = destId;
-    b.srcId = srcId;
-    b.save();
-    return b.id;
-  })),
-    (config.BLOCK_CAPTURE = constants.ac.BLOCK_CAPTURE);
+  config.BLOCK_CAPTURE = constants.ac.BLOCK_CAPTURE;
   config.BLOCK_MOVES = constants.ac.BLOCK_MOVES;
   config.TEAMS_ENABLED = constants.ac.TEAMS_ENABLED;
   config.NUM_TEAMS = constants.ac.NUM_TEAMS.toI32();
@@ -176,7 +167,13 @@ export function buildPlanet(contract: DarkForest, id: string, locationDec: BigIn
   planet.isSpaceJunkHalved = isSpaceJunkHalved(locationId);
   planet.spaceType = toSpaceType(planetData.info.spaceType);
   planet.captured = false;
-
+  planet.blockedPlanetIds = arenaData.blockedPlanetIds.map<string>((x) =>
+    arenaId(hexStringToPaddedUnprefixed(x))
+  );
+  planet.blockedPlanetHashes = arenaData.blockedPlanetIds.map<string>((x) =>
+    hexStringToPaddedUnprefixed(x)
+  );
+  
   let arena = Arena.load(contract._address.toHexString());
 
   if (!arena) {
