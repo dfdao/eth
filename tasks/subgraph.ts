@@ -58,7 +58,7 @@ async function subgraphCodegen(_args: HardhatArguments, hre: HardhatRuntimeEnvir
   const yaml = (await fs.readFile(path.join(subgraphPath, 'subgraph.template.yaml')))
     .toString()
     .replace(/{{{CONTRACT_ADDRESS}}}/g, CONTRACT_ADDRESS)
-    .replace(/#{{{START_BLOCK}}}/g, START_BLOCK.toString()) // Gnosis Optimism '938640'
+    .replace(/#{{{START_BLOCK}}}/g, '1332939') // Gnosis Optimism '938640'
     .replace(/{{{DARKFOREST_ABI_PATH}}}/g, path.join(abisPath, 'DarkForest_stripped.json'))
     .replace(
       /{{{DARKFOREST_ABI_PATH}}}/g,
