@@ -58,6 +58,7 @@ contract DFStartFacet is WithStorage, WithArenaStorage {
     snarkConstants().PERLIN_MIRROR_Y = ai().initArgs.PERLIN_MIRROR_Y;
     snarkConstants().PERLIN_LENGTH_SCALE = ai().initArgs.PERLIN_LENGTH_SCALE;
 
+    gameConstants().PLANET_LEVEL_THRESHOLDS = ai().initArgs.PLANET_LEVEL_THRESHOLDS;
     gameConstants().ADMIN_CAN_ADD_PLANETS = ai().initArgs.ADMIN_CAN_ADD_PLANETS;
     gameConstants().WORLD_RADIUS_LOCKED = ai().initArgs.WORLD_RADIUS_LOCKED;
     gameConstants().WORLD_RADIUS_MIN = ai().initArgs.WORLD_RADIUS_MIN;

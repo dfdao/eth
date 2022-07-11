@@ -26,6 +26,7 @@ import {
   toPlanetType,
   toSpaceType,
 } from './converters';
+import { MAX_INT_32 } from './constants';
 
 export function arenaId(id: string): string {
   return `${dataSource.address().toHexString()}-${id}`;
@@ -100,7 +101,7 @@ export function buildConfig(
   config.PLANETHASH_KEY = constants.sc.PLANETHASH_KEY.toI32();
   config.PLANET_LEVEL_JUNK = constants.gc.PLANET_LEVEL_JUNK.map<i32>((x) => x.toI32());
   config.PLANET_LEVEL_THRESHOLDS = constants.gc.PLANET_LEVEL_THRESHOLDS.map<i32>((x) => x.toI32());
-  config.PLANET_RARITY = constants.gc.PLANET_RARITY.toI32();
+  config.PLANET_RARITY = constants.gc.PLANET_RARITY.gt(BigInt.fromI32(MAX_INT_32)) ? MAX_INT_32 : constants.gc.PLANET_RARITY.toI32();
   config.PLANET_TRANSFER_ENABLED = constants.gc.PLANET_TRANSFER_ENABLED;
   config.PLANET_TYPE_WEIGHTS = constants.gc.PLANET_TYPE_WEIGHTS;
   config.SILVER_SCORE_VALUE = constants.gc.SILVER_SCORE_VALUE.toI32();
