@@ -165,18 +165,17 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
             require(arenaConstants().MANUAL_SPAWN, "admin cannot create spawn planets");
             arenaStorage().spawnPlanetIds.push(args.location);
         }
+        
+        arenaStorage().arenaPlanetInfo[args.location] = ArenaPlanetInfo(
+            args.isSpawnPlanet,
+            args.isTargetPlanet,
+            args.blockedPlanetIds
+        );
 
-        if (args.isTargetPlanet || args.isSpawnPlanet) {
-            arenaStorage().arenaPlanetInfo[args.location] = ArenaPlanetInfo(
-                args.isSpawnPlanet,
-                args.isTargetPlanet,
-                args.blockedPlanetIds
-            );
-
-            for(uint i = 0; i < args.blockedPlanetIds.length; i++) {
-                arenaStorage().blocklist[args.location][args.blockedPlanetIds[i]] = true;
-            }           
-        }
+        for(uint i = 0; i < args.blockedPlanetIds.length; i++) {
+            arenaStorage().blocklist[args.location][args.blockedPlanetIds[i]] = true;
+        }           
+        
 
         SpaceType spaceType = LibGameUtils.spaceTypeFromPerlin(args.perlin);
         LibPlanet._initializePlanet(
