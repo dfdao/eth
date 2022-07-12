@@ -69,6 +69,7 @@ export function buildConfig(
   config.CAPTURE_ZONE_RADIUS = constants.gc.CAPTURE_ZONE_RADIUS;
   config.CAPTURE_ZONES_ENABLED = constants.gc.CAPTURE_ZONES_ENABLED;
   config.CAPTURE_ZONES_PER_5000_WORLD_RADIUS = constants.gc.CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
+  config.CLAIM_VICTORY_ENERGY_PERCENT = constants.ac.CLAIM_VICTORY_ENERGY_PERCENT;
   config.CONFIG_HASH = constants.ac.CONFIG_HASH;
   config.CONFIRM_START = constants.ac.CONFIRM_START;
   config.DISABLE_ZK_CHECKS = constants.sc.DISABLE_ZK_CHECKS;
