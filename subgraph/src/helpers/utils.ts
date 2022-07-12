@@ -116,7 +116,7 @@ export function buildConfig(
     constants.ac.SPACESHIPS.gear,
     constants.ac.SPACESHIPS.titan,
   ];
-  config.SPACETYPE_KEY = constants.sc.PLANETHASH_KEY;
+  config.SPACETYPE_KEY = constants.sc.SPACETYPE_KEY;
   config.SPAWN_RIM_AREA = constants.gc.SPAWN_RIM_AREA;
   config.START_PAUSED = constants.ac.START_PAUSED;
   config.TARGET_PLANETS = constants.ac.TARGET_PLANETS;
