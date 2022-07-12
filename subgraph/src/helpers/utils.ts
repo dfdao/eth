@@ -52,59 +52,63 @@ export function buildConfig(
 ): ArenaConfig {
   const config = new ArenaConfig(arenaId);
   config.arena = arenaId;
-  config.ABANDON_RANGE_CHANGE_PERCENT = constants.gc.ABANDON_SPEED_CHANGE_PERCENT.toI32();
-  config.ABANDON_SPEED_CHANGE_PERCENT = constants.gc.ABANDON_SPEED_CHANGE_PERCENT.toI32();
+  // Good to here
+  config.ABANDON_RANGE_CHANGE_PERCENT = constants.gc.ABANDON_SPEED_CHANGE_PERCENT;
+  config.ABANDON_SPEED_CHANGE_PERCENT = constants.gc.ABANDON_SPEED_CHANGE_PERCENT;
   config.ADMIN_CAN_ADD_PLANETS = constants.gc.ADMIN_CAN_ADD_PLANETS;
-  config.ARTIFACT_POINT_VALUES = constants.gc.ARTIFACT_POINT_VALUES.map<i32>((x) => x.toI32());
-  config.BIOMEBASE_KEY = constants.sc.BIOMEBASE_KEY.toI32();
-  config.BIOME_THRESHOLD_1 = constants.gc.BIOME_THRESHOLD_1.toI32();
-  config.BIOME_THRESHOLD_2 = constants.gc.BIOME_THRESHOLD_2.toI32();
+  config.ARTIFACT_POINT_VALUES = constants.gc.ARTIFACT_POINT_VALUES;
+  config.BIOME_THRESHOLD_1 = constants.gc.BIOME_THRESHOLD_1;
+  config.BIOME_THRESHOLD_2 = constants.gc.BIOME_THRESHOLD_2;
+  config.BIOMEBASE_KEY = constants.sc.BIOMEBASE_KEY;
+  config.BLOCK_CAPTURE = constants.ac.BLOCK_CAPTURE;
+  config.BLOCK_MOVES = constants.ac.BLOCK_MOVES;
+  config.CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL = config.CAPTURE_ZONE_COUNT =
+    constants.gc.CAPTURE_ZONE_COUNT;
+  config.CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED = constants.gc.CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED;
+  config.CAPTURE_ZONE_PLANET_LEVEL_SCORE = constants.gc.CAPTURE_ZONE_PLANET_LEVEL_SCORE;
+  config.CAPTURE_ZONE_RADIUS = constants.gc.CAPTURE_ZONE_RADIUS;
   config.CAPTURE_ZONES_ENABLED = constants.gc.CAPTURE_ZONES_ENABLED;
-  config.CAPTURE_ZONES_PER_5000_WORLD_RADIUS =
-    constants.gc.CAPTURE_ZONES_PER_5000_WORLD_RADIUS.toI32();
-  config.CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL =
-    constants.gc.CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL.toI32();
-  config.CAPTURE_ZONE_COUNT = constants.gc.CAPTURE_ZONE_COUNT.toI32();
-  config.CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED = constants.gc.CAPTURE_ZONE_HOLD_BLOCKS_REQUIRED.toI32();
-  config.CAPTURE_ZONE_PLANET_LEVEL_SCORE = constants.gc.CAPTURE_ZONE_PLANET_LEVEL_SCORE.map<i32>(
-    (x) => x.toI32()
-  );
-  config.CAPTURE_ZONE_RADIUS = constants.gc.CAPTURE_ZONE_RADIUS.toI32();
-  config.CLAIM_VICTORY_ENERGY_PERCENT = constants.ac.CLAIM_VICTORY_ENERGY_PERCENT.toI32();
+  config.CAPTURE_ZONES_PER_5000_WORLD_RADIUS = config.CLAIM_VICTORY_ENERGY_PERCENT =
+    constants.ac.CLAIM_VICTORY_ENERGY_PERCENT;
   config.CONFIG_HASH = constants.ac.CONFIG_HASH;
+  config.CONFIRM_START = constants.ac.CONFIRM_START;
   config.DISABLE_ZK_CHECKS = constants.sc.DISABLE_ZK_CHECKS;
-  config.INIT_PERLIN_MAX = constants.gc.INIT_PERLIN_MAX.toI32();
-  config.INIT_PERLIN_MIN = constants.gc.INIT_PERLIN_MIN.toI32();
+  config.INIT_PERLIN_MAX = constants.gc.INIT_PERLIN_MAX;
+  config.INIT_PERLIN_MIN = constants.gc.INIT_PERLIN_MIN;
   config.INIT_PLANET_HASHES = constants.ac.INIT_PLANET_HASHES;
-  config.LOCATION_REVEAL_COOLDOWN = constants.gc.LOCATION_REVEAL_COOLDOWN.toI32();
+  config.LOCATION_REVEAL_COOLDOWN = constants.gc.LOCATION_REVEAL_COOLDOWN;
   config.MANUAL_SPAWN = constants.ac.MANUAL_SPAWN;
-  config.MAX_NATURAL_PLANET_LEVEL = constants.gc.MAX_NATURAL_PLANET_LEVEL.toI32();
+  config.MAX_NATURAL_PLANET_LEVEL = constants.gc.MAX_NATURAL_PLANET_LEVEL;
   config.MODIFIERS = [
-    constants.ac.MODIFIERS.popCap.toI32(),
-    constants.ac.MODIFIERS.popGrowth.toI32(),
-    constants.ac.MODIFIERS.silverCap.toI32(),
-    constants.ac.MODIFIERS.silverGrowth.toI32(),
-    constants.ac.MODIFIERS.range.toI32(),
-    constants.ac.MODIFIERS.speed.toI32(),
-    constants.ac.MODIFIERS.defense.toI32(),
-    constants.ac.MODIFIERS.barbarianPercentage.toI32(),
+    constants.ac.MODIFIERS.popCap,
+    constants.ac.MODIFIERS.popGrowth,
+    constants.ac.MODIFIERS.silverCap,
+    constants.ac.MODIFIERS.silverGrowth,
+    constants.ac.MODIFIERS.range,
+    constants.ac.MODIFIERS.speed,
+    constants.ac.MODIFIERS.defense,
+    constants.ac.MODIFIERS.barbarianPercentage,
   ];
   config.NO_ADMIN = constants.ac.NO_ADMIN;
-  config.PERLIN_LENGTH_SCALE = constants.sc.PERLIN_LENGTH_SCALE.toI32();
+  config.NUM_TEAMS = constants.ac.NUM_TEAMS;
+  config.PERLIN_LENGTH_SCALE = constants.sc.PERLIN_LENGTH_SCALE;
   config.PERLIN_MIRROR_X = constants.sc.PERLIN_MIRROR_X;
   config.PERLIN_MIRROR_Y = constants.sc.PERLIN_MIRROR_Y;
-  config.PERLIN_THRESHOLD_1 = constants.gc.PERLIN_THRESHOLD_1.toI32();
-  config.PERLIN_THRESHOLD_2 = constants.gc.PERLIN_THRESHOLD_2.toI32();
-  config.PERLIN_THRESHOLD_3 = constants.gc.PERLIN_THRESHOLD_3.toI32();
-  config.PHOTOID_ACTIVATION_DELAY = constants.gc.PHOTOID_ACTIVATION_DELAY.toI32();
-  // Good to here
-  config.PLANETHASH_KEY = constants.sc.PLANETHASH_KEY.toI32();
-  config.PLANET_LEVEL_JUNK = constants.gc.PLANET_LEVEL_JUNK.map<i32>((x) => x.toI32());
-  config.PLANET_LEVEL_THRESHOLDS = constants.gc.PLANET_LEVEL_THRESHOLDS.map<i32>((x) => x.toI32());
-  config.PLANET_RARITY = constants.gc.PLANET_RARITY.gt(BigInt.fromI32(MAX_INT_32)) ? MAX_INT_32 : constants.gc.PLANET_RARITY.toI32();
+  config.PERLIN_THRESHOLD_1 = constants.gc.PERLIN_THRESHOLD_1;
+  config.PERLIN_THRESHOLD_2 = constants.gc.PERLIN_THRESHOLD_2;
+  config.PERLIN_THRESHOLD_3 = constants.gc.PERLIN_THRESHOLD_3;
+  config.PHOTOID_ACTIVATION_DELAY = constants.gc.PHOTOID_ACTIVATION_DELAY;
+  config.PLANET_LEVEL_JUNK = constants.gc.PLANET_LEVEL_JUNK;
+  config.PLANET_LEVEL_THRESHOLDS = constants.gc.PLANET_LEVEL_THRESHOLDS;
+  config.PLANET_RARITY = constants.gc.PLANET_RARITY;
   config.PLANET_TRANSFER_ENABLED = constants.gc.PLANET_TRANSFER_ENABLED;
   config.PLANET_TYPE_WEIGHTS = constants.gc.PLANET_TYPE_WEIGHTS;
-  config.SILVER_SCORE_VALUE = constants.gc.SILVER_SCORE_VALUE.toI32();
+  config.PLANETHASH_KEY = constants.sc.PLANETHASH_KEY;
+  config.RANDOM_ARTIFACTS = constants.ac.RANDOM_ARTIFACTS;
+  config.RANKED = constants.ac.RANKED;
+  config.SILVER_SCORE_VALUE = constants.gc.SILVER_SCORE_VALUE;
+  config.SPACE_JUNK_ENABLED = constants.gc.SPACE_JUNK_ENABLED;
+  config.SPACE_JUNK_LIMIT = constants.gc.SPACE_JUNK_LIMIT;
   config.SPACESHIPS = [
     constants.ac.SPACESHIPS.mothership,
     constants.ac.SPACESHIPS.whale,
@@ -112,30 +116,21 @@ export function buildConfig(
     constants.ac.SPACESHIPS.gear,
     constants.ac.SPACESHIPS.titan,
   ];
-  config.SPACETYPE_KEY = constants.sc.SPACETYPE_KEY.toI32();
-  config.SPACE_JUNK_ENABLED = constants.gc.SPACE_JUNK_ENABLED;
-  config.SPACE_JUNK_LIMIT = constants.gc.SPACE_JUNK_LIMIT.toI32();
-  config.SPAWN_RIM_AREA = constants.gc.SPAWN_RIM_AREA.toI32();
-  config.TARGET_PLANETS = constants.ac.TARGET_PLANETS;
-  config.TIME_FACTOR_HUNDREDTHS = constants.gc.TIME_FACTOR_HUNDREDTHS.toI32();
-  config.TOKEN_MINT_END_TIMESTAMP = constants.gc.TOKEN_MINT_END_TIMESTAMP; // Might be BigInt
-  config.WORLD_RADIUS_LOCKED = constants.gc.WORLD_RADIUS_LOCKED;
-  config.WORLD_RADIUS_MIN = constants.gc.WORLD_RADIUS_MIN.toI32();
+  config.SPACETYPE_KEY = constants.sc.PLANETHASH_KEY;
+  config.SPAWN_RIM_AREA = constants.gc.SPAWN_RIM_AREA;
   config.START_PAUSED = constants.ac.START_PAUSED;
-  config.RANDOM_ARTIFACTS = constants.ac.RANDOM_ARTIFACTS;
+  config.TARGET_PLANETS = constants.ac.TARGET_PLANETS;
+  config.TARGETS_REQUIRED_FOR_VICTORY = constants.ac.TARGETS_REQUIRED_FOR_VICTORY;
+  config.TEAMS_ENABLED = constants.ac.TEAMS_ENABLED;
+  config.TIME_FACTOR_HUNDREDTHS = constants.gc.TIME_FACTOR_HUNDREDTHS;
+  config.TOKEN_MINT_END_TIMESTAMP = constants.gc.TOKEN_MINT_END_TIMESTAMP; // Might be BigInt
   // Map Address => hexString => Bytes
   config.WHITELIST = constants.ai.allowedAddresses.map<Bytes>((x) =>
     Bytes.fromHexString(x.toHexString())
   );
   config.WHITELIST_ENABLED = constants.ai.allowListEnabled;
-  config.CONFIRM_START = constants.ac.CONFIRM_START;
-  config.TARGETS_REQUIRED_FOR_VICTORY = constants.ac.TARGETS_REQUIRED_FOR_VICTORY.toI32();
-  config.BLOCK_CAPTURE = constants.ac.BLOCK_CAPTURE;
-  config.BLOCK_MOVES = constants.ac.BLOCK_MOVES;
-  config.TEAMS_ENABLED = constants.ac.TEAMS_ENABLED;
-  config.NUM_TEAMS = constants.ac.NUM_TEAMS.toI32();
-  config.RANKED = constants.ac.RANKED;
-
+  config.WORLD_RADIUS_LOCKED = constants.gc.WORLD_RADIUS_LOCKED;
+  config.WORLD_RADIUS_MIN = constants.gc.WORLD_RADIUS_MIN;
   return config;
 }
 
@@ -153,8 +148,8 @@ export function buildPlanet(contract: DarkForest, id: string, locationDec: BigIn
     planet.x = bjjFieldElementToSignedInt(planetData.revealedCoords.x);
     planet.y = bjjFieldElementToSignedInt(planetData.revealedCoords.y);
   }
-  planet.perlin = planetData.info.perlin.toI32();
-  planet.level = planetData.planet.planetLevel.toI32();
+  planet.perlin = planetData.info.perlin;
+  planet.level = planetData.planet.planetLevel;
   planet.planetType = toPlanetType(planetData.planet.planetType);
   planet.targetPlanet = arenaData.targetPlanet;
   planet.spawnPlanet = arenaData.spawnPlanet;
@@ -174,7 +169,7 @@ export function buildPlanet(contract: DarkForest, id: string, locationDec: BigIn
   planet.blockedPlanetHashes = arenaData.blockedPlanetIds.map<string>((x) =>
     hexStringToPaddedUnprefixed(x)
   );
-  
+
   let arena = Arena.load(contract._address.toHexString());
 
   if (!arena) {

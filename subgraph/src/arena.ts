@@ -22,7 +22,7 @@ import {
   Player,
 } from '../generated/schema';
 import { hexStringToPaddedUnprefixed } from './helpers/converters';
-import { Bytes, dataSource, log } from '@graphprotocol/graph-ts';
+import { Bytes, dataSource, log, BigInt } from '@graphprotocol/graph-ts';
 import {
   arenaId,
   buildPlanet,
@@ -318,10 +318,11 @@ export function handleGameover(event: Gameover): void {
   const config = loadArenaConfig(arena.id);
 
   if (config.RANKED) {
-    if (config.TEAMS_ENABLED && config.NUM_TEAMS == 2) {
+    // Can only add ELO for teams if ranked = true and num teams = 2.
+    if (config.TEAMS_ENABLED && config.NUM_TEAMS.equals(BigInt.fromI32(2))) {
       // Get ArenaTeams
       let arenaTeams: ArenaTeam[] = [];
-      for (var teamId = 1; teamId <= config.NUM_TEAMS; teamId++) {
+      for (var teamId = 1; config.NUM_TEAMS.ge(BigInt.fromI32(teamId)); teamId++) {
         const arenaTeam = ArenaTeam.load(arenaId(teamId.toString()));
         // Guarantee each team has at least one player.
         if (arenaTeam && arenaTeam.players.length > 0) arenaTeams.push(arenaTeam);

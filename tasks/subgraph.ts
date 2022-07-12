@@ -42,14 +42,15 @@ task(TASK_SUBGRAPH_CODEGEN, 'generate subgraph files before graph deploy').setAc
 async function subgraphCodegen(_args: HardhatArguments, hre: HardhatRuntimeEnvironment) {
   const { CONTRACT_ADDRESS, START_BLOCK } = hre.contracts;
 
-  const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
+  // const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
 
-  // For fast indexing in dev, only start from current block.
+  // // For fast indexing in dev, only start from current block.
 
-  const startBlock = isDev
-    ? (await hre.ethers.provider.getBlockNumber()).toString()
-    : START_BLOCK.toString();
+  // const startBlock = isDev
+  //   ? (await hre.ethers.provider.getBlockNumber()).toString()
+  //   : START_BLOCK.toString();
   // hardcoded for now, will be able to set with plugin
+  
   const subgraphPath = path.join(hre.config.paths.root, 'subgraph');
 
   const abisPath = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'abis');
@@ -58,7 +59,7 @@ async function subgraphCodegen(_args: HardhatArguments, hre: HardhatRuntimeEnvir
   const yaml = (await fs.readFile(path.join(subgraphPath, 'subgraph.template.yaml')))
     .toString()
     .replace(/{{{CONTRACT_ADDRESS}}}/g, CONTRACT_ADDRESS)
-    .replace(/#{{{START_BLOCK}}}/g, '1332939') // Gnosis Optimism '938640'
+    .replace(/#{{{START_BLOCK}}}/g, '1335096') // Gnosis Optimism '1333305, 1333216'
     .replace(/{{{DARKFOREST_ABI_PATH}}}/g, path.join(abisPath, 'DarkForest_stripped.json'))
     .replace(
       /{{{DARKFOREST_ABI_PATH}}}/g,
