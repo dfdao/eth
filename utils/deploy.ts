@@ -172,11 +172,14 @@ export async function createLobby(
 ): Promise<any> {
   const diamond = await hre.ethers.getContractAt('DarkForest', diamondAddress);
   const diamondInit = await hre.ethers.getContractAt('DFArenaInitialize', diamondInitAddress);
-  // // @ts-expect-error
   const diamondInitFunctionCall = diamondInit.interface.encodeFunctionData('init', [
-    whitelistEnabled,
-    '',
+    // // @ts-expect-error
     initializers,
+    {
+      allowListEnabled: false,
+      artifactBaseURI: "",
+      allowedAddresses: []
+    },
   ]);
 
   const arenaTx = await diamond.createLobby(diamondInit.address, diamondInitFunctionCall);

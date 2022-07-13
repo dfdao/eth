@@ -242,10 +242,14 @@ enum Biome {
 struct ArenaPlanetInfo {
     bool spawnPlanet;
     bool targetPlanet;
+    uint256[] blockedPlanetIds;
 }
 
 struct ArenaPlayerInfo {
     uint256 moves;
+    bool ready;
+    uint256 lastReadyTime;
+    uint256 team;
 }
 
 struct ArenaCreateRevealPlanetArgs {
@@ -258,6 +262,7 @@ struct ArenaCreateRevealPlanetArgs {
     bool requireValidLocationId;
     bool isTargetPlanet;
     bool isSpawnPlanet;
+    uint256[] blockedPlanetIds;
 }
 
 struct Modifiers {
@@ -297,8 +302,9 @@ struct RevealProofArgs {
     uint256[9] _input;
 }
 
-// THIS NEEDS TO BE UPDATED ANY TIME A CONSTANT IS ADDED
-struct AllConstants {
+// Values that are critical for determining if a match is valid. 
+struct InitArgs {
+    bool START_PAUSED;
     bool ADMIN_CAN_ADD_PLANETS;
     uint256 LOCATION_REVEAL_COOLDOWN;
     uint256 TOKEN_MINT_END_TIMESTAMP;
@@ -326,7 +332,7 @@ struct AllConstants {
     uint256[10] PLANET_LEVEL_THRESHOLDS;
     uint256 PLANET_RARITY;
     bool PLANET_TRANSFER_ENABLED;
-    // uint8[5][10][4] PLANET_TYPE_WEIGHTS; // spaceType (enum 0-3) -> planetLevel (0-7) -> planetType (enum 0-4)
+    uint8[5][10][4] PLANET_TYPE_WEIGHTS; // spaceType (enum 0-3) -> planetLevel (0-7) -> planetType (enum 0-4)
     uint256 SILVER_SCORE_VALUE;
     uint256[6] ARTIFACT_POINT_VALUES;
     uint256 PHOTOID_ACTIVATION_DELAY;
@@ -368,11 +374,25 @@ struct AllConstants {
     // Manual Spawn
     bool MANUAL_SPAWN;
 
-    Modifiers MODIFIERS;
-    Spaceships SPACESHIPS;
+    uint256[8] MODIFIERS;
+    bool[5] SPACESHIPS;
+
+    bool RANDOM_ARTIFACTS;
     bool NO_ADMIN;
-    bytes32[] INIT_PLANET_HASHES;
-    bytes32 CONFIG_HASH;
-
-
+    ArenaCreateRevealPlanetArgs[] INIT_PLANETS;
+    bool CONFIRM_START;
+    uint256 TARGETS_REQUIRED_FOR_VICTORY;
+    bool BLOCK_MOVES;
+    bool BLOCK_CAPTURE;    
+    bool TEAMS_ENABLED;
+    uint256 NUM_TEAMS;
+    bool RANKED;
 }
+
+// Values that are useful but not constant across arenas (whitelisted players, which planet goes to which team)
+struct AuxiliaryArgs {
+    bool allowListEnabled;
+    string artifactBaseURI;
+    address[] allowedAddresses;
+}
+

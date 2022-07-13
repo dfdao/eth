@@ -42,26 +42,24 @@ const { DEPLOYER_MNEMONIC, ADMIN_PUBLIC_ADDRESS } = process.env;
 const AbiItemsToIgnore = [
   {
     facet: 'DFCoreFacet',
-    functions: ['initializePlayer', 'giveSpaceShips'],
-    events: ['PlayerInitialized', 'ArtifactFound', 'LocationRevealed'],
+    functions: ['initializePlayer', 'giveceShips'],
+    events: ['PlayerInitialized', 'LocationRevealed'],
   },
   {
     facet: 'DFAdminFacet',
-    events: ['AdminPlanetCreated'],
+    events: ['AdminPlanetCreated','PauseStateChanged'],
   },
-  {
-    facet: 'DFLobbyFacet',
-    functions: ['createLobby'],
-    events: ['LobbyCreated'],
-  },
-  {
-    facet: 'DFArenaGetterFacet',
-    functions: ['getArenaConstants']
-  },
+  // {
+  //   facet: 'DFArenaGetterFacet',
+  //   functions: ['getArenaConstants']
+  // },
   {
     facet: 'DFArtifactFacet',
     events: ['ArtifactFound'],
-    functions: ['giveSpaceShips']
+  },
+  {
+    facet: 'DFMoveFacet',
+    events: ['GameStarted'],
   }
 ];
 
@@ -154,6 +152,7 @@ const config: HardhatUserConfig = {
         // Same mnemonic used in the .env.example
         mnemonic: 'change typical hire slam amateur loan grid fix drama electric seed label',
       },
+      blockGasLimit: 15000000,
       chainId: 31337,
     },
     // Used when you dont specify a network on command line, like in tests

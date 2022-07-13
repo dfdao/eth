@@ -79,11 +79,12 @@ export function getInitPlanetHash(initPlanet: {
   perlin: number;
   isTargetPlanet: boolean;
   isSpawnPlanet: boolean;
+  blockedPlanetIds: string[];
 }): string {
   const abiCoder = ethers.utils.defaultAbiCoder;
   return ethers.utils.keccak256(
     abiCoder.encode(
-      ['uint', 'uint', 'uint', 'uint', 'uint', 'bool', 'bool', 'bool'],
+      ['uint', 'uint', 'uint', 'uint', 'uint', 'bool', 'bool', 'bool', 'uint[]'],
       [
         BigInt(initPlanet.location),
         BigInt(initPlanet.x),
@@ -93,6 +94,7 @@ export function getInitPlanetHash(initPlanet: {
         initPlanet.requireValidLocationId,
         initPlanet.isTargetPlanet,
         initPlanet.isSpawnPlanet,
+        initPlanet.blockedPlanetIds.map(x => BigInt(x))
       ]
     )
   );
@@ -237,7 +239,8 @@ export async function makeWhitelistArgs(key: string, recipient: string) {
 
 export function makeInitArgs(
   planetLoc: TestLocation,
-  spawnRadius: number = initializers.WORLD_RADIUS_MIN
+  spawnRadius: number = initializers.WORLD_RADIUS_MIN,
+  team: number = 0
 ): [
   [BigNumberish, BigNumberish],
   [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]],
@@ -251,7 +254,9 @@ export function makeInitArgs(
     BigNumberish,
     BigNumberish,
     BigNumberish
-  ]
+  ],
+  BigNumberish
+
 ] {
   return [
     [BN_ZERO, BN_ZERO],
@@ -270,6 +275,7 @@ export function makeInitArgs(
       PERLIN_MIRROR_X ? '1' : '0',
       PERLIN_MIRROR_Y ? '1' : '0',
     ],
+    team
   ];
 }
 

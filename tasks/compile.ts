@@ -27,11 +27,11 @@ async function copyAbi(
   // graph but largely dont need these
 
   const filteredDiamondAbi = abi.filter(abiFilter);
-  // const finalAbi = copyAbiNoPlanetTypeWeights(filteredDiamondAbi);
+  const finalAbi = copyAbiNoPlanetTypeWeights(filteredDiamondAbi);
 
   await fs.writeFile(
     path.join(abisDir, 'DarkForest_stripped.json'),
-    prettier.format(JSON.stringify(filteredDiamondAbi), {
+    prettier.format(JSON.stringify(finalAbi), {
       semi: false,
       parser: 'json',
     })
@@ -81,7 +81,7 @@ function copyAbiNoPlanetTypeWeights(abi: any): any {
   console.log('abi length', abi.length);
   for (var h = 0; h < abi.length; h++) {
     var abiItem = abi[h];
-    if(abiItem.name == 'getAllConstants') {
+    if(abiItem.name == 'getInitializers') {
       // Position of gameConstants in getAllConstantsABI
       var gameConstantsComponents = abiItem.outputs[0].components[0].components;
       for(var i = 0; i < gameConstantsComponents.length; i++) {

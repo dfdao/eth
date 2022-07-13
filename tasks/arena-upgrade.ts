@@ -17,6 +17,7 @@ import {
 import * as fs from "fs";
 import * as path from "path";
 import { remove } from 'lodash';
+import { deployArenaStarterFacet } from './arena-deploy';
 
 const DEPLOY_PATH = './facets.json';
 
@@ -60,19 +61,22 @@ async function upgrade(args: { load: boolean }, hre: HardhatRuntimeEnvironment) 
     const getterFacet = await deployGetterFacet({}, libraries, hre);
     const whitelistFacet = await deployWhitelistFacet({}, libraries, hre);
     const adminFacet = await deployAdminFacet({}, libraries, hre);
-    const lobbyFacet = await deployLobbyFacet({}, libraries, hre);
+    // const lobbyFacet = await deployLobbyFacet({}, libraries, hre);
     const captureFacet = await deployCaptureFacet({}, libraries, hre);
   
     const arenaGetterFacet = await deployContract('DFArenaGetterFacet', {}, hre);
     const arenaCoreFacet = await deployContract('DFArenaCoreFacet', { LibGameUtils: libraries.LibGameUtils, LibPlanet: libraries.LibPlanet }, hre);
     const spaceshipConfigFacet = await deployContract('DFSpaceshipConfigFacet', { LibGameUtils: libraries.LibGameUtils }, hre);
     const tournamentFacet = await deployContract('DFArenaTournamentFacet', {}, hre);
-  
+    const startFacet = await deployArenaStarterFacet({}, libraries, hre);
+
     const arenaDiamondCuts: FacetCut[] = [
       ...changes.getFacetCuts('DFArenaGetterFacet', arenaGetterFacet),
       ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
       ...changes.getFacetCuts('DFSpaceshipConfigFacet', spaceshipConfigFacet),
       ...changes.getFacetCuts('DFTournamentFacet', tournamentFacet),
+      ...changes.getFacetCuts('DFStartFacet', startFacet),
+
     ];
   
   
@@ -84,7 +88,7 @@ async function upgrade(args: { load: boolean }, hre: HardhatRuntimeEnvironment) 
       ...changes.getFacetCuts('DFGetterFacet', getterFacet),
       ...changes.getFacetCuts('DFWhitelistFacet', whitelistFacet),
       ...changes.getFacetCuts('DFAdminFacet', adminFacet),
-      ...changes.getFacetCuts('DFLobbyFacet', lobbyFacet),
+      // ...changes.getFacetCuts('DFLobbyFacet', lobbyFacet),
       ...changes.getFacetCuts('DFCaptureFacet', captureFacet),
     ];
   

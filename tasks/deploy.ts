@@ -24,12 +24,12 @@ async function deploy(
 ) {
   const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
 
-  let whitelistEnabled: boolean;
+  let allowListEnabled: boolean;
   if (typeof args.whitelist === 'undefined') {
     // `whitelistEnabled` defaults to `false` in dev but `true` in prod
-    whitelistEnabled = isDev ? false : true;
+    allowListEnabled = isDev ? false : true;
   } else {
-    whitelistEnabled = args.whitelist;
+    allowListEnabled = args.whitelist;
   }
 
   // Ensure we have required keys in our initializers
@@ -56,7 +56,7 @@ async function deploy(
   }
 
   const [diamond, diamondInit, initReceipt, libraries] = await deployAndCut(
-    { ownerAddress: deployer.address, whitelistEnabled, initializers: hre.initializers },
+    { ownerAddress: deployer.address, allowListEnabled, initializers: hre.initializers },
     hre
   );
 
@@ -202,11 +202,13 @@ async function saveDeploy(
 export async function deployAndCut(
   {
     ownerAddress,
-    whitelistEnabled,
+    allowListEnabled,
+    allowedAddresses = [],
     initializers,
   }: {
     ownerAddress: string;
-    whitelistEnabled: boolean;
+    allowListEnabled: boolean;
+    allowedAddresses?: string[]
     initializers: HardhatRuntimeEnvironment['initializers'];
   },
   hre: HardhatRuntimeEnvironment
@@ -254,7 +256,7 @@ export async function deployAndCut(
   const getterFacet = await deployGetterFacet({}, libraries, hre);
   const whitelistFacet = await deployWhitelistFacet({}, libraries, hre);
   const adminFacet = await deployAdminFacet({}, libraries, hre);
-  const lobbyFacet = await deployLobbyFacet({}, {}, hre);
+  // const lobbyFacet = await deployLobbyFacet({}, {}, hre);
 
   // The `cuts` to perform for Dark Forest facets
   const darkForestFacetCuts = [
@@ -265,7 +267,7 @@ export async function deployAndCut(
     ...changes.getFacetCuts('DFGetterFacet', getterFacet),
     ...changes.getFacetCuts('DFWhitelistFacet', whitelistFacet),
     ...changes.getFacetCuts('DFAdminFacet', adminFacet),
-    ...changes.getFacetCuts('DFLobbyFacet', lobbyFacet),
+    // ...changes.getFacetCuts('DFLobbyFacet', lobbyFacet),
   ];
 
   if (isDev) {
@@ -290,9 +292,12 @@ export async function deployAndCut(
   // More info here: https://eips.ethereum.org/EIPS/eip-2535#diamond-interface
   const initAddress = diamondInit.address;
   const initFunctionCall = diamondInit.interface.encodeFunctionData('init', [
-    whitelistEnabled,
-    tokenBaseUri,
     initializers,
+    {
+      allowListEnabled,
+      artifactBaseURI: tokenBaseUri,
+      allowedAddresses
+    }
   ]);
 
   const initTx = await diamondCut.diamondCut(toCut, initAddress, initFunctionCall);
@@ -475,7 +480,7 @@ export async function deployCaptureFacet(
   return contract;
 }
 
-async function deployDiamondCutFacet({}, libraries: Libraries, hre: HardhatRuntimeEnvironment) {
+export async function deployDiamondCutFacet({}, libraries: Libraries, hre: HardhatRuntimeEnvironment) {
   const factory = await hre.ethers.getContractFactory('DiamondCutFacet');
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
@@ -483,7 +488,7 @@ async function deployDiamondCutFacet({}, libraries: Libraries, hre: HardhatRunti
   return contract;
 }
 
-async function deployDiamond(
+export async function deployDiamond(
   {
     ownerAddress,
     diamondCutAddress,
@@ -513,7 +518,7 @@ async function deployDiamondInit({}, { LibGameUtils }: Libraries, hre: HardhatRu
   return contract;
 }
 
-async function deployDiamondLoupeFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
+export async function deployDiamondLoupeFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
   const factory = await hre.ethers.getContractFactory('DiamondLoupeFacet');
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();
@@ -521,7 +526,7 @@ async function deployDiamondLoupeFacet({}, {}: Libraries, hre: HardhatRuntimeEnv
   return contract;
 }
 
-async function deployOwnershipFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
+export async function deployOwnershipFacet({}, {}: Libraries, hre: HardhatRuntimeEnvironment) {
   const factory = await hre.ethers.getContractFactory('OwnershipFacet');
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();

@@ -20,6 +20,10 @@ contract DFWhitelistFacet is WithStorage {
         return ws().allowedAccountsArray.length;
     }
 
+    function allowListEnabled() public view returns (bool) {
+        return ws().enabled;
+    }
+
     function isWhitelisted(address _addr) public view returns (bool) {
         if (!ws().enabled) {
             return true;
@@ -78,12 +82,18 @@ contract DFWhitelistFacet is WithStorage {
         // xDAI ONLY
         payable(recipient).transfer(ws().drip);
     }
-
+    
     function addToWhitelist(address toAdd) public onlyAdmin {
         require(!ws().allowedAccounts[toAdd], "player is already allowed");
 
         ws().allowedAccounts[toAdd] = true;
         ws().allowedAccountsArray.push(toAdd);
+    }
+
+    function bulkAddToWhitelist(address[] memory addresses) public onlyAdmin {
+        for(uint256 i = 0; i < addresses.length; i++) {
+            addToWhitelist(addresses[i]);
+        }
     }
 
     function removeFromWhitelist(address toRemove) public onlyAdmin {

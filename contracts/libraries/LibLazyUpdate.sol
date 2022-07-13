@@ -6,6 +6,7 @@ import {ABDKMath64x64} from "../vendor/libraries/ABDKMath64x64.sol";
 
 // Storage imports
 import {LibStorage, GameStorage} from "./LibStorage.sol";
+import {ArenaStorage, ArenaConstants, LibArenaStorage} from "./LibArenaStorage.sol";
 
 // Type imports
 import {
@@ -23,6 +24,14 @@ import {
 library LibLazyUpdate {
     function gs() internal pure returns (GameStorage storage) {
         return LibStorage.gameStorage();
+    }
+
+    function arenaStorage() internal pure returns (ArenaStorage storage) {
+        return LibArenaStorage.arenaStorage();
+    }
+
+    function arenaConstants() internal pure returns (ArenaConstants storage) {
+        return LibArenaStorage.arenaConstants();
     }
 
     function _updateSilver(
@@ -148,9 +157,11 @@ library LibLazyUpdate {
         Planet memory planet,
         PlanetExtendedInfo2 memory planetExtendedInfo2,
         ArrivalData memory arrival
-    ) private pure returns (uint256 newArtifactOnPlanet, Planet memory) {
+    ) private view returns (uint256 newArtifactOnPlanet, Planet memory) {
+        uint256 sendingTeam = arenaStorage().arenaPlayerInfo[arrival.player].team;
+        uint256 planetOwnerTeam = arenaStorage().arenaPlayerInfo[planet.owner].team;
         // checks whether the planet is owned by the player sending ships
-        if (arrival.player == planet.owner) {
+        if (arrival.player == planet.owner || (arenaConstants().TEAMS_ENABLED && sendingTeam == planetOwnerTeam)) {
             // simply increase the population if so
             planet.population = planet.population + arrival.popArriving;
         } else {

@@ -109,15 +109,21 @@ struct InitArgs {
     uint256 CAPTURE_ZONES_PER_5000_WORLD_RADIUS;
 }
 
+struct AuxiliaryArgs {
+    bool allowListEnabled;
+    string artifactBaseURI;
+    address[] allowedAddresses;
+}
+
+
 contract DFInitialize is WithStorage {
     using ERC721MetadataStorage for ERC721MetadataStorage.Layout;
 
     // You can add parameters to this function in order to pass in
     // data to set initialize state variables
     function init(
-        bool whitelistEnabled,
-        string memory artifactBaseURI,
-        InitArgs memory initArgs
+        InitArgs memory initArgs,
+        AuxiliaryArgs memory auxArgs
     ) external {
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -133,11 +139,11 @@ contract DFInitialize is WithStorage {
         // TODO(#1925): Add name and symbol for the artifact tokens
         ERC721MetadataStorage.layout().name = "";
         ERC721MetadataStorage.layout().symbol = "";
-        ERC721MetadataStorage.layout().baseURI = artifactBaseURI;
+        ERC721MetadataStorage.layout().baseURI = auxArgs.artifactBaseURI;
 
         gs().diamondAddress = address(this);
 
-        ws().enabled = whitelistEnabled;
+        ws().enabled = auxArgs.allowListEnabled;
         ws().drip = 0.05 ether;
         ws().relayerRewardsEnabled = false;
         ws().relayerReward = 0.01 ether;

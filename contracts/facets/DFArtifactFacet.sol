@@ -228,37 +228,6 @@ contract DFArtifactFacet is WithStorage, ERC721 {
       by a given player. This is a first pass at getting spaceships into the game.
       Eventually ships will be able to spawn in the game naturally (construction, capturing, etc.)
      */
-    function giveSpaceShips(uint256 locationId) public onlyWhitelisted {
-        require(!gs().players[msg.sender].claimedShips, "player already claimed ships");
-        require(
-            gs().planets[locationId].owner == msg.sender && gs().planets[locationId].isHomePlanet,
-            "you can only spawn ships on your home planet"
-        );
-
-        address owner = gs().planets[locationId].owner;
-        uint256 id1 =
-            LibArtifactUtils.createAndPlaceSpaceship(
-                locationId,
-                owner,
-                ArtifactType.ShipMothership
-            );
-        uint256 id2 =
-            LibArtifactUtils.createAndPlaceSpaceship(locationId, owner, ArtifactType.ShipCrescent);
-        uint256 id3 =
-            LibArtifactUtils.createAndPlaceSpaceship(locationId, owner, ArtifactType.ShipWhale);
-        uint256 id4 =
-            LibArtifactUtils.createAndPlaceSpaceship(locationId, owner, ArtifactType.ShipGear);
-        uint256 id5 =
-            LibArtifactUtils.createAndPlaceSpaceship(locationId, owner, ArtifactType.ShipTitan);
-
-        emit ArtifactFound(msg.sender, id1, locationId);
-        emit ArtifactFound(msg.sender, id2, locationId);
-        emit ArtifactFound(msg.sender, id3, locationId);
-        emit ArtifactFound(msg.sender, id4, locationId);
-        emit ArtifactFound(msg.sender, id5, locationId);
-
-        gs().players[msg.sender].claimedShips = true;
-    }
 
     function adminGiveArtifact(DFTCreateArtifactArgs memory args) public onlyAdmin {
         Artifact memory artifact = createArtifact(args);

@@ -14,12 +14,13 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 import {WithArenaStorage} from "../libraries/LibArenaStorage.sol";
 
 contract DFArenaTournamentFacet is WithStorage, WithArenaStorage {
-    event LobbyCreated(address ownerAddress, address lobbyAddress);
+    event LobbyCreated(address creatorAddress, address lobbyAddress);
 
     function createLobby(address initAddress, bytes calldata initData) public {
         address diamondAddress = gs().diamondAddress;
-        address diamondCutAddress =
-            IDiamondLoupe(diamondAddress).facetAddress(IDiamondCut.diamondCut.selector);
+        address diamondCutAddress = IDiamondLoupe(diamondAddress).facetAddress(
+            IDiamondCut.diamondCut.selector
+        );
         Diamond lobby = new Diamond(diamondAddress, diamondCutAddress);
 
         IDiamondLoupe.Facet[] memory facets = IDiamondLoupe(diamondAddress).facets();
@@ -39,9 +40,9 @@ contract DFArenaTournamentFacet is WithStorage, WithArenaStorage {
 
         IDiamondCut(address(lobby)).diamondCut(facetCut, initAddress, initData);
 
-        /* only transfer if ownership has not changed*/
-        if(IERC173(address(lobby)).owner() == diamondAddress) 
+        if (IERC173(address(lobby)).owner() == diamondAddress) {
             IERC173(address(lobby)).transferOwnership(msg.sender);
+        }
 
         emit LobbyCreated(msg.sender, address(lobby));
 

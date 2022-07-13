@@ -114,10 +114,12 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
 
         _executeMove(args);
         
-        if(arenaStorage().startTime == 0) {
+        
+        if(!(arenaConstants().CONFIRM_START) && arenaStorage().startTime == 0) {
            arenaStorage().startTime = block.timestamp; 
            emit GameStarted(msg.sender, block.timestamp);
         }
+
         arenaStorage().arenaPlayerInfo[msg.sender].moves++;
 
         LibGameUtils.updateWorldRadius();
@@ -245,10 +247,18 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
             );
         }
 
+        if(arenaConstants().BLOCK_MOVES) {
+            uint256 playerHomePlanet = gs().players[msg.sender].homePlanetId;
+            bool blocked = arenaStorage().blocklist[args.newLoc][playerHomePlanet];
+            require(!blocked, "you cannot move to a blocked planet");
+        }
+
         require(
             gs().planets[args.oldLoc].silver >= args.silverMoved,
             "Tried to move more silver than what exists"
         );
+
+
 
         if (args.movedArtifactId != 0) {
             require(
