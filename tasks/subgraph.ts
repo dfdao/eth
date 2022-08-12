@@ -42,15 +42,15 @@ task(TASK_SUBGRAPH_CODEGEN, 'generate subgraph files before graph deploy').setAc
 async function subgraphCodegen(_args: HardhatArguments, hre: HardhatRuntimeEnvironment) {
   const { CONTRACT_ADDRESS, START_BLOCK } = hre.contracts;
 
-  // const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
+  const isDev = hre.network.name === 'localhost' || hre.network.name === 'hardhat';
 
   // // For fast indexing in dev, only start from current block.
 
-  // const startBlock = isDev
-  //   ? (await hre.ethers.provider.getBlockNumber()).toString()
-  //   : START_BLOCK.toString();
+  const startBlock = isDev
+    ? (await hre.ethers.provider.getBlockNumber()).toString()
+    : START_BLOCK.toString();
   // hardcoded for now, will be able to set with plugin
-  
+
   const subgraphPath = path.join(hre.config.paths.root, 'subgraph');
 
   const abisPath = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'abis');
@@ -59,7 +59,7 @@ async function subgraphCodegen(_args: HardhatArguments, hre: HardhatRuntimeEnvir
   const yaml = (await fs.readFile(path.join(subgraphPath, 'subgraph.template.yaml')))
     .toString()
     .replace(/{{{CONTRACT_ADDRESS}}}/g, CONTRACT_ADDRESS)
-    .replace(/#{{{START_BLOCK}}}/g, '1335096') // Gnosis Optimism '1333305, 1333216'
+    .replace(/#{{{START_BLOCK}}}/g, isDev ? startBlock : '1335096') // Gnosis Optimism '1333305, 1333216'
     .replace(/{{{DARKFOREST_ABI_PATH}}}/g, path.join(abisPath, 'DarkForest_stripped.json'))
     .replace(
       /{{{DARKFOREST_ABI_PATH}}}/g,
@@ -77,10 +77,15 @@ async function subgraphCodegen(_args: HardhatArguments, hre: HardhatRuntimeEnvir
 
 task(TASK_SUBGRAPH_DEPLOY, 'deploy subgraph')
   .addParam('name', 'name of subgraph', undefined, types.string)
-  .addOptionalParam('rpc', 'RPC URL. Index on prod network. Make sure packages has correct contract address.', undefined, types.string)
+  .addOptionalParam(
+    'rpc',
+    'RPC URL. Index on prod network. Make sure packages has correct contract address.',
+    undefined,
+    types.string
+  )
   .setAction(subgraphDeploy);
 
-async function subgraphDeploy(args: { name: string, rpc: string }, hre: HardhatRuntimeEnvironment) {
+async function subgraphDeploy(args: { name: string; rpc: string }, hre: HardhatRuntimeEnvironment) {
   // The subgraph local docker crashes if we don't set automine true
   await hre.network.provider.send('evm_setAutomine', [true]);
   await hre.network.provider.send('evm_setIntervalMining', [0]);
