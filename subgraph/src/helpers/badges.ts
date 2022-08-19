@@ -1,9 +1,7 @@
 import { Arena, ArenaPlayer, Badge, ConfigPlayer } from '../../generated/schema';
+import { CONTRACT_ADDRESS } from '@darkforest_eth/contracts';
 
-const NICE = 69;
-const BASED = 420;
-const OUCH = 24 * 60 * 60;
-const START_ENGINE = 1;
+import { NICE, BASED, OUCH, START_ENGINE } from './constants';
 
 export interface BadgeItems {
   startYourEngine: bool;
