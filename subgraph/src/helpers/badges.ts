@@ -1,5 +1,4 @@
 import { Arena, ArenaPlayer, Badge, ConfigPlayer } from '../../generated/schema';
-import { CONTRACT_ADDRESS } from '@darkforest_eth/contracts';
 
 import { NICE, BASED, OUCH, START_ENGINE } from './constants';
 
