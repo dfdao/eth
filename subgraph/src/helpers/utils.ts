@@ -9,6 +9,7 @@ import {
   ArenaConfig,
   ArenaPlanet,
   ArenaPlayer,
+  Badge,
   Blocklist,
   ConfigPlayer,
   Player,
@@ -287,4 +288,13 @@ export function loadArenaPlayerInfo(key: Address): DarkForest__arenaPlayersResul
   } else {
     return result.value;
   }
+}
+
+export function loadBadge(id: string): Badge {
+  const entity = Badge.load(id);
+  if (!entity) {
+    log.error('attempting to load unkown Badge: {}', [id]);
+    throw new Error();
+  }
+  return entity;
 }

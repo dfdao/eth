@@ -17,6 +17,7 @@ import {
   ArenaPlanet,
   ArenaPlayer,
   ArenaTeam,
+  Badge,
   ConfigPlayer,
   ConfigTeam,
   Player,
@@ -34,6 +35,8 @@ import {
   loadArenaPlanet,
   loadArenaPlayer,
   loadArenaPlayerInfo,
+  loadBadge,
+  loadConfigPlayer,
   loadGraphConstants,
   loadPlayer,
   loadWinners,
@@ -42,30 +45,37 @@ import { DarkForest as DFDiamond } from '../generated/templates';
 import { buildConfig } from './helpers/utils';
 import { updateElo } from './helpers/elo';
 import { DEFAULT_ELO, NO_TEAM } from './helpers/constants';
+import { updateBadge } from './helpers/badges';
 
 function updatePlayerElo(configHash: string, p1Id: string, p2Id: string, winner: string): void {
-  let p1 = ConfigPlayer.load(configPlayerId(p1Id, configHash));
-  let p2 = ConfigPlayer.load(configPlayerId(p2Id, configHash));
-  if (p1 && p2) {
-    const p1Win = p1.address == winner;
-    const newElo = updateElo(p1.elo, p2.elo, p1Win);
-    const p1NewRating = newElo[0];
-    const p2NewRating = newElo[1];
-    p1.elo = p1NewRating as i32;
-    p2.elo = p2NewRating as i32;
-    p1.gamesFinished += p1.gamesFinished + 1;
-    p2.gamesFinished += p2.gamesFinished + 1;
+  const p1 = loadConfigPlayer(configPlayerId(p1Id, configHash));
+  const p2 = loadConfigPlayer(configPlayerId(p2Id, configHash));
 
-    if (p1Win) {
-      p1.wins = p1.wins + 1;
-      p2.losses = p2.losses + 1;
-    } else {
-      p1.losses = p1.losses + 1;
-      p2.wins = p2.wins + 1;
-    }
-    p1.save();
-    p2.save();
+  const p1Win = p1.address == winner;
+  const newElo = updateElo(p1.elo, p2.elo, p1Win);
+  const p1NewRating = newElo[0];
+  const p2NewRating = newElo[1];
+  p1.elo = p1NewRating as i32;
+  p2.elo = p2NewRating as i32;
+  // We increment the gamesFinished in the GameOver for the winner no matter what.
+  // Here, we only increment for the player who didn't win.
+  if(p1.address != winner) {
+    p1.gamesFinished += p1.gamesFinished + 1;
   }
+  if(p2.address != winner) {
+    p2.gamesFinished += p2.gamesFinished + 1;
+  }
+
+  if (p1Win) {
+    p1.wins = p1.wins + 1;
+    p2.losses = p2.losses + 1;
+  } else {
+    p1.losses = p1.losses + 1;
+    p2.wins = p2.wins + 1;
+  }
+  p1.save();
+  p2.save();
+  
 }
 
 function updateTeamElo(
@@ -289,7 +299,6 @@ export function handleTargetCaptured(event: TargetCaptured): void {
  */
 export function handleGameover(event: Gameover): void {
   const arena = loadArena(dataSource.address().toHexString());
-
   const winnerAddress = event.params.winner.toHexString();
 
   // Every ArenaPlayer and Player gets updated
@@ -308,13 +317,52 @@ export function handleGameover(event: Gameover): void {
 
   arena.gameOver = true;
   arena.endTime = event.block.timestamp.toI32();
-  // Edge case: If you win a match, but haven't made a move, duration is startTime is creationTime.
-  if (arena.startTime) arena.duration = arena.endTime - arena.startTime;
+  // Edge case: If you win a match, but haven't made a move, duration is endTime - creationTime.
+  if (arena.startTime) {
+    arena.duration = arena.endTime - arena.startTime;
+  } else {
+    arena.duration = arena.endTime - arena.creationTime;
+  }
 
   arena.winners = winners.map<string>((playerId) => arenaId(playerId));
   arena.save();
 
-  //TODO: Add teams here for more general logic
+  // Update ConfigPlayer (not ELO related)
+  const configPlayerIdString = configPlayerId(winnerAddress, arena.configHash.toHexString());
+  const p1 = loadConfigPlayer(configPlayerIdString);
+  // Update Best Time
+  if (p1.bestTime) {
+    const bestTimeArena = loadArena(p1.bestTime!);
+    if (bestTimeArena.duration > arena.duration) {
+      p1.bestTime = arena.id;
+    }
+  } else {
+    p1.bestTime = arena.id;
+  }
+  // Update GamesFinished
+  p1.gamesFinished += p1.gamesFinished + 1;
+  // Update Badges
+  let badges = p1.badge;
+  const winningPlayer = loadArenaPlayer(arenaId(winnerAddress));
+  if(badges) {
+    const allTimeBadges = loadBadge(p1.badge!);
+    updateBadge(allTimeBadges, arena, winningPlayer, p1);
+  }
+  else {
+    const newBadges = new Badge(configPlayerIdString);
+    newBadges.configPlayer = p1.id;
+    newBadges.startYourEngine = false;
+    newBadges.nice = false;
+    newBadges.based = false;
+    newBadges.ouch = false;
+    newBadges.save();
+    updateBadge(newBadges, arena, winningPlayer, p1);
+    p1.badge = newBadges.id;
+  }
+
+  p1.save();
+
+  // TODO: Add teams here for more general logic
   const config = loadArenaConfig(arena.id);
 
   if (config.RANKED) {
@@ -332,14 +380,9 @@ export function handleGameover(event: Gameover): void {
         const t1Addresses = arenaTeams[0].playerAddresses;
         const t2Addresses = arenaTeams[1].playerAddresses;
         // Winning player must be on one of the teams
-        if(t1Addresses.includes(winnerAddress) || t2Addresses.includes(winnerAddress)) {
+        if (t1Addresses.includes(winnerAddress) || t2Addresses.includes(winnerAddress)) {
           log.info('updating team elo', []);
-          updateTeamElo(
-            arena.configHash.toHexString(),
-            t1Addresses,
-            t2Addresses,
-            winnerAddress
-          );
+          updateTeamElo(arena.configHash.toHexString(), t1Addresses, t2Addresses, winnerAddress);
         }
       }
     } else if (!config.TEAMS_ENABLED && arena.players.length == 2) {
