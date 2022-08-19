@@ -69,15 +69,27 @@ type ConfigPlayer @entity {
   player: Player!
   gamesStarted: Int!
   gamesFinished: Int!
+  bestTime: Arena # stores the top time
   wins: Int!
   losses: Int!
   elo: Int!
+  badge: Badge
+  # Non-competitive Badges
 }
 
 type Blocklist @entity {
   id: ID!
   destId: String!
   srcId: String!
+}
+
+type Badge @entity {
+  id: ID!
+  configPlayer: ConfigPlayer!
+  startYourEngine: Boolean!
+  nice: Boolean!,
+  based: Boolean!,
+  ouch: Boolean!
 }
 
 type ArenaConfig @entity {
