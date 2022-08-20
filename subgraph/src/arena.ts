@@ -340,7 +340,7 @@ export function handleGameover(event: Gameover): void {
     p1.bestTime = arena.id;
   }
   // Update GamesFinished
-  p1.gamesFinished += p1.gamesFinished + 1;
+  p1.gamesFinished = p1.gamesFinished + 1;
   // Update Badges
   let badges = p1.badge;
   const winningPlayer = loadArenaPlayer(arenaId(winnerAddress));
