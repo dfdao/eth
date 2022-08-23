@@ -123,6 +123,7 @@ export function handleLobbyCreated(event: LobbyCreated): void {
   arena.players = new Array<string>();
   arena.configHash = Bytes.fromHexString('0x00');
   arena.creationTime = event.block.timestamp.toI32();
+  arena.startTime = event.block.timestamp.toI32(); // Arena startTime is creationTime until player initializes.
 
   // Note: this will be a problem if / when block.number > 2 billion
   arena.creationBlock = event.block.number.toI32();
@@ -318,11 +319,7 @@ export function handleGameover(event: Gameover): void {
   arena.gameOver = true;
   arena.endTime = event.block.timestamp.toI32();
   // Edge case: If you win a match, but haven't made a move, duration is endTime - creationTime.
-  if (arena.startTime) {
-    arena.duration = arena.endTime - arena.startTime;
-  } else {
-    arena.duration = arena.endTime - arena.creationTime;
-  }
+  arena.duration = arena.endTime - arena.startTime;
 
   arena.winners = winners.map<string>((playerId) => arenaId(playerId));
   arena.save();
@@ -340,7 +337,7 @@ export function handleGameover(event: Gameover): void {
     p1.bestTime = arena.id;
   }
   // Update GamesFinished
-  p1.gamesFinished += p1.gamesFinished + 1;
+  p1.gamesFinished = p1.gamesFinished + 1;
   // Update Badges
   let badges = p1.badge;
   const winningPlayer = loadArenaPlayer(arenaId(winnerAddress));
