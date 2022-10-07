@@ -9,17 +9,7 @@ import {LibStorage, GameStorage} from "./LibStorage.sol";
 import {ArenaStorage, ArenaConstants, LibArenaStorage} from "./LibArenaStorage.sol";
 
 // Type imports
-import {
-    Planet,
-    PlanetExtendedInfo,
-    PlanetExtendedInfo2,
-    PlanetType,
-    PlanetEventMetadata,
-    PlanetEventType,
-    ArrivalData,
-    ArrivalType,
-    Artifact
-} from "../DFTypes.sol";
+import {Planet, PlanetExtendedInfo, PlanetExtendedInfo2, PlanetType, PlanetEventMetadata, PlanetEventType, ArrivalData, ArrivalType, Artifact} from "../DFTypes.sol";
 
 library LibLazyUpdate {
     function gs() internal pure returns (GameStorage storage) {
@@ -72,44 +62,41 @@ library LibLazyUpdate {
             return;
         }
 
-        int128 _timeElapsed =
-            ABDKMath64x64.sub(
-                ABDKMath64x64.fromUInt(updateToTime),
-                ABDKMath64x64.fromUInt(planetExtendedInfo.lastUpdated)
-            );
+        int128 _timeElapsed = ABDKMath64x64.sub(
+            ABDKMath64x64.fromUInt(updateToTime),
+            ABDKMath64x64.fromUInt(planetExtendedInfo.lastUpdated)
+        );
 
         int128 _one = ABDKMath64x64.fromUInt(1);
 
-        int128 _denominator =
-            ABDKMath64x64.add(
-                ABDKMath64x64.mul(
-                    ABDKMath64x64.exp(
-                        ABDKMath64x64.div(
+        int128 _denominator = ABDKMath64x64.add(
+            ABDKMath64x64.mul(
+                ABDKMath64x64.exp(
+                    ABDKMath64x64.div(
+                        ABDKMath64x64.mul(
                             ABDKMath64x64.mul(
-                                ABDKMath64x64.mul(
-                                    ABDKMath64x64.fromInt(-4),
-                                    ABDKMath64x64.fromUInt(planet.populationGrowth)
-                                ),
-                                _timeElapsed
+                                ABDKMath64x64.fromInt(-4),
+                                ABDKMath64x64.fromUInt(planet.populationGrowth)
                             ),
-                            ABDKMath64x64.fromUInt(planet.populationCap)
-                        )
-                    ),
-                    ABDKMath64x64.sub(
-                        ABDKMath64x64.div(
-                            ABDKMath64x64.fromUInt(planet.populationCap),
-                            ABDKMath64x64.fromUInt(planet.population)
+                            _timeElapsed
                         ),
-                        _one
+                        ABDKMath64x64.fromUInt(planet.populationCap)
                     )
                 ),
-                _one
-            );
+                ABDKMath64x64.sub(
+                    ABDKMath64x64.div(
+                        ABDKMath64x64.fromUInt(planet.populationCap),
+                        ABDKMath64x64.fromUInt(planet.population)
+                    ),
+                    _one
+                )
+            ),
+            _one
+        );
 
-        uint256 newPopulation =
-            ABDKMath64x64.toUInt(
-                ABDKMath64x64.div(ABDKMath64x64.fromUInt(planet.populationCap), _denominator)
-            );
+        uint256 newPopulation = ABDKMath64x64.toUInt(
+            ABDKMath64x64.div(ABDKMath64x64.fromUInt(planet.populationCap), _denominator)
+        );
 
         // If paused, no energy growth
         if (planetExtendedInfo2.pausers > 0 && newPopulation > planet.population) {
@@ -161,7 +148,10 @@ library LibLazyUpdate {
         uint256 sendingTeam = arenaStorage().arenaPlayerInfo[arrival.player].team;
         uint256 planetOwnerTeam = arenaStorage().arenaPlayerInfo[planet.owner].team;
         // checks whether the planet is owned by the player sending ships
-        if (arrival.player == planet.owner || (arenaConstants().TEAMS_ENABLED && sendingTeam == planetOwnerTeam)) {
+        if (
+            arrival.player == planet.owner ||
+            (arenaConstants().TEAMS_ENABLED && sendingTeam == planetOwnerTeam)
+        ) {
             // simply increase the population if so
             planet.population = planet.population + arrival.popArriving;
         } else {

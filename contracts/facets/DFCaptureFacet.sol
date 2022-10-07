@@ -117,8 +117,8 @@ contract DFCaptureFacet is WithStorage {
     function planetInCaptureZone(uint256 x, uint256 y) public returns (bool) {
         setNextGenerationBlock();
 
-        uint256 generationBlock =
-            gs().nextChangeBlock - gameConstants().CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL;
+        uint256 generationBlock = gs().nextChangeBlock -
+            gameConstants().CAPTURE_ZONE_CHANGE_BLOCK_INTERVAL;
         bytes32 generationBlockHash = blockhash(generationBlock);
 
         int256 planetX = getIntFromUInt(x);
@@ -182,8 +182,7 @@ contract DFCaptureFacet is WithStorage {
     }
 
     function getIntFromUInt(uint256 n) public pure returns (int256) {
-        uint256 LOCATION_ID_UB =
-            21888242871839275222246405745257275088548364400416034343698204186575808495617;
+        uint256 LOCATION_ID_UB = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
         require(n < LOCATION_ID_UB, "Number outside of AbsoluteModP Range");
         if (n > (LOCATION_ID_UB / 2)) {
             return 0 - int256(LOCATION_ID_UB - n);

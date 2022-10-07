@@ -25,14 +25,10 @@ import {IERC173} from "./vendor/interfaces/IERC173.sol";
 import {IERC165} from "@solidstate/contracts/introspection/IERC165.sol";
 import {IERC721} from "@solidstate/contracts/token/ERC721/IERC721.sol";
 import {IERC721Metadata} from "@solidstate/contracts/token/ERC721/metadata/IERC721Metadata.sol";
-import {
-    IERC721Enumerable
-} from "@solidstate/contracts/token/ERC721/enumerable/IERC721Enumerable.sol";
+import {IERC721Enumerable} from "@solidstate/contracts/token/ERC721/enumerable/IERC721Enumerable.sol";
 
 // Inherited storage
-import {
-    ERC721MetadataStorage
-} from "@solidstate/contracts/token/ERC721/metadata/ERC721MetadataStorage.sol";
+import {ERC721MetadataStorage} from "@solidstate/contracts/token/ERC721/metadata/ERC721MetadataStorage.sol";
 
 // Library imports
 import {LibDiamond} from "./vendor/libraries/LibDiamond.sol";
@@ -115,16 +111,12 @@ struct AuxiliaryArgs {
     address[] allowedAddresses;
 }
 
-
 contract DFInitialize is WithStorage {
     using ERC721MetadataStorage for ERC721MetadataStorage.Layout;
 
     // You can add parameters to this function in order to pass in
     // data to set initialize state variables
-    function init(
-        InitArgs memory initArgs,
-        AuxiliaryArgs memory auxArgs
-    ) external {
+    function init(InitArgs memory initArgs, AuxiliaryArgs memory auxArgs) external {
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         ds.supportedInterfaces[type(IERC165).interfaceId] = true;

@@ -10,20 +10,7 @@ import {Verifier} from "../Verifier.sol";
 import {LibStorage, GameStorage, GameConstants, SnarkConstants} from "./LibStorage.sol";
 
 // Type imports
-import {
-    Artifact,
-    ArtifactType,
-    DFPInitPlanetArgs,
-    Planet,
-    PlanetEventMetadata,
-    PlanetExtendedInfo,
-    PlanetExtendedInfo2,
-    PlanetType,
-    RevealedCoords,
-    SpaceType,
-    Upgrade,
-    UpgradeBranch
-} from "../DFTypes.sol";
+import {Artifact, ArtifactType, DFPInitPlanetArgs, Planet, PlanetEventMetadata, PlanetExtendedInfo, PlanetExtendedInfo2, PlanetType, RevealedCoords, SpaceType, Upgrade, UpgradeBranch} from "../DFTypes.sol";
 
 library LibPlanet {
     function gs() internal pure returns (GameStorage storage) {
@@ -73,8 +60,8 @@ library LibPlanet {
         uint256 _perlin,
         bool _isHomePlanet
     ) public view returns (DFPInitPlanetArgs memory) {
-        (uint256 level, PlanetType planetType, SpaceType spaceType) =
-            LibGameUtils._getPlanetLevelTypeAndSpaceType(_location, _perlin);
+        (uint256 level, PlanetType planetType, SpaceType spaceType) = LibGameUtils
+            ._getPlanetLevelTypeAndSpaceType(_location, _perlin);
 
         if (_isHomePlanet) {
             require(level == 0, "Can only initialize on planet level 0");
@@ -126,8 +113,11 @@ library LibPlanet {
     ) public {
         require(LibGameUtils._locationIdValid(_location), "Not a valid planet location");
 
-        DFPInitPlanetArgs memory initArgs =
-            getDefaultInitPlanetArgs(_location, _perlin, _isHomePlanet);
+        DFPInitPlanetArgs memory initArgs = getDefaultInitPlanetArgs(
+            _location,
+            _perlin,
+            _isHomePlanet
+        );
 
         _initializePlanet(initArgs);
         gs().planetIds.push(_location);
@@ -144,14 +134,13 @@ library LibPlanet {
         // planet initialize should set the planet to default state, including having the owner be adress 0x0
         // then it's the responsibility for the mechanics to set the owner to the player
 
-        Planet memory defaultPlanet =
-            LibGameUtils._defaultPlanet(
-                args.location,
-                args.level,
-                args.planetType,
-                args.spaceType,
-                args.TIME_FACTOR_HUNDREDTHS
-            );
+        Planet memory defaultPlanet = LibGameUtils._defaultPlanet(
+            args.location,
+            args.level,
+            args.planetType,
+            args.spaceType,
+            args.TIME_FACTOR_HUNDREDTHS
+        );
         _planet.owner = defaultPlanet.owner;
         _planet.isHomePlanet = defaultPlanet.isHomePlanet;
         _planet.range = defaultPlanet.range;

@@ -36,7 +36,7 @@ import {WithStorage} from "./libraries/LibStorage.sol";
 import {WithArenaStorage} from "./libraries/LibArenaStorage.sol";
 import {LibGameUtils} from "./libraries/LibGameUtils.sol";
 
-// Contract imports 
+// Contract imports
 import {DFWhitelistFacet} from "./facets/DFWhitelistFacet.sol";
 
 // Type imports
@@ -47,10 +47,7 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
 
     // You can add parameters to this function in order to pass in
     // data to set initialize state variables
-    function init(
-        InitArgs calldata initArgs,
-        AuxiliaryArgs calldata auxArgs
-    ) external {        
+    function init(InitArgs calldata initArgs, AuxiliaryArgs calldata auxArgs) external {
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         ds.supportedInterfaces[type(IERC165).interfaceId] = true;
@@ -80,8 +77,10 @@ contract DFArenaInitialize is WithStorage, WithArenaStorage {
         /* 
             Transferring ownership here is necessary because contract owner needs to do it.
         */
-        if(initArgs.NO_ADMIN) {
-            (bool success, bytes memory returndata) = address(this).delegatecall(abi.encodeWithSignature("transferOwnership(address)", address(0)));
+        if (initArgs.NO_ADMIN) {
+            (bool success, bytes memory returndata) = address(this).delegatecall(
+                abi.encodeWithSignature("transferOwnership(address)", address(0))
+            );
             require(success, "transfer ownership did not succeed");
         }
     }

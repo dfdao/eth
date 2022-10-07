@@ -11,7 +11,7 @@ import {WithStorage} from "../libraries/LibStorage.sol";
 import {LibGameUtils} from "../libraries/LibGameUtils.sol";
 import {LibDiamond} from "../vendor/libraries/LibDiamond.sol";
 // Type imports
-import { ArtifactType, DFTCreateArtifactArgs, ArtifactRarity, Artifact, Biome, Spaceships} from "../DFTypes.sol";
+import {ArtifactType, DFTCreateArtifactArgs, ArtifactRarity, Artifact, Biome, Spaceships} from "../DFTypes.sol";
 
 contract DFSpaceshipConfigFacet is WithStorage, WithArenaStorage {
     event ArtifactFound(address player, uint256 artifactId, uint256 loc);
@@ -48,11 +48,7 @@ contract DFSpaceshipConfigFacet is WithStorage, WithArenaStorage {
         }
 
         if (arenaConstants().SPACESHIPS.whale) {
-            uint256 whale = createAndPlaceSpaceship(
-                locationId,
-                owner,
-                ArtifactType.ShipWhale
-            );
+            uint256 whale = createAndPlaceSpaceship(locationId, owner, ArtifactType.ShipWhale);
             emit ArtifactFound(msg.sender, whale, locationId);
         }
 
@@ -66,20 +62,12 @@ contract DFSpaceshipConfigFacet is WithStorage, WithArenaStorage {
         }
 
         if (arenaConstants().SPACESHIPS.gear) {
-            uint256 gear = createAndPlaceSpaceship(
-                locationId,
-                owner,
-                ArtifactType.ShipGear
-            );
+            uint256 gear = createAndPlaceSpaceship(locationId, owner, ArtifactType.ShipGear);
             emit ArtifactFound(msg.sender, gear, locationId);
         }
 
         if (arenaConstants().SPACESHIPS.titan) {
-            uint256 titan = createAndPlaceSpaceship(
-                locationId,
-                owner,
-                ArtifactType.ShipTitan
-            );
+            uint256 titan = createAndPlaceSpaceship(locationId, owner, ArtifactType.ShipTitan);
             emit ArtifactFound(msg.sender, titan, locationId);
         }
 

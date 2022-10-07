@@ -2,25 +2,7 @@
 pragma solidity ^0.8.0;
 
 // Type imports
-import {
-    Planet, 
-    PlanetExtendedInfo, 
-    PlanetExtendedInfo2, 
-    PlanetEventMetadata, 
-    PlanetDefaultStats, 
-    Upgrade, 
-    RevealedCoords, 
-    Player, 
-    ArrivalData, 
-    Artifact,
-    ArenaPlanetInfo,
-    ArenaPlayerInfo,
-    Modifiers,
-    ArenaCreateRevealPlanetArgs,
-    Spaceships,
-    InitArgs,
-    AuxiliaryArgs
-} from "../DFTypes.sol";
+import {Planet, PlanetExtendedInfo, PlanetExtendedInfo2, PlanetEventMetadata, PlanetDefaultStats, Upgrade, RevealedCoords, Player, ArrivalData, Artifact, ArenaPlanetInfo, ArenaPlayerInfo, Modifiers, ArenaCreateRevealPlanetArgs, Spaceships, InitArgs, AuxiliaryArgs} from "../DFTypes.sol";
 
 /* Remember! Only add new storage variables at the end of structs !! */
 
@@ -40,7 +22,6 @@ struct ArenaStorage {
     mapping(uint256 => ArenaPlanetInfo) arenaPlanetInfo;
     uint256[] spawnPlanetIds;
     uint256[] targetPlanetIds;
-
     uint256 moveCap;
     mapping(address => ArenaPlayerInfo) arenaPlayerInfo;
     uint256 endTime;
@@ -54,17 +35,13 @@ struct ArenaStorage {
 struct ArenaConstants {
     bool TARGET_PLANETS;
     bool MANUAL_SPAWN;
-
     bytes32 CONFIG_HASH;
-
     Modifiers MODIFIERS;
     Spaceships SPACESHIPS;
     uint256 CLAIM_VICTORY_ENERGY_PERCENT;
-
     bool RANDOM_ARTIFACTS;
-
     bool NO_ADMIN;
-    bytes32 [] INIT_PLANET_HASHES; // This won't mess up Diamond storage
+    bytes32[] INIT_PLANET_HASHES; // This won't mess up Diamond storage
     bool CONFIRM_START;
     uint256 TARGETS_REQUIRED_FOR_VICTORY;
     bool BLOCK_MOVES;
@@ -82,7 +59,6 @@ library LibArenaStorage {
     bytes32 constant ARENA_CONSTANTS_POSITION = keccak256("darkforest.constants.arena");
     bytes32 constant TOURNAMENT_STORAGE_POSITION = keccak256("darkforest.storage.tournament");
 
-
     function arenaStorage() internal pure returns (ArenaStorage storage gs) {
         bytes32 position = ARENA_STORAGE_POSITION;
         assembly {
@@ -90,22 +66,21 @@ library LibArenaStorage {
         }
     }
 
-     function arenaConstants() internal pure returns (ArenaConstants storage gs) {
+    function arenaConstants() internal pure returns (ArenaConstants storage gs) {
         bytes32 position = ARENA_CONSTANTS_POSITION;
         assembly {
             gs.slot := position
         }
     }
 
-     function tournamentStorage() internal pure returns (TournamentStorage storage ts) {
+    function tournamentStorage() internal pure returns (TournamentStorage storage ts) {
         bytes32 position = TOURNAMENT_STORAGE_POSITION;
         assembly {
             ts.slot := position
         }
     }
 
-
-     function arenaInitializers() internal pure returns (Initializers storage ai) {
+    function arenaInitializers() internal pure returns (Initializers storage ai) {
         bytes32 position = ARENA_INITIALIZERS_POSITION;
         assembly {
             ai.slot := position
@@ -117,10 +92,11 @@ contract WithArenaStorage {
     function arenaStorage() internal pure returns (ArenaStorage storage) {
         return LibArenaStorage.arenaStorage();
     }
+
     function arenaConstants() internal pure returns (ArenaConstants storage) {
         return LibArenaStorage.arenaConstants();
     }
-    
+
     function tournamentStorage() internal pure returns (TournamentStorage storage) {
         return LibArenaStorage.tournamentStorage();
     }

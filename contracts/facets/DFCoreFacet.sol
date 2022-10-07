@@ -16,18 +16,7 @@ import {LibPlanet} from "../libraries/LibPlanet.sol";
 import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
-import {
-    SpaceType,
-    Planet,
-    PlanetExtendedInfo,
-    PlanetExtendedInfo2,
-    Player,
-    ArtifactType,
-    DFPInitPlanetArgs,
-    DFPMoveArgs,
-    DFPFindArtifactArgs,
-    AdminCreatePlanetArgs
-} from "../DFTypes.sol";
+import {SpaceType, Planet, PlanetExtendedInfo, PlanetExtendedInfo2, Player, ArtifactType, DFPInitPlanetArgs, DFPMoveArgs, DFPFindArtifactArgs, AdminCreatePlanetArgs} from "../DFTypes.sol";
 
 contract DFCoreFacet is WithStorage {
     using ABDKMath64x64 for *;

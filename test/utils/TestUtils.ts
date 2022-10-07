@@ -94,14 +94,13 @@ export function getInitPlanetHash(initPlanet: {
         initPlanet.requireValidLocationId,
         initPlanet.isTargetPlanet,
         initPlanet.isSpawnPlanet,
-        initPlanet.blockedPlanetIds.map(x => BigInt(x))
+        initPlanet.blockedPlanetIds.map((x) => BigInt(x)),
       ]
     )
   );
 }
 
 export function getDeterministicArtifact(planet: TestLocation, initializers: Initializers) {
-
   const abiCoder = ethers.utils.defaultAbiCoder;
 
   const artifactSeed = ethers.utils.keccak256(
@@ -114,17 +113,25 @@ export function getDeterministicArtifact(planet: TestLocation, initializers: Ini
   const lastByteOfSeed = seed.mod(BigNumber.from('0xff')).toNumber();
   const bigLastByte = BigNumber.from(lastByteOfSeed);
 
-  const secondLastByteOfSeed = ((seed.sub(bigLastByte)).div(BigNumber.from(256))).mod(BigNumber.from('0xff')).toNumber();
+  const secondLastByteOfSeed = seed
+    .sub(bigLastByte)
+    .div(BigNumber.from(256))
+    .mod(BigNumber.from('0xff'))
+    .toNumber();
 
   const perlin = BigNumber.from(planet.perlin).toNumber();
   const biome = getBiome({ perlin, biomebase: initializers.BIOMEBASE_KEY, initializers });
 
   console.log(`seed hash ${seed.toHexString()}`);
   console.log(`seed string ${seed.toString()}`);
-  console.log('mod', BigNumber.from('0xff').toNumber())
+  console.log('mod', BigNumber.from('0xff').toNumber());
   console.log('lastByte', lastByteOfSeed);
   console.log('secondLastByte', secondLastByteOfSeed);
-  console.log(`hex representations: last byte: ${bigLastByte.toHexString()} second last: ${BigNumber.from(secondLastByteOfSeed).toHexString()}`);
+  console.log(
+    `hex representations: last byte: ${bigLastByte.toHexString()} second last: ${BigNumber.from(
+      secondLastByteOfSeed
+    ).toHexString()}`
+  );
   console.log('biome', biome);
 
   console.log('js artifact seed hex', artifactSeed);
@@ -174,7 +181,9 @@ export function getDeterministicArtifact(planet: TestLocation, initializers: Ini
     bonus = 1;
   }
 
-  const rarity = artifactRarityFromPlanetLevel(planetLevelFromHexPerlin(planet.id.toHexString(), perlin, initializers) + bonus);
+  const rarity = artifactRarityFromPlanetLevel(
+    planetLevelFromHexPerlin(planet.id.toHexString(), perlin, initializers) + bonus
+  );
 
   console.log('artifactType', artifactType, 'rarity', rarity);
 
@@ -256,7 +265,6 @@ export function makeInitArgs(
     BigNumberish
   ],
   BigNumberish
-
 ] {
   return [
     [BN_ZERO, BN_ZERO],
@@ -275,7 +283,7 @@ export function makeInitArgs(
       PERLIN_MIRROR_X ? '1' : '0',
       PERLIN_MIRROR_Y ? '1' : '0',
     ],
-    team
+    team,
   ];
 }
 
@@ -555,7 +563,6 @@ function planetLevelFromHexPerlin(hex: string, perlin: number, initializers: Ini
     ret = PlanetLevel.FIVE;
   }
   if (ret > initializers.MAX_NATURAL_PLANET_LEVEL) {
-    
     ret = initializers.MAX_NATURAL_PLANET_LEVEL as PlanetLevel;
   }
 

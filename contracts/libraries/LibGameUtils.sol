@@ -10,19 +10,7 @@ import {ABDKMath64x64} from "../vendor/libraries/ABDKMath64x64.sol";
 // Storage imports
 import {LibStorage, GameStorage, GameConstants, SnarkConstants} from "./LibStorage.sol";
 
-import {
-    Biome,
-    SpaceType,
-    Planet,
-    PlanetType,
-    PlanetEventType,
-    Artifact,
-    ArtifactType,
-    ArtifactRarity,
-    Upgrade,
-    ArenaCreateRevealPlanetArgs,
-    PlanetDefaultStats
-} from "../DFTypes.sol";
+import {Biome, SpaceType, Planet, PlanetType, PlanetEventType, Artifact, ArtifactType, ArtifactRarity, Upgrade, ArenaCreateRevealPlanetArgs, PlanetDefaultStats} from "../DFTypes.sol";
 
 library LibGameUtils {
     function gs() internal pure returns (GameStorage storage) {
@@ -48,29 +36,32 @@ library LibGameUtils {
         }
     }
 
-    function _hashInitPlanet(ArenaCreateRevealPlanetArgs memory planet) public pure returns (bytes32) {
-        return(
-            keccak256(abi.encode(
-                planet.location, 
-                planet.x, 
-                planet.y, 
-                planet.perlin, 
-                planet.planetType,
-                planet.requireValidLocationId,
-                planet.isTargetPlanet,
-                planet.isSpawnPlanet,
-                planet.blockedPlanetIds
-            ))
+    function _hashInitPlanet(ArenaCreateRevealPlanetArgs memory planet)
+        public
+        pure
+        returns (bytes32)
+    {
+        return (
+            keccak256(
+                abi.encode(
+                    planet.location,
+                    planet.x,
+                    planet.y,
+                    planet.perlin,
+                    planet.planetType,
+                    planet.requireValidLocationId,
+                    planet.isTargetPlanet,
+                    planet.isSpawnPlanet,
+                    planet.blockedPlanetIds
+                )
+            )
         );
     }
 
     function _locationIdValid(uint256 _loc) public view returns (bool) {
-        return (
-            (_loc <
+        return ((_loc <
             (21888242871839275222246405745257275088548364400416034343698204186575808495617 /
-                gameConstants().PLANET_RARITY))
-            && _planetLevelBelowLevel0Threshold(_loc)
-        );
+                gameConstants().PLANET_RARITY)) && _planetLevelBelowLevel0Threshold(_loc));
     }
 
     function _planetLevelBelowLevel0Threshold(uint256 _loc) public view returns (bool) {
@@ -185,8 +176,9 @@ library LibGameUtils {
         uint256 worldRadiusMin = gameConstants().WORLD_RADIUS_MIN;
         uint256 target4 = gs().initializedPlanetCountByLevel[4] + 20 * nPlayers;
         uint256 targetRadiusSquared4 = (target4 * gs().cumulativeRarities[4] * 100) / 314;
-        uint256 r4 =
-            ABDKMath64x64.toUInt(ABDKMath64x64.sqrt(ABDKMath64x64.fromUInt(targetRadiusSquared4)));
+        uint256 r4 = ABDKMath64x64.toUInt(
+            ABDKMath64x64.sqrt(ABDKMath64x64.fromUInt(targetRadiusSquared4))
+        );
         if (r4 < worldRadiusMin) {
             return worldRadiusMin;
         } else {
@@ -342,14 +334,13 @@ library LibGameUtils {
                 });
         }
 
-        Upgrade memory ret =
-            Upgrade({
-                popCapMultiplier: 100,
-                popGroMultiplier: 100,
-                rangeMultiplier: 100,
-                speedMultiplier: 100,
-                defMultiplier: 100
-            });
+        Upgrade memory ret = Upgrade({
+            popCapMultiplier: 100,
+            popGroMultiplier: 100,
+            rangeMultiplier: 100,
+            speedMultiplier: 100,
+            defMultiplier: 100
+        });
 
         if (artifact.artifactType == ArtifactType.Monolith) {
             ret.popCapMultiplier += 5;
@@ -439,8 +430,9 @@ library LibGameUtils {
 
         for (uint256 i = 0; i < artifactsOnThisPlanet; i++) {
             if (gs().planetArtifacts[locationId][i] == artifactId) {
-                Artifact memory artifact =
-                    DFArtifactFacet(address(this)).getArtifact(gs().planetArtifacts[locationId][i]);
+                Artifact memory artifact = DFArtifactFacet(address(this)).getArtifact(
+                    gs().planetArtifacts[locationId][i]
+                );
 
                 require(
                     !isActivated(artifact),
@@ -499,8 +491,9 @@ library LibGameUtils {
     // otherwise, return a 'null artifact'
     function getActiveArtifact(uint256 locationId) public view returns (Artifact memory) {
         for (uint256 i; i < gs().planetArtifacts[locationId].length; i++) {
-            Artifact memory artifact =
-                DFArtifactFacet(address(this)).getArtifact(gs().planetArtifacts[locationId][i]);
+            Artifact memory artifact = DFArtifactFacet(address(this)).getArtifact(
+                gs().planetArtifacts[locationId][i]
+            );
 
             if (isActivated(artifact)) {
                 return artifact;

@@ -247,7 +247,7 @@ type Arena @entity {
 
 type ArenaPlayer @entity {
   id: ID!
-  address: ID! 
+  address: ID!
   initTimestamp: Int!
   winner: Boolean!
   arena: Arena!
