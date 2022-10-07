@@ -480,8 +480,15 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
         uint256 _populationCap
     ) private view returns (uint256 _decayedPop) {
         require(arenaStorage().startTime > 0, "game hasn't started yet");
-        // time buff = (360 - 0) * 100 / 360 + 100 = 200 -> every 360 seconds, range doubles
-        uint256 _timeBuff = 100 + (((block.timestamp - arenaStorage().startTime) * 100) / 360);
+        // time buff = (doubling_time - 0) * 100 / doubling_time + 100 = 200 -> every doubling_time seconds, range doubles
+
+        uint256 _timeBuff = 100;
+        if (arenaConstants().RANGE_DOUBLING_SECS > 0) {
+            _timeBuff =
+                100 +
+                (((block.timestamp - arenaStorage().startTime) * 100) /
+                    arenaConstants().RANGE_DOUBLING_SECS);
+        }
         // time buffed range = ((range * 100) * time buff) / 100 = range * timeBuff
         uint256 _timeBuffedRange = (_range * 100 * _timeBuff) / 100;
         // scale = ln(dist / range)
