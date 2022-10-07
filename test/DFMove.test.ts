@@ -459,7 +459,7 @@ describe('DarkForestMove', function () {
 
       const planets = await world.contract.planets(toId);
       // above because need to take into account some pop growth
-      expect(planets.population).to.be.above(popArrivingTotal);
+      expect(planets.population).to.be.above(popArrivingTotal.toNumber());
     });
 
     it('should init high level planet with pirates', async function () {
@@ -506,7 +506,7 @@ describe('DarkForestMove', function () {
         ...makeMoveArgs(SPAWN_PLANET_2, LVL4_UNOWNED_DEEP_SPACE, dist, shipsSent, silverSent)
       );
 
-      expect(await world.contract.worldRadius()).to.be.above(initialRadius);
+      expect(await world.contract.worldRadius()).to.be.above(initialRadius.toNumber());
     });
   });
 });
@@ -538,7 +538,9 @@ describe('move to friendly planet', function () {
     await increaseBlockchainTime();
     await world.contract.refreshPlanet(toId);
 
-    expect((await world.contract.planets(toId)).population).to.be.above(initialPlanetPopulation);
+    expect((await world.contract.planets(toId)).population).to.be.above(
+      initialPlanetPopulation.toNumber()
+    );
   });
 
   it('should allow overpopulation', async function () {
@@ -560,7 +562,9 @@ describe('move to friendly planet', function () {
 
     await world.contract.refreshPlanet(toId);
 
-    expect((await world.contract.planets(toId)).population).to.be.above(planet2.populationCap);
+    expect((await world.contract.planets(toId)).population).to.be.above(
+      planet2.populationCap.toNumber()
+    );
   });
 
   it('should send silver', async function () {
@@ -588,8 +592,8 @@ describe('move to friendly planet', function () {
     await increaseBlockchainTime();
     await world.contract.refreshPlanet(toId2);
 
-    expect((await world.contract.planets(toId2)).silver).to.be.above(oldSilverValue);
-    expect((await world.contract.planets(toId2)).silver).to.be.below(silverCap);
+    expect((await world.contract.planets(toId2)).silver).to.be.above(oldSilverValue.toNumber());
+    expect((await world.contract.planets(toId2)).silver).to.be.below(silverCap.toNumber());
   });
 
   it('should not allow overpopulation of quasars', async function () {

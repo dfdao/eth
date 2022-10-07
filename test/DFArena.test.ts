@@ -385,9 +385,9 @@ describe('Arena Functions', function () {
         planetType,
         requireValidLocationId: false,
         isTargetPlanet: false,
+        isSpawnPlanet: true,
         team: 0,
         blockedPlanetIds: [],
-        blockedPlanetIds: []
       });
 
       await world.contract.revealLocation(...makeRevealArgs(LVL2_PLANET_DEEP_SPACE, x, y));
@@ -529,23 +529,23 @@ describe('Arena Functions', function () {
         );
       });
       it('needs to have enough energy', async function () {
-        await expect(
-          world.user1Core.claimVictory()
-        ).to.be.revertedWith('victory condition not met');
+        await expect(world.user1Core.claimVictory()).to.be.revertedWith(
+          'victory condition not met'
+        );
       });
       describe('time elapsed', async function () {
         beforeEach(async function () {
           await increaseBlocks();
         });
         it('cannot claim victory with a non-target planet', async function () {
-          await expect(
-            world.user1Core.claimVictory()
-          ).to.be.revertedWith('victory condition not met');
+          await expect(world.user1Core.claimVictory()).to.be.revertedWith(
+            'victory condition not met'
+          );
         });
         it('must own planet to claim victory', async function () {
-          await expect(
-            world.user2Core.claimVictory()
-          ).to.be.revertedWith('victory condition not met');
+          await expect(world.user2Core.claimVictory()).to.be.revertedWith(
+            'victory condition not met'
+          );
         });
         it('gameover event emitted after claim victory', async function () {
           await increaseBlockchainTime();
@@ -623,9 +623,9 @@ describe('Arena Functions', function () {
           }%`
         );
 
-        await expect(
-          world.user1Core.claimVictory()
-        ).to.be.revertedWith('victory condition not met');
+        await expect(world.user1Core.claimVictory()).to.be.revertedWith(
+          'victory condition not met'
+        );
       });
 
       it('get round duration 0 if round not over', async function () {
@@ -1273,7 +1273,6 @@ describe('Arena Functions', function () {
 
       expect(await world.contract.getGameover()).to.equal(true);
     });
-
   });
 
   describe('Blocklist', function () {
@@ -1307,13 +1306,10 @@ describe('Arena Functions', function () {
       await world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED));
       const constants = await world.user1Core.getArenaConstants();
 
-
       // there are three planets owned by the player, a spawn planet and two target planets.
       // the minimum planet threshold is 2. one target planet has been blocked from the player's spawn location.
-      // we should expect to see that there are  
-      await expect(
-        world.user1Core.claimVictory()
-      ).to.be.revertedWith('victory condition not met');
+      // we should expect to see that there are
+      await expect(world.user1Core.claimVictory()).to.be.revertedWith('victory condition not met');
     });
     it('Confirms that move to target from spawn IS blocked', async function () {
       // HARD CODED LMAO.
@@ -1429,7 +1425,7 @@ describe('Arena Functions', function () {
     });
 
     it('allows players to join a valid team', async function () {
-      await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1, minRadius, 1));
+      await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
       const player = await world.contract.arenaPlayers(world.user1.address);
       expect(player.team).to.eq(1);
     });
