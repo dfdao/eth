@@ -87,7 +87,8 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: true,
-        blockedPlanetIds: []
+        blockedPlanetIds: [],
+        team: 0,
       });
 
       await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
@@ -116,7 +117,8 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: true,
         isSpawnPlanet: false,
-        blockedPlanetIds: []
+        blockedPlanetIds: [],
+        team: 0,
       });
 
       await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
@@ -149,7 +151,8 @@ describe('Arena Functions', function () {
           requireValidLocationId: true,
           isTargetPlanet: false,
           isSpawnPlanet: false,
-          blockedPlanetIds: []
+          blockedPlanetIds: [],
+          team: 0,
         },
         {
           location: ADMIN_PLANET_CLOAKED.id,
@@ -161,7 +164,8 @@ describe('Arena Functions', function () {
           requireValidLocationId: false,
           isTargetPlanet: false,
           isSpawnPlanet: false,
-          blockedPlanetIds: []
+          team: 0,
+          blockedPlanetIds: [],
         },
         {
           location: LVL1_PLANET_SPACE.id,
@@ -173,7 +177,8 @@ describe('Arena Functions', function () {
           requireValidLocationId: true,
           isTargetPlanet: false,
           isSpawnPlanet: false,
-          blockedPlanetIds: []
+          team: 0,
+          blockedPlanetIds: [],
         },
       ];
       await world.contract.bulkCreatePlanet(planets);
@@ -210,7 +215,8 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: true,
-        blockedPlanetIds: []
+        team: 0,
+        blockedPlanetIds: [],
       });
 
       const createRevealReceipt = await createReveal.wait();
@@ -243,7 +249,8 @@ describe('Arena Functions', function () {
           requireValidLocationId: false,
           isTargetPlanet: false,
           isSpawnPlanet: true,
-          blockedPlanetIds: []
+          team: 0,
+          blockedPlanetIds: [],
         };
 
         planetArgList.push(planetArgs);
@@ -290,7 +297,8 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: true,
-        blockedPlanetIds: []
+        team: 0,
+        blockedPlanetIds: [],
       });
 
       const toPlanetExtended = await world.contract.planetsExtendedInfo(ADMIN_PLANET_CLOAKED.id);
@@ -319,7 +327,8 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: true,
-        blockedPlanetIds: []
+        team: 0,
+        blockedPlanetIds: [],
       });
 
       const toPlanetExtended = await world.contract.planetsExtendedInfo(ADMIN_PLANET_CLOAKED.id);
@@ -346,7 +355,8 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: false,
-        blockedPlanetIds: []
+        team: 0,
+        blockedPlanetIds: [],
       });
 
       await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
@@ -375,7 +385,8 @@ describe('Arena Functions', function () {
         planetType,
         requireValidLocationId: false,
         isTargetPlanet: false,
-        isSpawnPlanet: true,
+        team: 0,
+        blockedPlanetIds: [],
         blockedPlanetIds: []
       });
 
@@ -415,7 +426,8 @@ describe('Arena Functions', function () {
           requireValidLocationId: false,
           isTargetPlanet: true,
           isSpawnPlanet: false,
-          blockedPlanetIds: []
+          team: 0,
+          blockedPlanetIds: [],
         })
       ).to.be.revertedWith('admin cannot create target planets');
     });
@@ -495,7 +507,8 @@ describe('Arena Functions', function () {
         requireValidLocationId: true,
         isTargetPlanet: true,
         isSpawnPlanet: false,
-        blockedPlanetIds: []
+        team: 0,
+        blockedPlanetIds: [],
       });
       // await increaseBlockchainTime();
 
@@ -579,7 +592,8 @@ describe('Arena Functions', function () {
         requireValidLocationId: true,
         isTargetPlanet: true,
         isSpawnPlanet: false,
-        blockedPlanetIds: []
+        team: 0,
+        blockedPlanetIds: [],
       });
       return world;
     }
@@ -651,7 +665,8 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: false,
-        blockedPlanetIds: []
+        team: 0,
+        blockedPlanetIds: [],
       };
       await defaultWorld.contract.createArenaPlanet(planet);
 
@@ -1078,7 +1093,8 @@ describe('Arena Functions', function () {
           requireValidLocationId: false,
           isTargetPlanet: false,
           isSpawnPlanet: true,
-          blockedPlanetIds: []
+          team: 0,
+          blockedPlanetIds: [],
         };
 
         planetArgList.push(planetArgs);
@@ -1142,7 +1158,8 @@ describe('Arena Functions', function () {
           requireValidLocationId: false,
           isTargetPlanet: false,
           isSpawnPlanet: true,
-          blockedPlanetIds: []
+          team: 0,
+          blockedPlanetIds: [],
         };
 
         planetArgList.push(planetArgs);
@@ -1346,6 +1363,22 @@ describe('Arena Functions', function () {
     const minRadius = initializers.WORLD_RADIUS_MIN;
     async function worldFixture() {
       const world = await fixtureLoader(teamsFixture);
+      const perlin = VALID_INIT_PERLIN;
+      const level = 0;
+      const planetType = 0; // planet
+      await world.contract.createArenaPlanet({
+        location: SPAWN_PLANET_1.id,
+        x: 10,
+        y: 10,
+        perlin,
+        level,
+        planetType,
+        requireValidLocationId: false,
+        isTargetPlanet: false,
+        isSpawnPlanet: true,
+        team: 1,
+        blockedPlanetIds: [],
+      });
       return world;
     }
 
@@ -1353,9 +1386,45 @@ describe('Arena Functions', function () {
       world = await fixtureLoader(worldFixture);
     });
 
-    it('does not allow players to join an invalid team', async function () {
+    it('does not allow creation of a spawn planet with team 0', async function () {
+      const perlin = VALID_INIT_PERLIN;
+      const level = 0;
+      const planetType = 0; // planet
       await expect(
-        world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1, minRadius, 5))
+        world.contract.createArenaPlanet({
+          location: ADMIN_PLANET_CLOAKED.id,
+          x: 10,
+          y: 10,
+          perlin,
+          level,
+          planetType,
+          requireValidLocationId: false,
+          isTargetPlanet: false,
+          isSpawnPlanet: true,
+          team: 0,
+          blockedPlanetIds: [],
+        })
+      ).to.be.revertedWith('cannot make spawn planet of team 0 when teams is active');
+    });
+
+    it('does not allow creation of a spawn planet with team more than num_teams', async function () {
+      const perlin = VALID_INIT_PERLIN;
+      const level = 0;
+      const planetType = 0; // planet
+      await expect(
+        world.contract.createArenaPlanet({
+          location: SPAWN_PLANET_2.id,
+          x: 10,
+          y: 10,
+          perlin,
+          level,
+          planetType,
+          requireValidLocationId: false,
+          isTargetPlanet: false,
+          isSpawnPlanet: true,
+          team: 3,
+          blockedPlanetIds: [],
+        })
       ).to.be.revertedWith('invalid team');
     });
 
@@ -1370,17 +1439,40 @@ describe('Arena Functions', function () {
 
       async function worldFixture() {
         const world = await fixtureLoader(teamsFixture);
-        let initArgs = makeInitArgs(SPAWN_PLANET_1, minRadius, 1);
-        await world.user1Core.initializePlayer(...initArgs);
-        initArgs = makeInitArgs(SPAWN_PLANET_2, minRadius, 1);
-        await world.user2Core.initializePlayer(...initArgs);
-        await increaseBlockchainTime();
 
         const perlin = 20;
         const level = 0;
         const x = 10;
         const y = 10;
         const planetType = 1; // asteroid field
+
+        await world.contract.createArenaPlanet({
+          location: SPAWN_PLANET_1.id,
+          perlin,
+          level,
+          x,
+          y,
+          planetType,
+          requireValidLocationId: false,
+          isTargetPlanet: false,
+          isSpawnPlanet: true,
+          team: 1,
+          blockedPlanetIds: [],
+        });
+
+        await world.contract.createArenaPlanet({
+          location: SPAWN_PLANET_2.id,
+          perlin,
+          level,
+          x: 11,
+          y: 11,
+          planetType,
+          requireValidLocationId: false,
+          isTargetPlanet: false,
+          isSpawnPlanet: true,
+          team: 1,
+          blockedPlanetIds: [],
+        });
 
         await world.contract.createArenaPlanet({
           location: LVL0_PLANET_DEEP_SPACE.id,
@@ -1392,8 +1484,15 @@ describe('Arena Functions', function () {
           requireValidLocationId: true,
           isTargetPlanet: true,
           isSpawnPlanet: false,
-          blockedPlanetIds: []
+          blockedPlanetIds: [],
+          team: 0,
         });
+
+        let initArgs = makeInitArgs(SPAWN_PLANET_1);
+        await world.user1Core.initializePlayer(...initArgs);
+        initArgs = makeInitArgs(SPAWN_PLANET_2);
+        await world.user2Core.initializePlayer(...initArgs);
+        await increaseBlockchainTime();
 
         return world;
       }

@@ -98,6 +98,7 @@ export const teamsInitializers = settings.parse(decodeInitializers, {
   INIT_PERLIN_MIN: 0,
   INIT_PERLIN_MAX: 31,
   TARGET_PLANETS: true,
+  MANUAL_SPAWN: true,
   CLAIM_VICTORY_ENERGY_PERCENT: 50,
   TEAMS_ENABLED: true,
   NUM_TEAMS: 2,
@@ -400,7 +401,8 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
-    blockedPlanetIds: []
+    blockedPlanetIds: [],
+    team: 0,
   },
   {
     location: ARTIFACT_PLANET_1.id.toHexString(),
@@ -412,7 +414,9 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
-    blockedPlanetIds: []
+    team: 1,
+
+    blockedPlanetIds: [],
   },
   {
     location: LVL1_ASTEROID_2.id.toHexString(),
@@ -424,7 +428,9 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: true,
     isSpawnPlanet: false,
-    blockedPlanetIds: [ADMIN_PLANET_CLOAKED.id.toHexString()]
+    team: 1,
+
+    blockedPlanetIds: [ADMIN_PLANET_CLOAKED.id.toHexString()],
   },
   {
     location: LVL1_PLANET_SPACE.id.toHexString(),
@@ -436,7 +442,9 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: true,
     isSpawnPlanet: false,
-    blockedPlanetIds: [ADMIN_PLANET_CLOAKED.id.toHexString()]
+    team: 2,
+
+    blockedPlanetIds: [ADMIN_PLANET_CLOAKED.id.toHexString()],
   },
   {
     location: LVL0_PLANET_DEEP_SPACE.id.toHexString(),
@@ -448,7 +456,9 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: true,
     isSpawnPlanet: false,
-    blockedPlanetIds: [ADMIN_PLANET_CLOAKED.id.toHexString()]
+    team: 2,
+
+    blockedPlanetIds: [ADMIN_PLANET_CLOAKED.id.toHexString()],
   },
   {
     location: LVL0_PLANET_POPCAP_BOOSTED.id.toHexString(),
@@ -460,7 +470,9 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
-    blockedPlanetIds: []
+    team: 3,
+
+    blockedPlanetIds: [],
   },
   {
     location: LVL1_ASTEROID_DEEP_SPACE.id.toHexString(),
@@ -472,7 +484,9 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
-    blockedPlanetIds: []
+    team: 3,
+
+    blockedPlanetIds: [],
   },
   {
     location: LVL1_PLANET_DEEP_SPACE.id.toHexString(),
@@ -484,7 +498,9 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
-    blockedPlanetIds: []
+    team: 0,
+
+    blockedPlanetIds: [],
   },
   {
     location: LVL0_PLANET_POPCAP_BOOSTED.id.toHexString(),
@@ -496,7 +512,9 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
-    blockedPlanetIds: []
+    team: 0,
+
+    blockedPlanetIds: [],
   },
   {
     location: LVL3_UNOWNED_DEEP_SPACE.id.toHexString(),
@@ -508,7 +526,9 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
-    blockedPlanetIds: []
+    team: 0,
+
+    blockedPlanetIds: [],
   },
   {
     location: LVL3_SPACETIME_2.id.toHexString(),
@@ -520,9 +540,11 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
-    blockedPlanetIds: []
+    team: 0,
+
+    blockedPlanetIds: [],
   },
-]
+];
 
 export const initPlanetsInitializers = settings.parse(decodeInitializers, {
   ...defaultInitializerValues,
