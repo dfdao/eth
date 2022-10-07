@@ -12,17 +12,7 @@ import {LibStorage, GameStorage, GameConstants} from "./LibStorage.sol";
 import {LibArenaStorage, ArenaConstants} from "./LibArenaStorage.sol";
 
 // Type imports
-import {
-    Biome,
-    Planet,
-    PlanetExtendedInfo,
-    PlanetType,
-    Artifact,
-    ArtifactType,
-    ArtifactRarity,
-    DFPFindArtifactArgs,
-    DFTCreateArtifactArgs
-} from "../DFTypes.sol";
+import {Biome, Planet, PlanetExtendedInfo, PlanetType, Artifact, ArtifactType, ArtifactRarity, DFPFindArtifactArgs, DFTCreateArtifactArgs} from "../DFTypes.sol";
 
 library LibArtifactUtils {
     function gs() internal pure returns (GameStorage storage) {
@@ -75,20 +65,20 @@ library LibArtifactUtils {
 
         uint256 id = uint256(keccak256(abi.encodePacked(planetId, gs().miscNonce++)));
 
-        DFTCreateArtifactArgs memory createArtifactArgs =
-            DFTCreateArtifactArgs(
-                id,
-                msg.sender,
-                planetId,
-                ArtifactRarity.Unknown,
-                Biome.Unknown,
-                shipType,
-                address(this),
-                owner
-            );
+        DFTCreateArtifactArgs memory createArtifactArgs = DFTCreateArtifactArgs(
+            id,
+            msg.sender,
+            planetId,
+            ArtifactRarity.Unknown,
+            Biome.Unknown,
+            shipType,
+            address(this),
+            owner
+        );
 
-        Artifact memory foundArtifact =
-            DFArtifactFacet(address(this)).createArtifact(createArtifactArgs);
+        Artifact memory foundArtifact = DFArtifactFacet(address(this)).createArtifact(
+            createArtifactArgs
+        );
         LibGameUtils._putArtifactOnPlanet(foundArtifact.id, planetId);
 
         return id;
@@ -102,36 +92,28 @@ library LibArtifactUtils {
 
         Biome biome = LibGameUtils._getBiome(info.spaceType, args.biomebase);
         bytes memory randomness = "";
-        if(arenaConstants().RANDOM_ARTIFACTS) {
+        if (arenaConstants().RANDOM_ARTIFACTS) {
             randomness = abi.encodePacked(args.coreAddress, blockhash(info.prospectedBlockNumber));
         }
-        uint256 artifactSeed =
-            uint256(
-                keccak256(
-                    abi.encodePacked(
-                        args.planetId,
-                        randomness
-                    )
-                )
-            );
+        uint256 artifactSeed = uint256(keccak256(abi.encodePacked(args.planetId, randomness)));
 
-        (ArtifactType artifactType, uint256 levelBonus) =
-            LibGameUtils._randomArtifactTypeAndLevelBonus(artifactSeed, biome, info.spaceType);
+        (ArtifactType artifactType, uint256 levelBonus) = LibGameUtils
+            ._randomArtifactTypeAndLevelBonus(artifactSeed, biome, info.spaceType);
 
-        DFTCreateArtifactArgs memory createArtifactArgs =
-            DFTCreateArtifactArgs(
-                artifactSeed,
-                msg.sender,
-                args.planetId,
-                LibGameUtils.artifactRarityFromPlanetLevel(levelBonus + planet.planetLevel),
-                biome,
-                artifactType,
-                args.coreAddress,
-                address(0)
-            );
+        DFTCreateArtifactArgs memory createArtifactArgs = DFTCreateArtifactArgs(
+            artifactSeed,
+            msg.sender,
+            args.planetId,
+            LibGameUtils.artifactRarityFromPlanetLevel(levelBonus + planet.planetLevel),
+            biome,
+            artifactType,
+            args.coreAddress,
+            address(0)
+        );
 
-        Artifact memory foundArtifact =
-            DFArtifactFacet(address(this)).createArtifact(createArtifactArgs);
+        Artifact memory foundArtifact = DFArtifactFacet(address(this)).createArtifact(
+            createArtifactArgs
+        );
 
         LibGameUtils._putArtifactOnPlanet(foundArtifact.id, args.planetId);
 
@@ -189,14 +171,13 @@ library LibArtifactUtils {
 
             if (planet.silver == 0) {
                 planet.silver = 1;
-                Planet memory defaultPlanet =
-                    LibGameUtils._defaultPlanet(
-                        locationId,
-                        planet.planetLevel,
-                        PlanetType.SILVER_MINE,
-                        extendedInfo.spaceType,
-                        gameConstants().TIME_FACTOR_HUNDREDTHS
-                    );
+                Planet memory defaultPlanet = LibGameUtils._defaultPlanet(
+                    locationId,
+                    planet.planetLevel,
+                    PlanetType.SILVER_MINE,
+                    extendedInfo.spaceType,
+                    gameConstants().TIME_FACTOR_HUNDREDTHS
+                );
 
                 planet.silverGrowth = defaultPlanet.silverGrowth;
             }
@@ -304,9 +285,8 @@ library LibArtifactUtils {
         emit ArtifactDeactivated(msg.sender, artifact.id, locationId);
         DFArtifactFacet(address(this)).updateArtifact(artifact);
 
-        bool shouldBurn =
-            artifact.artifactType == ArtifactType.PlanetaryShield ||
-                artifact.artifactType == ArtifactType.PhotoidCannon;
+        bool shouldBurn = artifact.artifactType == ArtifactType.PlanetaryShield ||
+            artifact.artifactType == ArtifactType.PhotoidCannon;
         if (shouldBurn) {
             // burn it after use. will be owned by contract but not on a planet anyone can control
             LibGameUtils._takeArtifactOffPlanet(artifact.id, locationId);

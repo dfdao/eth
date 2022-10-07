@@ -82,7 +82,7 @@ contract DFWhitelistFacet is WithStorage {
         // xDAI ONLY
         payable(recipient).transfer(ws().drip);
     }
-    
+
     function addToWhitelist(address toAdd) public onlyAdmin {
         require(!ws().allowedAccounts[toAdd], "player is already allowed");
 
@@ -91,7 +91,7 @@ contract DFWhitelistFacet is WithStorage {
     }
 
     function bulkAddToWhitelist(address[] memory addresses) public onlyAdmin {
-        for(uint256 i = 0; i < addresses.length; i++) {
+        for (uint256 i = 0; i < addresses.length; i++) {
             addToWhitelist(addresses[i]);
         }
     }

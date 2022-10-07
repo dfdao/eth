@@ -55,7 +55,9 @@ contract DFArenaFaucet {
 
     function canWithdraw(address _address) public view returns (bool) {
         /* Admin can always withdraw. Can withdraw if have not received drip or allowed to access again */
-        return (_address == _owner || nextAccessTime[_address] == 0 || block.timestamp >= nextAccessTime[_address]);
+        return (_address == _owner ||
+            nextAccessTime[_address] == 0 ||
+            block.timestamp >= nextAccessTime[_address]);
     }
 
     function drip(address _address) public onlyOwner {

@@ -14,16 +14,16 @@ import {
   deployMoveFacet,
   deployWhitelistFacet,
 } from './deploy';
-import * as fs from "fs";
-import * as path from "path";
+import * as fs from 'fs';
+import * as path from 'path';
 import { remove } from 'lodash';
 import { deployArenaStarterFacet } from './arena-deploy';
 
 const DEPLOY_PATH = './facets.json';
 
 task('arena:upgrade', 'upgrade contracts and replace in the diamond')
-.addParam('load', 'load deployed facet addresses from file', false, types.boolean)
-.setAction(upgrade);
+  .addParam('load', 'load deployed facet addresses from file', false, types.boolean)
+  .setAction(upgrade);
 
 async function upgrade(args: { load: boolean }, hre: HardhatRuntimeEnvironment) {
   await hre.run('utils:assertChainId');
@@ -41,13 +41,12 @@ async function upgrade(args: { load: boolean }, hre: HardhatRuntimeEnvironment) 
 
   var toCut: FacetCut[] = [];
 
-  if(args.load) {
+  if (args.load) {
     console.log(`loading contracts from ${DEPLOY_PATH}`);
     const cutsFromFile: FacetCut[] = JSON.parse(fs.readFileSync(DEPLOY_PATH, 'utf-8'));
     console.log('cuts from file', cutsFromFile);
     toCut = cutsFromFile;
-  }
-  else {
+  } else {
     const libraries = await deployLibraries({}, hre);
 
     // Dark Forest facets
@@ -63,10 +62,18 @@ async function upgrade(args: { load: boolean }, hre: HardhatRuntimeEnvironment) 
     const adminFacet = await deployAdminFacet({}, libraries, hre);
     // const lobbyFacet = await deployLobbyFacet({}, libraries, hre);
     const captureFacet = await deployCaptureFacet({}, libraries, hre);
-  
+
     const arenaGetterFacet = await deployContract('DFArenaGetterFacet', {}, hre);
-    const arenaCoreFacet = await deployContract('DFArenaCoreFacet', { LibGameUtils: libraries.LibGameUtils, LibPlanet: libraries.LibPlanet }, hre);
-    const spaceshipConfigFacet = await deployContract('DFSpaceshipConfigFacet', { LibGameUtils: libraries.LibGameUtils }, hre);
+    const arenaCoreFacet = await deployContract(
+      'DFArenaCoreFacet',
+      { LibGameUtils: libraries.LibGameUtils, LibPlanet: libraries.LibPlanet },
+      hre
+    );
+    const spaceshipConfigFacet = await deployContract(
+      'DFSpaceshipConfigFacet',
+      { LibGameUtils: libraries.LibGameUtils },
+      hre
+    );
     const tournamentFacet = await deployContract('DFArenaTournamentFacet', {}, hre);
     const startFacet = await deployArenaStarterFacet({}, libraries, hre);
 
@@ -76,10 +83,8 @@ async function upgrade(args: { load: boolean }, hre: HardhatRuntimeEnvironment) 
       ...changes.getFacetCuts('DFSpaceshipConfigFacet', spaceshipConfigFacet),
       ...changes.getFacetCuts('DFTournamentFacet', tournamentFacet),
       ...changes.getFacetCuts('DFStartFacet', startFacet),
-
     ];
-  
-  
+
     // The `cuts` to perform for Dark Forest facets
     const darkForestCuts = [
       ...changes.getFacetCuts('DFCoreFacet', coreFacet),
@@ -91,18 +96,17 @@ async function upgrade(args: { load: boolean }, hre: HardhatRuntimeEnvironment) 
       // ...changes.getFacetCuts('DFLobbyFacet', lobbyFacet),
       ...changes.getFacetCuts('DFCaptureFacet', captureFacet),
     ];
-  
+
     if (isDev) {
       const debugFacet = await deployDebugFacet({}, libraries, hre);
       darkForestCuts.push(...changes.getFacetCuts('DFDebugFacet', debugFacet));
     }
-      
+
     // The `cuts` to remove any old, unused functions
     // const removeCuts = changes.getRemoveCuts(darkForestCuts).concat(changes.getRemoveCuts(arenaDiamondCuts));
     // ...removeCuts
-    
-    toCut = [...darkForestCuts, ...arenaDiamondCuts];
 
+    toCut = [...darkForestCuts, ...arenaDiamondCuts];
   }
 
   fs.writeFileSync(DEPLOY_PATH, JSON.stringify(toCut));
@@ -114,8 +118,6 @@ async function upgrade(args: { load: boolean }, hre: HardhatRuntimeEnvironment) 
     return;
   }
 
-
-
   // As mentioned in the `deploy` task, EIP-2535 specifies that the `diamondCut`
   // function takes two optional arguments: address _init and bytes calldata _calldata
   // However, in a standard upgrade, no state modifications are done, so the 0x0 address
@@ -125,7 +127,9 @@ async function upgrade(args: { load: boolean }, hre: HardhatRuntimeEnvironment) 
   const initAddress = hre.ethers.constants.AddressZero;
   const initFunctionCall = '0x';
 
-  const upgradeTx = await diamond.diamondCut(toCut, initAddress, initFunctionCall, {gasLimit: 15000000});
+  const upgradeTx = await diamond.diamondCut(toCut, initAddress, initFunctionCall, {
+    gasLimit: 15000000,
+  });
   const upgradeReceipt = await upgradeTx.wait();
   if (!upgradeReceipt.status) {
     throw Error(`Diamond cut failed: ${upgradeTx.hash}`);

@@ -1,7 +1,14 @@
 import { expect } from 'chai';
 import { fixtureLoader, makeInitArgs, makeMoveArgs, makeRevealArgs } from './utils/TestUtils';
 import { defaultWorldFixture, World } from './utils/TestWorld';
-import { ADMIN_PLANET_CLOAKED, arenaWorldInitializers, initializers, LVL2_PLANET_SPACE, SPAWN_PLANET_1, VALID_INIT_PERLIN } from './utils/WorldConstants';
+import {
+  ADMIN_PLANET_CLOAKED,
+  arenaWorldInitializers,
+  initializers,
+  LVL2_PLANET_SPACE,
+  SPAWN_PLANET_1,
+  VALID_INIT_PERLIN,
+} from './utils/WorldConstants';
 import hre from 'hardhat';
 import { DarkForest, LobbyCreatedEvent } from '@darkforest_eth/contracts/typechain/DarkForest';
 // Note: The deployed addresses are written to the contracts package on any deploy, including for testing
@@ -36,9 +43,9 @@ describe.skip('Arena Upgrade', function () {
           requireValidLocationId: false,
           isTargetPlanet: true,
           isSpawnPlanet: false,
-          blockedPlanetIds: []
+          blockedPlanetIds: [],
         })
-        ).to.be.revertedWith('Diamond: Function does not exist');
+      ).to.be.revertedWith('Diamond: Function does not exist');
     });
 
     it('Creates a new lobby with msg.sender as owner', async function () {
@@ -76,8 +83,11 @@ describe.skip('Arena Upgrade', function () {
       const Verifier = (await deployContract('Verifier', {}, hre)).address;
       const LibGameUtils = (await deployContract('LibGameUtils', {}, hre)).address;
       const LibLazyUpdate = (await deployContract('LibLazyUpdate', {}, hre)).address;
-      const LibArtifactUtils = (await deployContract('LibArtifactUtils', {LibGameUtils}, hre)).address;
-      const LibPlanet = (await deployContract('LibPlanet', {LibGameUtils, LibLazyUpdate, Verifier}, hre)).address;
+      const LibArtifactUtils = (await deployContract('LibArtifactUtils', { LibGameUtils }, hre))
+        .address;
+      const LibPlanet = (
+        await deployContract('LibPlanet', { LibGameUtils, LibLazyUpdate, Verifier }, hre)
+      ).address;
 
       const diamondInit = await deployContract('DFArenaInitialize', { LibGameUtils }, hre);
 
@@ -86,9 +96,9 @@ describe.skip('Arena Upgrade', function () {
         { LibGameUtils, LibPlanet },
         hre
       );
-    
+
       const arenaGetterFacet = await deployContract('DFArenaGetterFacet', {}, hre);
-    
+
       const arenaDiamondCuts = [
         // Note: The `diamondCut` is omitted because it is cut upon deployment
         ...changes.getFacetCuts('DFArenaCoreFacet', arenaCoreFacet),
@@ -129,7 +139,7 @@ describe.skip('Arena Upgrade', function () {
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: true,
-        blockedPlanetIds: []
+        blockedPlanetIds: [],
       });
 
       await lobby.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));

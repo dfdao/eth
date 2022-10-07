@@ -2,18 +2,7 @@
 pragma solidity ^0.8.0;
 
 // Type imports
-import {
-    Planet,
-    PlanetExtendedInfo,
-    PlanetExtendedInfo2,
-    PlanetEventMetadata,
-    PlanetDefaultStats,
-    Upgrade,
-    RevealedCoords,
-    Player,
-    ArrivalData,
-    Artifact
-} from "../DFTypes.sol";
+import {Planet, PlanetExtendedInfo, PlanetExtendedInfo2, PlanetEventMetadata, PlanetDefaultStats, Upgrade, RevealedCoords, Player, ArrivalData, Artifact} from "../DFTypes.sol";
 
 struct WhitelistStorage {
     bool enabled;

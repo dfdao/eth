@@ -11,17 +11,7 @@ import {LibArtifactUtils} from "../libraries/LibArtifactUtils.sol";
 import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
-import {
-    SpaceType,
-    DFPInitPlanetArgs,
-    AdminCreatePlanetArgs,
-    Artifact,
-    ArtifactType,
-    Player,
-    Planet,
-    PlanetExtendedInfo,
-    PlanetExtendedInfo2
-} from "../DFTypes.sol";
+import {SpaceType, DFPInitPlanetArgs, AdminCreatePlanetArgs, Artifact, ArtifactType, Player, Planet, PlanetExtendedInfo, PlanetExtendedInfo2} from "../DFTypes.sol";
 
 contract DFAdminFacet is WithStorage {
     event AdminOwnershipChanged(uint256 loc, address newOwner);

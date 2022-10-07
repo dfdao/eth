@@ -208,7 +208,7 @@ export async function deployAndCut(
   }: {
     ownerAddress: string;
     allowListEnabled: boolean;
-    allowedAddresses?: string[]
+    allowedAddresses?: string[];
     initializers: HardhatRuntimeEnvironment['initializers'];
   },
   hre: HardhatRuntimeEnvironment
@@ -296,8 +296,8 @@ export async function deployAndCut(
     {
       allowListEnabled,
       artifactBaseURI: tokenBaseUri,
-      allowedAddresses
-    }
+      allowedAddresses,
+    },
   ]);
 
   const initTx = await diamondCut.diamondCut(toCut, initAddress, initFunctionCall);
@@ -480,7 +480,11 @@ export async function deployCaptureFacet(
   return contract;
 }
 
-export async function deployDiamondCutFacet({}, libraries: Libraries, hre: HardhatRuntimeEnvironment) {
+export async function deployDiamondCutFacet(
+  {},
+  libraries: Libraries,
+  hre: HardhatRuntimeEnvironment
+) {
   const factory = await hre.ethers.getContractFactory('DiamondCutFacet');
   const contract = await factory.deploy();
   await contract.deployTransaction.wait();

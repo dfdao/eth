@@ -37,7 +37,11 @@ export async function deployContract(
   return contract;
 }
 
-export function writeToContractsPackage(hre: HardhatRuntimeEnvironment, tsContents: string, append = false) {
+export function writeToContractsPackage(
+  hre: HardhatRuntimeEnvironment,
+  tsContents: string,
+  append = false
+) {
   const { jsContents, dtsContents } = tscompile(tsContents);
 
   const contractsFileTS = path.join(hre.packageDirs['@darkforest_eth/contracts'], 'index.ts');
@@ -46,7 +50,7 @@ export function writeToContractsPackage(hre: HardhatRuntimeEnvironment, tsConten
 
   const options = prettier.resolveConfig.sync(contractsFileTS);
 
-  if(append) {
+  if (append) {
     fs.appendFileSync(
       contractsFileTS,
       prettier.format(tsContents, { ...options, parser: 'babel-ts' })
@@ -58,9 +62,8 @@ export function writeToContractsPackage(hre: HardhatRuntimeEnvironment, tsConten
     fs.appendFileSync(
       contractsFileDTS,
       prettier.format(dtsContents, { ...options, parser: 'babel-ts' })
-    );  
-  }
-  else {
+    );
+  } else {
     fs.writeFileSync(
       contractsFileTS,
       prettier.format(tsContents, { ...options, parser: 'babel-ts' })
@@ -72,7 +75,7 @@ export function writeToContractsPackage(hre: HardhatRuntimeEnvironment, tsConten
     fs.writeFileSync(
       contractsFileDTS,
       prettier.format(dtsContents, { ...options, parser: 'babel-ts' })
-    );  
+    );
   }
 }
 
@@ -160,7 +163,7 @@ export async function saveDeploy(
     export const LIB_ARTIFACT_UTILS_ADDRESS = '${args.libraries.LibArtifactUtils}';
     `;
 
-    writeToContractsPackage(hre, tsContents);
+  writeToContractsPackage(hre, tsContents);
 }
 
 export async function createLobby(
@@ -177,8 +180,8 @@ export async function createLobby(
     initializers,
     {
       allowListEnabled: false,
-      artifactBaseURI: "",
-      allowedAddresses: []
+      artifactBaseURI: '',
+      allowedAddresses: [],
     },
   ]);
 

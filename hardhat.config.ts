@@ -47,7 +47,7 @@ const AbiItemsToIgnore = [
   },
   {
     facet: 'DFAdminFacet',
-    events: ['AdminPlanetCreated','PauseStateChanged'],
+    events: ['AdminPlanetCreated', 'PauseStateChanged'],
   },
   // {
   //   facet: 'DFArenaGetterFacet',
@@ -60,7 +60,7 @@ const AbiItemsToIgnore = [
   {
     facet: 'DFMoveFacet',
     events: ['GameStarted'],
-  }
+  },
 ];
 
 // Warning: If the facet is not in the `facets` directory, getFullyQualifiedFacetName will not work.

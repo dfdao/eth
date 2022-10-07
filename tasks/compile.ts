@@ -69,7 +69,6 @@ function abiFilter(item: any) {
         if (component.internalType.includes('][')) {
           return false;
         }
-
       }
     }
   }
@@ -81,13 +80,13 @@ function copyAbiNoPlanetTypeWeights(abi: any): any {
   console.log('abi length', abi.length);
   for (var h = 0; h < abi.length; h++) {
     var abiItem = abi[h];
-    if(abiItem.name == 'getInitializers') {
+    if (abiItem.name == 'getInitializers') {
       // Position of gameConstants in getAllConstantsABI
       var gameConstantsComponents = abiItem.outputs[0].components[0].components;
-      for(var i = 0; i < gameConstantsComponents.length; i++) {
+      for (var i = 0; i < gameConstantsComponents.length; i++) {
         var res = gameConstantsComponents[i];
-        if(res.name == 'PLANET_TYPE_WEIGHTS') {
-          gameConstantsComponents = gameConstantsComponents.splice(i,1);
+        if (res.name == 'PLANET_TYPE_WEIGHTS') {
+          gameConstantsComponents = gameConstantsComponents.splice(i, 1);
         }
       }
     }

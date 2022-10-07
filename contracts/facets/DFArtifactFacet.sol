@@ -73,22 +73,21 @@ contract DFArtifactFacet is WithStorage, ERC721 {
 
         _mint(args.owner, args.tokenId);
 
-        Artifact memory newArtifact =
-            Artifact(
-                true,
-                args.tokenId,
-                args.planetId,
-                args.rarity,
-                args.biome,
-                block.timestamp,
-                args.discoverer,
-                args.artifactType,
-                0,
-                0,
-                0,
-                0,
-                args.controller
-            );
+        Artifact memory newArtifact = Artifact(
+            true,
+            args.tokenId,
+            args.planetId,
+            args.rarity,
+            args.biome,
+            block.timestamp,
+            args.discoverer,
+            args.artifactType,
+            0,
+            0,
+            0,
+            0,
+            args.controller
+        );
 
         gs().artifacts[args.tokenId] = newArtifact;
 
@@ -158,8 +157,9 @@ contract DFArtifactFacet is WithStorage, ERC721 {
             );
         }
 
-        uint256 foundArtifactId =
-            LibArtifactUtils.findArtifact(DFPFindArtifactArgs(planetId, biomebase, address(this)));
+        uint256 foundArtifactId = LibArtifactUtils.findArtifact(
+            DFPFindArtifactArgs(planetId, biomebase, address(this))
+        );
 
         emit ArtifactFound(msg.sender, foundArtifactId, planetId);
     }

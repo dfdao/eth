@@ -59,10 +59,10 @@ function updatePlayerElo(configHash: string, p1Id: string, p2Id: string, winner:
   p2.elo = p2NewRating as i32;
   // We increment the gamesFinished in the GameOver for the winner no matter what.
   // Here, we only increment for the player who didn't win.
-  if(p1.address != winner) {
+  if (p1.address != winner) {
     p1.gamesFinished += p1.gamesFinished + 1;
   }
-  if(p2.address != winner) {
+  if (p2.address != winner) {
     p2.gamesFinished += p2.gamesFinished + 1;
   }
 
@@ -75,7 +75,6 @@ function updatePlayerElo(configHash: string, p1Id: string, p2Id: string, winner:
   }
   p1.save();
   p2.save();
-  
 }
 
 function updateTeamElo(
@@ -341,11 +340,10 @@ export function handleGameover(event: Gameover): void {
   // Update Badges
   let badges = p1.badge;
   const winningPlayer = loadArenaPlayer(arenaId(winnerAddress));
-  if(badges) {
+  if (badges) {
     const allTimeBadges = loadBadge(p1.badge!);
     updateBadge(allTimeBadges, arena, winningPlayer, p1);
-  }
-  else {
+  } else {
     const newBadges = new Badge(configPlayerIdString);
     newBadges.configPlayer = p1.id;
     newBadges.startYourEngine = false;

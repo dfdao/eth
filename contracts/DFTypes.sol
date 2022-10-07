@@ -1,10 +1,27 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.0;
 
-enum PlanetType {PLANET, SILVER_MINE, RUINS, TRADING_POST, SILVER_BANK}
-enum PlanetEventType {ARRIVAL}
-enum SpaceType {NEBULA, SPACE, DEEP_SPACE, DEAD_SPACE}
-enum UpgradeBranch {DEFENSE, RANGE, SPEED}
+enum PlanetType {
+    PLANET,
+    SILVER_MINE,
+    RUINS,
+    TRADING_POST,
+    SILVER_BANK
+}
+enum PlanetEventType {
+    ARRIVAL
+}
+enum SpaceType {
+    NEBULA,
+    SPACE,
+    DEEP_SPACE,
+    DEAD_SPACE
+}
+enum UpgradeBranch {
+    DEFENSE,
+    RANGE,
+    SPEED
+}
 
 struct Player {
     bool isInitialized;
@@ -88,7 +105,12 @@ struct PlanetEventMetadata {
     uint256 timeAdded;
 }
 
-enum ArrivalType {Unknown, Normal, Photoid, Wormhole}
+enum ArrivalType {
+    Unknown,
+    Normal,
+    Photoid,
+    Wormhole
+}
 
 struct DFPInitPlanetArgs {
     uint256 location;
@@ -195,7 +217,14 @@ enum ArtifactType {
     ShipTitan
 }
 
-enum ArtifactRarity {Unknown, Common, Rare, Epic, Legendary, Mythic}
+enum ArtifactRarity {
+    Unknown,
+    Common,
+    Rare,
+    Epic,
+    Legendary,
+    Mythic
+}
 
 // for NFTs
 struct Artifact {
@@ -287,7 +316,7 @@ enum Mod {
     barbarianPercentage
 }
 // # Mothership, Whale, Crescent, Gear, Titan
-struct Spaceships{
+struct Spaceships {
     bool mothership;
     bool whale;
     bool crescent;
@@ -296,13 +325,13 @@ struct Spaceships{
 }
 
 struct RevealProofArgs {
-    uint256[2]  _a;
+    uint256[2] _a;
     uint256[2][2] _b;
     uint256[2] _c;
     uint256[9] _input;
 }
 
-// Values that are critical for determining if a match is valid. 
+// Values that are critical for determining if a match is valid.
 struct InitArgs {
     bool START_PAUSED;
     bool ADMIN_CAN_ADD_PLANETS;
@@ -373,17 +402,15 @@ struct InitArgs {
     uint256 CLAIM_VICTORY_ENERGY_PERCENT;
     // Manual Spawn
     bool MANUAL_SPAWN;
-
     uint256[8] MODIFIERS;
     bool[5] SPACESHIPS;
-
     bool RANDOM_ARTIFACTS;
     bool NO_ADMIN;
     ArenaCreateRevealPlanetArgs[] INIT_PLANETS;
     bool CONFIRM_START;
     uint256 TARGETS_REQUIRED_FOR_VICTORY;
     bool BLOCK_MOVES;
-    bool BLOCK_CAPTURE;    
+    bool BLOCK_CAPTURE;
     bool TEAMS_ENABLED;
     uint256 NUM_TEAMS;
     bool RANKED;
@@ -395,4 +422,3 @@ struct AuxiliaryArgs {
     string artifactBaseURI;
     address[] allowedAddresses;
 }
-

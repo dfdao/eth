@@ -141,7 +141,7 @@ export async function deployAndCutArena(
   {
     ownerAddress,
     allowListEnabled,
-    allowedAddresses=[],
+    allowedAddresses = [],
     initializers,
     save = true,
   }: {
@@ -240,11 +240,7 @@ export async function deployAndCutArena(
     calldata: '0x',
   };
 
-  const diamondInit = await deployContract(
-    'DFArenaInitialize',
-    { },
-    hre
-  );
+  const diamondInit = await deployContract('DFArenaInitialize', {}, hre);
 
   // EIP-2535 specifies that the `diamondCut` function takes two optional
   // arguments: address _init and bytes calldata _calldata
@@ -257,7 +253,7 @@ export async function deployAndCutArena(
     {
       allowListEnabled,
       artifactBaseURI: tokenBaseUri,
-      allowedAddresses
+      allowedAddresses,
     },
   ]);
 
