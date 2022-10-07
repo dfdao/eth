@@ -371,7 +371,7 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
     }
 
     function _checkCube(DFPMoveArgs memory args)
-        private
+        private view
         returns (bool cubePresent, Upgrade memory temporaryUpgrade)
     {
         Artifact memory movedArtifact = gs().artifacts[args.movedArtifactId];

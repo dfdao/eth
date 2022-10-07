@@ -233,6 +233,9 @@ contract DFArtifactFacet is WithStorage, ERC721 {
         Artifact memory artifact = createArtifact(args);
 
         if (artifact.artifactType == ArtifactType.AntiMatterCube) {
+            // Get an underflow if planet is not initialized.
+            require(gs().planetsExtendedInfo2[args.planetId].isInitialized, "planet is not initialized");
+
             Planet memory planet = gs().planets[args.planetId];
             PlanetExtendedInfo memory planetExtendedInfo = gs().planetsExtendedInfo[args.planetId];
             PlanetExtendedInfo2 memory planetExtendedInfo2 = gs().planetsExtendedInfo2[args.planetId];
