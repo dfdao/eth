@@ -16,18 +16,7 @@ import {LibPlanet} from "../libraries/LibPlanet.sol";
 import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
-import {
-    SpaceType,
-    Planet,
-    PlanetExtendedInfo,
-    PlanetExtendedInfo2,
-    Player,
-    ArtifactType,
-    DFPInitPlanetArgs,
-    DFPMoveArgs,
-    DFPFindArtifactArgs,
-    AdminCreatePlanetArgs
-} from "../DFTypes.sol";
+import {SpaceType, Planet, PlanetExtendedInfo, PlanetExtendedInfo2, Player, ArtifactType, DFPInitPlanetArgs, DFPMoveArgs, DFPFindArtifactArgs, AdminCreatePlanetArgs} from "../DFTypes.sol";
 
 contract DFCoreFacet is WithStorage {
     using ABDKMath64x64 for *;
@@ -196,5 +185,23 @@ contract DFCoreFacet is WithStorage {
         refreshPlanet(locationId);
         LibPlanet.withdrawSilver(locationId, amount);
         emit PlanetSilverWithdrawn(msg.sender, locationId, amount);
+    }
+
+    // withdraw silver
+    function withdrawSilverAsteroid(uint256 locationId) public notPaused {
+        refreshPlanet(locationId);
+        uint256 amount = LibPlanet.withdrawSilverAsteroid(locationId);
+        emit PlanetSilverWithdrawn(msg.sender, locationId, amount);
+    }
+
+    // withdraw silver
+    function bulkWithdrawSilverAsteroid(uint256[] memory locationIds) public notPaused {
+        uint256 amount = 0;
+        for (uint256 i = 0; i < locationIds.length; i++) {
+            refreshPlanet(locationIds[i]);
+            amount += LibPlanet.withdrawSilverAsteroid(locationIds[i]);
+        }
+        // Using 0 for locationId, bad pattern
+        emit PlanetSilverWithdrawn(msg.sender, 0, amount);
     }
 }
