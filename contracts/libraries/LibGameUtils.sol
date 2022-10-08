@@ -287,6 +287,17 @@ library LibGameUtils {
                     defMultiplier: 100
                 });
         }
+        // Nuke range by 50%
+        if (artifact.artifactType == ArtifactType.AntiMatterCube) {
+            return
+                Upgrade({
+                    popCapMultiplier: 100,
+                    popGroMultiplier: 100,
+                    rangeMultiplier: 50,
+                    speedMultiplier: 100,
+                    defMultiplier: 100
+                });
+        }
 
         return defaultUpgrade();
     }

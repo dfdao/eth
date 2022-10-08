@@ -2,6 +2,7 @@ import { ArtifactType } from '@darkforest_eth/types';
 import { expect } from 'chai';
 import {
   conquerUnownedPlanet,
+  createArtifactOnPlanet,
   fixtureLoader,
   increaseBlockchainTime,
   makeInitArgs,
@@ -9,6 +10,7 @@ import {
 } from './utils/TestUtils';
 import { defaultWorldFixture, World } from './utils/TestWorld';
 import {
+  LVL0_PLANET,
   LVL1_ASTEROID_1,
   LVL1_PLANET_DEEP_SPACE,
   LVL2_PLANET_SPACE,
@@ -69,6 +71,9 @@ describe('Space Ships', function () {
       );
       await increaseBlockchainTime();
 
+      await world.contract.refreshPlanet(SPAWN_PLANET_1.id);
+      const spawn = await world.contract.planets(SPAWN_PLANET_1.id);
+
       await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_1);
 
       const previousPlanet = await world.contract.planets(LVL1_ASTEROID_1.id);
@@ -101,6 +106,78 @@ describe('Space Ships', function () {
       await world.contract.refreshPlanet(LVL1_ASTEROID_1.id);
       const currentPlanet = await world.contract.planets(LVL1_ASTEROID_1.id);
       expect(currentPlanet.population).to.be.equal(currentPlanet.populationCap);
+    });
+  });
+
+  describe('using the AntiMatter Cube', async function () {
+    it('pauses energy regeneration on planets', async function () {
+      await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_1);
+      await increaseBlockchainTime();
+
+      // // put cube on planet;
+      const artifactId = await createArtifactOnPlanet(
+        world.contract,
+        world.user1.address,
+        LVL1_ASTEROID_1,
+        ArtifactType.AntiMatterCube
+      );
+      const cube = (await world.user1Core.getArtifactsOnPlanet(LVL1_ASTEROID_1.id)).find(
+        (a) => a.artifact.artifactType === ArtifactType.AntiMatterCube
+      )?.artifact;
+
+      const previousPlanet = await world.contract.planets(LVL1_ASTEROID_1.id);
+      const sendingPopulation = 50000;
+
+      // Move energy off of planet and wait
+      await world.user1Core.move(
+        ...makeMoveArgs(LVL1_ASTEROID_1, SPAWN_PLANET_1, 100, sendingPopulation, 0)
+      );
+
+      await increaseBlockchainTime();
+
+      const currentPlanetPopulation = (await world.contract.planets(LVL1_ASTEROID_1.id)).population;
+      const expectedPopulation = previousPlanet.population.sub(sendingPopulation);
+      // Population did not grow
+      await world.contract.refreshPlanet(LVL1_ASTEROID_1.id);
+      expect(currentPlanetPopulation).to.be.equal(expectedPopulation);
+    });
+    it('halves range on move', async function () {
+      await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_1);
+      await increaseBlockchainTime();
+
+      const previousPlanet = await world.contract.planets(LVL1_ASTEROID_1.id);
+      const sendingPopulation = 50000;
+
+      // Move energy off of planet and wait
+      const moveTx = await world.user1Core.move(
+        ...makeMoveArgs(LVL1_ASTEROID_1, LVL0_PLANET, 100, sendingPopulation, 0)
+      );
+      const moveReceipt = await moveTx.wait();
+      const voyageId = moveReceipt.events?.[0].args?.[1];
+      const voyage = await world.contract.getPlanetArrival(voyageId);
+
+      await increaseBlockchainTime();
+      await world.contract.refreshPlanet(LVL1_ASTEROID_1.id);
+      // // put cube on planet;
+      const artifactId = await createArtifactOnPlanet(
+        world.contract,
+        world.user1.address,
+        LVL1_ASTEROID_1,
+        ArtifactType.AntiMatterCube
+      );
+
+      const cube = (await world.user1Core.getArtifactsOnPlanet(LVL1_ASTEROID_1.id)).find(
+        (a) => a.artifact.artifactType === ArtifactType.AntiMatterCube
+      )?.artifact;
+
+      // Move the cube.
+      const move = await world.user1Core.move(
+        ...makeMoveArgs(LVL1_ASTEROID_1, LVL0_PLANET, 100, sendingPopulation, 0, cube?.id)
+      );
+      const moveRct = await move.wait();
+      const voyageId1 = moveRct.events?.[0].args?.[1];
+      const voyage1 = await world.contract.getPlanetArrival(voyageId1);
+      expect(voyage.popArriving.toNumber()).to.be.greaterThan(voyage1.popArriving.toNumber());
     });
   });
 
