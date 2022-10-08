@@ -36,7 +36,6 @@ describe('Space Ships', function () {
   }
 
   beforeEach(async function () {
-    console.log('loading world');
     world = await fixtureLoader(worldFixture);
   });
 

@@ -14,7 +14,6 @@ import {WithArenaStorage} from "../libraries/LibArenaStorage.sol";
 
 // Type imports
 import {ArrivalData, ArrivalType, Artifact, ArtifactType, DFPCreateArrivalArgs, DFPMoveArgs, Planet, PlanetExtendedInfo, PlanetExtendedInfo2, PlanetEventMetadata, PlanetEventType, Upgrade, ArenaPlayerInfo} from "../DFTypes.sol";
-import "hardhat/console.sol";
 
 contract DFMoveFacet is WithStorage, WithArenaStorage {
     modifier notPaused() {
