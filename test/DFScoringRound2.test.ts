@@ -42,9 +42,10 @@ describe('DFScoringRound2', async function () {
   });
 
   it('allows player to withdraw silver from trading posts', async function () {
-    const withdrawnAmount = (await world.contract.planets(LVL3_SPACETIME_1.id)).silverCap;
+    const withdrawnAmount =
+      (await world.contract.planets(LVL3_SPACETIME_1.id)).silverCap.toNumber() / CONTRACT_PRECISION;
 
-    await expect(world.user1Core.withdrawSilver(LVL3_SPACETIME_1.id, withdrawnAmount))
+    await expect(world.user1Core.withdrawSilver(LVL3_SPACETIME_1.id))
       .to.emit(world.contract, 'PlanetSilverWithdrawn')
       .withArgs(world.user1.address, LVL3_SPACETIME_1.id, withdrawnAmount);
 
@@ -55,37 +56,15 @@ describe('DFScoringRound2', async function () {
     // FIXME(blaine): This should have been done client-side because this type of
     // division isn't supposed to be done in the contract. That's the whole point of
     // `CONTRACT_PRECISION`
-    expect((await world.contract.players(world.user1.address)).score).to.equal(
-      withdrawnAmount.div(1000)
-    );
-  });
-
-  it("doesn't allow player to withdraw more silver than planet has", async function () {
-    const withdrawnAmount = (await world.contract.planets(LVL3_SPACETIME_1.id)).silverCap.add(1000);
-
-    await expect(
-      world.user1Core.withdrawSilver(LVL3_SPACETIME_1.id, withdrawnAmount)
-    ).to.be.revertedWith('tried to withdraw more silver than exists on planet');
-
-    expect((await world.contract.players(world.user1.address)).score).to.equal(0);
-  });
-
-  it("doesn't allow player to withdraw silver from non-trading post", async function () {
-    const withdrawnAmount = (await world.contract.planets(LVL1_ASTEROID_1.id)).silverCap;
-
-    await expect(
-      world.user1Core.withdrawSilver(LVL1_ASTEROID_1.id, withdrawnAmount)
-    ).to.be.revertedWith('can only withdraw silver from trading posts');
-
-    expect((await world.contract.players(world.user1.address)).score).to.equal(0);
+    expect((await world.contract.players(world.user1.address)).score).to.equal(withdrawnAmount);
   });
 
   it("doesn't allow player to withdraw silver from planet that is not theirs", async function () {
     const withdrawnAmount = (await world.contract.planets(LVL3_SPACETIME_1.id)).silverCap;
 
-    await expect(
-      world.user2Core.withdrawSilver(LVL3_SPACETIME_1.id, withdrawnAmount)
-    ).to.be.revertedWith('you must own this planet');
+    await expect(world.user2Core.withdrawSilver(LVL3_SPACETIME_1.id)).to.be.revertedWith(
+      'you must own this planet'
+    );
 
     expect((await world.contract.players(world.user1.address)).score).to.equal(0);
     expect((await world.contract.players(world.user2.address)).score).to.equal(0);
@@ -95,15 +74,11 @@ describe('DFScoringRound2', async function () {
     await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_2);
     await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_NEBULA);
     await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_DEEP_SPACE);
-    const ast1 = await world.contract.planets(LVL1_ASTEROID_1.id);
-    const ast2 = await world.contract.planets(LVL1_ASTEROID_2.id);
-    const ast3 = await world.contract.planets(LVL1_ASTEROID_NEBULA.id);
-    const ast4 = await world.contract.planets(LVL1_ASTEROID_DEEP_SPACE.id);
 
     // Let Asteroids fill up
     await increaseBlockchainTime();
 
-    const tx = await world.user1Core.bulkWithdrawSilverAsteroid([
+    const tx = await world.user1Core.bulkWithdrawSilver([
       LVL1_ASTEROID_1.id,
       LVL1_ASTEROID_2.id,
       LVL1_ASTEROID_NEBULA.id,
@@ -111,6 +86,15 @@ describe('DFScoringRound2', async function () {
     ]);
     const rct = await tx.wait();
     console.log(`bulk withdraw used ${rct.gasUsed.toNumber() / 4} gas per asteroid`);
+    const ast1 = await world.contract.planets(LVL1_ASTEROID_1.id);
+    const ast2 = await world.contract.planets(LVL1_ASTEROID_2.id);
+    const ast3 = await world.contract.planets(LVL1_ASTEROID_NEBULA.id);
+    const ast4 = await world.contract.planets(LVL1_ASTEROID_DEEP_SPACE.id);
+    // // Confirm all silver has been withdrawn
+    expect(ast1.silver).to.equal(0);
+    expect(ast2.silver).to.equal(0);
+    expect(ast3.silver).to.equal(0);
+    expect(ast4.silver).to.equal(0);
 
     expect((await world.user1Core.players(world.user1.address)).score.toNumber()).to.equal(
       ast1.silverCap.add(ast2.silverCap).add(ast3.silverCap).add(ast4.silverCap).toNumber() /

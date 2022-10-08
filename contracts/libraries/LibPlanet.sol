@@ -397,7 +397,7 @@ library LibPlanet {
     }
 
     // Withdraw Max Silver
-    function withdrawSilverAsteroid(uint256 locationId) public returns (uint256) {
+    function withdrawSilver(uint256 locationId) public returns (uint256) {
         Planet storage planet = gs().planets[locationId];
         PlanetExtendedInfo memory info = gs().planetsExtendedInfo[locationId];
 
