@@ -441,10 +441,22 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
     function _createArrival(DFPCreateArrivalArgs memory args) private {
         // enter the arrival data for event id
         Planet memory planet = gs().planets[args.oldLoc];
+
+        require(arenaStorage().startTime > 0, "game hasn't started yet");
+        // time buff = (doubling_time - 0) * 100 / doubling_time + 100 = 200 -> every doubling_time seconds, range doubles
+
+        uint256 rangeBoostPercent = 0;
+        if (arenaConstants().RANGE_DOUBLING_SECS > 0) {
+            uint256 timeElapsed = block.timestamp - arenaStorage().startTime;
+            uint256 boostModifier = (timeElapsed * 100 / arenaConstants().RANGE_DOUBLING_SECS);
+            rangeBoostPercent += boostModifier;
+        }
+        uint256 newRange = (planet.range * rangeBoostPercent) / 100;
+
         uint256 popArriving = _getDecayedPop(
             args.popMoved,
             args.effectiveDistTimesHundred,
-            planet.range,
+            newRange,
             planet.populationCap
         );
         bool isSpaceship = LibArtifactUtils.isSpaceship(
@@ -478,24 +490,9 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
         uint256 distTimesHundred,
         uint256 _range,
         uint256 _populationCap
-    ) private view returns (uint256 _decayedPop) {
-        require(arenaStorage().startTime > 0, "game hasn't started yet");
-        // time buff = (doubling_time - 0) * 100 / doubling_time + 100 = 200 -> every doubling_time seconds, range doubles
-
-        uint256 _timeBuff = 100;
-        if (arenaConstants().RANGE_DOUBLING_SECS > 0) {
-            _timeBuff =
-                100 +
-                (((block.timestamp - arenaStorage().startTime) * 100) /
-                    arenaConstants().RANGE_DOUBLING_SECS);
-        }
-        // time buffed range = ((range * 100) * time buff) / 100 = range * timeBuff
-        uint256 _timeBuffedRange = (_range * 100 * _timeBuff) / 100;
-        // scale = ln(dist / range)
-        int128 _scaleInv = ABDKMath64x64.exp_2(
-            ABDKMath64x64.divu(distTimesHundred, _timeBuffedRange)
-        );
-
+    ) private pure returns (uint256 _decayedPop) {
+        int128 _scaleInv = ABDKMath64x64.exp_2(ABDKMath64x64.divu(distTimesHundred, _range * 100));
+        
         // population cap / 20
         int128 _bigPlanetDebuff = ABDKMath64x64.divu(_populationCap, 20);
 

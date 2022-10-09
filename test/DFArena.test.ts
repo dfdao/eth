@@ -27,6 +27,7 @@ import {
   multipleTargetPlanetVictoryFixture,
   noAdminWorldFixture,
   planetLevelThresholdFixture,
+  rangeIncreaseFixture,
   spaceshipWorldFixture,
   targetPlanetFixture,
   teamsFixture,
@@ -57,6 +58,7 @@ import {
   LVL1_ASTEROID_2,
   initializers,
   LVL3_UNOWNED_DEEP_SPACE,
+  rangeIncreaseInitializers,
 } from './utils/WorldConstants';
 import hre, { ethers } from 'hardhat';
 import { TestLocation } from './utils/TestLocation';
@@ -87,7 +89,7 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: true,
-        blockedPlanetIds: []
+        blockedPlanetIds: [],
       });
 
       await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
@@ -116,7 +118,7 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: true,
         isSpawnPlanet: false,
-        blockedPlanetIds: []
+        blockedPlanetIds: [],
       });
 
       await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
@@ -149,7 +151,7 @@ describe('Arena Functions', function () {
           requireValidLocationId: true,
           isTargetPlanet: false,
           isSpawnPlanet: false,
-          blockedPlanetIds: []
+          blockedPlanetIds: [],
         },
         {
           location: ADMIN_PLANET_CLOAKED.id,
@@ -161,7 +163,7 @@ describe('Arena Functions', function () {
           requireValidLocationId: false,
           isTargetPlanet: false,
           isSpawnPlanet: false,
-          blockedPlanetIds: []
+          blockedPlanetIds: [],
         },
         {
           location: LVL1_PLANET_SPACE.id,
@@ -173,7 +175,7 @@ describe('Arena Functions', function () {
           requireValidLocationId: true,
           isTargetPlanet: false,
           isSpawnPlanet: false,
-          blockedPlanetIds: []
+          blockedPlanetIds: [],
         },
       ];
       await world.contract.bulkCreatePlanet(planets);
@@ -210,7 +212,7 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: true,
-        blockedPlanetIds: []
+        blockedPlanetIds: [],
       });
 
       const createRevealReceipt = await createReveal.wait();
@@ -243,7 +245,7 @@ describe('Arena Functions', function () {
           requireValidLocationId: false,
           isTargetPlanet: false,
           isSpawnPlanet: true,
-          blockedPlanetIds: []
+          blockedPlanetIds: [],
         };
 
         planetArgList.push(planetArgs);
@@ -290,7 +292,7 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: true,
-        blockedPlanetIds: []
+        blockedPlanetIds: [],
       });
 
       const toPlanetExtended = await world.contract.planetsExtendedInfo(ADMIN_PLANET_CLOAKED.id);
@@ -319,7 +321,7 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: true,
-        blockedPlanetIds: []
+        blockedPlanetIds: [],
       });
 
       const toPlanetExtended = await world.contract.planetsExtendedInfo(ADMIN_PLANET_CLOAKED.id);
@@ -346,7 +348,7 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: false,
-        blockedPlanetIds: []
+        blockedPlanetIds: [],
       });
 
       await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
@@ -376,7 +378,7 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: true,
-        blockedPlanetIds: []
+        blockedPlanetIds: [],
       });
 
       await world.contract.revealLocation(...makeRevealArgs(LVL2_PLANET_DEEP_SPACE, x, y));
@@ -415,7 +417,7 @@ describe('Arena Functions', function () {
           requireValidLocationId: false,
           isTargetPlanet: true,
           isSpawnPlanet: false,
-          blockedPlanetIds: []
+          blockedPlanetIds: [],
         })
       ).to.be.revertedWith('admin cannot create target planets');
     });
@@ -495,7 +497,7 @@ describe('Arena Functions', function () {
         requireValidLocationId: true,
         isTargetPlanet: true,
         isSpawnPlanet: false,
-        blockedPlanetIds: []
+        blockedPlanetIds: [],
       });
       // await increaseBlockchainTime();
 
@@ -516,23 +518,23 @@ describe('Arena Functions', function () {
         );
       });
       it('needs to have enough energy', async function () {
-        await expect(
-          world.user1Core.claimVictory()
-        ).to.be.revertedWith('victory condition not met');
+        await expect(world.user1Core.claimVictory()).to.be.revertedWith(
+          'victory condition not met'
+        );
       });
       describe('time elapsed', async function () {
         beforeEach(async function () {
           await increaseBlocks();
         });
         it('cannot claim victory with a non-target planet', async function () {
-          await expect(
-            world.user1Core.claimVictory()
-          ).to.be.revertedWith('victory condition not met');
+          await expect(world.user1Core.claimVictory()).to.be.revertedWith(
+            'victory condition not met'
+          );
         });
         it('must own planet to claim victory', async function () {
-          await expect(
-            world.user2Core.claimVictory()
-          ).to.be.revertedWith('victory condition not met');
+          await expect(world.user2Core.claimVictory()).to.be.revertedWith(
+            'victory condition not met'
+          );
         });
         it('gameover event emitted after claim victory', async function () {
           await increaseBlockchainTime();
@@ -579,7 +581,7 @@ describe('Arena Functions', function () {
         requireValidLocationId: true,
         isTargetPlanet: true,
         isSpawnPlanet: false,
-        blockedPlanetIds: []
+        blockedPlanetIds: [],
       });
       return world;
     }
@@ -609,9 +611,9 @@ describe('Arena Functions', function () {
           }%`
         );
 
-        await expect(
-          world.user1Core.claimVictory()
-        ).to.be.revertedWith('victory condition not met');
+        await expect(world.user1Core.claimVictory()).to.be.revertedWith(
+          'victory condition not met'
+        );
       });
 
       it('get round duration 0 if round not over', async function () {
@@ -651,7 +653,7 @@ describe('Arena Functions', function () {
         requireValidLocationId: false,
         isTargetPlanet: false,
         isSpawnPlanet: false,
-        blockedPlanetIds: []
+        blockedPlanetIds: [],
       };
       await defaultWorld.contract.createArenaPlanet(planet);
 
@@ -1078,7 +1080,7 @@ describe('Arena Functions', function () {
           requireValidLocationId: false,
           isTargetPlanet: false,
           isSpawnPlanet: true,
-          blockedPlanetIds: []
+          blockedPlanetIds: [],
         };
 
         planetArgList.push(planetArgs);
@@ -1142,7 +1144,7 @@ describe('Arena Functions', function () {
           requireValidLocationId: false,
           isTargetPlanet: false,
           isSpawnPlanet: true,
-          blockedPlanetIds: []
+          blockedPlanetIds: [],
         };
 
         planetArgList.push(planetArgs);
@@ -1256,7 +1258,6 @@ describe('Arena Functions', function () {
 
       expect(await world.contract.getGameover()).to.equal(true);
     });
-
   });
 
   describe('Blocklist', function () {
@@ -1290,13 +1291,10 @@ describe('Arena Functions', function () {
       await world.user1Core.initializePlayer(...makeInitArgs(ADMIN_PLANET_CLOAKED));
       const constants = await world.user1Core.getArenaConstants();
 
-
       // there are three planets owned by the player, a spawn planet and two target planets.
       // the minimum planet threshold is 2. one target planet has been blocked from the player's spawn location.
-      // we should expect to see that there are  
-      await expect(
-        world.user1Core.claimVictory()
-      ).to.be.revertedWith('victory condition not met');
+      // we should expect to see that there are
+      await expect(world.user1Core.claimVictory()).to.be.revertedWith('victory condition not met');
     });
     it('Confirms that move to target from spawn IS blocked', async function () {
       // HARD CODED LMAO.
@@ -1392,7 +1390,7 @@ describe('Arena Functions', function () {
           requireValidLocationId: true,
           isTargetPlanet: true,
           isSpawnPlanet: false,
-          blockedPlanetIds: []
+          blockedPlanetIds: [],
         });
 
         return world;
@@ -1433,6 +1431,55 @@ describe('Arena Functions', function () {
         expect(winners[0]).to.equal(world.user1.address);
         expect(winners[1]).to.equal(world.user2.address);
       });
+    });
+  });
+
+  describe('Range Modifier', function () {
+    let world: World;
+
+    beforeEach('load fixture', async function () {
+      world = await fixtureLoader(rangeIncreaseFixture);
+      await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
+      await increaseBlockchainTime();
+    });
+
+    it.only('confirms range increase', async function () {
+      expect((await world.contract.getArenaConstants()).RANGE_DOUBLING_SECS).to.equal(
+        rangeIncreaseInitializers.RANGE_DOUBLING_SECS
+      );
+    });
+    it.only('move has more pop arriving after time has elapsed', async function () {
+      await world.user1Core.move(
+        ...makeMoveArgs(SPAWN_PLANET_1, LVL1_ASTEROID_1, 50, 60000, 0)
+      );
+      const ArrivalQueuedFilter = world.user1Core.filters.ArrivalQueued();
+      let events = await world.user1Core.queryFilter(ArrivalQueuedFilter, "latest");
+      let voyageId = events[0].args?.arrivalId;
+      const voyage0 = await world.contract.getPlanetArrival(voyageId);
+      console.log(`pop arriving`, voyage0.popArriving.toNumber());
+
+      const gameStart = (await world.contract.getStartTime()).toNumber();
+
+      let currTime = (await events[0].getBlock()).timestamp;
+      console.log(`currTime`, currTime, `gameStart`, gameStart);
+      console.log(currTime - gameStart, 'sec have passed');
+
+      await increaseBlockchainTime();
+
+      await world.user1Core.move(
+        ...makeMoveArgs(SPAWN_PLANET_1, LVL1_ASTEROID_1, 50, 60000, 0)
+      );
+      events = await world.user1Core.queryFilter(ArrivalQueuedFilter, "latest");
+
+      currTime = (await events[0].getBlock()).timestamp;
+      const timeElapsed = currTime - gameStart;
+      console.log(timeElapsed, 'sec have passed');
+      console.log(`boosts`, (timeElapsed / rangeIncreaseInitializers.RANGE_DOUBLING_SECS) + 100)
+      voyageId = events[0].args?.arrivalId;
+      const voyage1 = await world.contract.getPlanetArrival(voyageId);
+      console.log(`pop arriving 1`, voyage1.popArriving.toNumber());
+      expect(voyage0.pop)
+
     });
   });
 });
