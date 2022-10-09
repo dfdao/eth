@@ -10,6 +10,7 @@ import {LibPlanet} from "../libraries/LibPlanet.sol";
 import {Diamond} from "../vendor/Diamond.sol";
 import {DFWhitelistFacet} from "../facets/DFWhitelistFacet.sol";
 import {DFCoreFacet} from "../facets/DFCoreFacet.sol";
+import {DFArtifactFacet} from "../facets/DFArtifactFacet.sol";
 
 // Interface imports
 import {IDiamondCut} from "../vendor/interfaces/IDiamondCut.sol";
@@ -178,10 +179,9 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
             args.team
         );
 
-        for(uint i = 0; i < args.blockedPlanetIds.length; i++) {
+        for (uint256 i = 0; i < args.blockedPlanetIds.length; i++) {
             arenaStorage().blocklist[args.location][args.blockedPlanetIds[i]] = true;
-        }           
-        
+        }
 
         SpaceType spaceType = LibGameUtils.spaceTypeFromPerlin(args.perlin);
         LibPlanet._initializePlanet(
@@ -283,40 +283,18 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         emit PlayerNotReady(msg.sender, block.timestamp);
     }
 
-    function _checkGameOver() public returns (bool) {
-        require(arenaConstants().TARGET_PLANETS, "target planets are disabled");
+    function _checkGameOver() public view returns (bool) {
+        uint256[] memory playerArtifactIds = DFArtifactFacet(address(this)).getPlayerArtifactIds(
+            msg.sender
+        );
 
-        uint256[] memory targetPlanets = arenaStorage().targetPlanetIds;
-        uint256 captured = 0;
-
-        for (uint256 i = 0; i < targetPlanets.length; i++) {
-            uint256 locationId = targetPlanets[i];
-            LibPlanet.refreshPlanet(locationId);
-            Planet memory planet = gs().planets[locationId];
-            PlanetExtendedInfo memory planetExtendedInfo = gs().planetsExtendedInfo[locationId];
-
-            bool myPlanet = planet.owner == msg.sender;
-
-            if (arenaConstants().TEAMS_ENABLED) {
-                myPlanet =
-                    arenaStorage().arenaPlayerInfo[planet.owner].team ==
-                    arenaStorage().arenaPlayerInfo[msg.sender].team;
+        for (uint256 i = 0; i < playerArtifactIds.length; i++) {
+            Artifact memory artifact = DFArtifactFacet(address(this)).getArtifact(
+                playerArtifactIds[i]
+            );
+            if (artifact.artifactType == ArtifactType.AntiMatterCube) {
+                return true;
             }
-
-            uint256 playerHomePlanet = gs().players[msg.sender].homePlanetId;
-            bool blocked = arenaStorage().blocklist[locationId][playerHomePlanet];
-
-            if (
-                !myPlanet ||
-                (planet.population * 100) / planet.populationCap <
-                arenaConstants().CLAIM_VICTORY_ENERGY_PERCENT ||
-                (arenaConstants().BLOCK_CAPTURE && blocked)
-            ) {
-                continue;
-            }
-
-            captured += 1;
-            if (captured >= arenaConstants().TARGETS_REQUIRED_FOR_VICTORY) return true;
         }
 
         return false;
