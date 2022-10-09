@@ -214,11 +214,11 @@ library LibPlanet {
 
         Upgrade memory upgrade = LibStorage.upgrades()[_branch][upgradeBranchCurrentLevel];
         uint256 upgradeCost = (planet.silverCap * 20 * (totalLevel + 1)) / 100;
-        require(planet.silver >= upgradeCost, "Insufficient silver to upgrade");
+        require(player.score >= upgradeCost, "Insufficient silver to upgrade");
 
         // do upgrade
         LibGameUtils._buffPlanet(_location, upgrade);
-        planet.silver -= upgradeCost;
+        player.score -= upgradeCost;
         if (_branch == uint256(UpgradeBranch.DEFENSE)) {
             info.upgradeState0 += 1;
         } else if (_branch == uint256(UpgradeBranch.RANGE)) {

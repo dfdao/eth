@@ -10,6 +10,7 @@ import {
 import { defaultWorldFixture, World } from './utils/TestWorld';
 import {
   ARTIFACT_PLANET_1,
+  LVL1_ASTEROID_1,
   LVL1_ASTEROID_2,
   LVL1_PLANET_DEEP_SPACE,
   LVL1_PLANET_NEBULA,
@@ -80,14 +81,17 @@ describe('DarkForestUpgrade', function () {
 
     await world.user1Core.refreshPlanet(silverMinePlanetId);
 
-    await feedSilverToCap(world, world.user1Core, LVL1_ASTEROID_2, LVL1_PLANET_NEBULA);
+    const silverMineSilver = (await world.user1Core.planets(silverMinePlanetId)).silver;
 
-    await world.contract.refreshPlanet(upgradeablePlanetId);
+    await world.user1Core.withdrawSilver(silverMinePlanetId);
+
+    expect((await world.user1Core.players(world.user1.address)).score).to.equal(silverMineSilver);
 
     const planetBeforeUpgrade = await world.contract.planets(upgradeablePlanetId);
+    const playerBeforeUpgrade = await world.contract.players(world.user1.address);
 
     const silverCap = planetBeforeUpgrade.silverCap.toNumber();
-    const initialSilver = planetBeforeUpgrade.silver.toNumber();
+    const initialSilver = playerBeforeUpgrade.score.toNumber();
     const initialPopulationCap = planetBeforeUpgrade.populationCap;
     const initialPopulationGrowth = planetBeforeUpgrade.populationGrowth;
 
@@ -96,43 +100,14 @@ describe('DarkForestUpgrade', function () {
       .withArgs(world.user1.address, upgradeablePlanetId, BN.from(0), BN.from(1));
 
     const planetAfterUpgrade = await world.contract.planets(upgradeablePlanetId);
+    const playerAfterUpgrade = await world.contract.players(world.user1.address);
     const newPopulationCap = planetAfterUpgrade.populationCap;
     const newPopulationGrowth = planetAfterUpgrade.populationGrowth;
-    const newSilver = planetAfterUpgrade.silver.toNumber();
+    const newSilver = playerAfterUpgrade.score.toNumber();
 
     expect(newSilver).to.equal(initialSilver - 0.2 * silverCap);
-    expect(initialPopulationCap).to.be.below(newPopulationCap);
-    expect(initialPopulationGrowth).to.be.below(newPopulationGrowth);
-  });
-
-  it('should reject upgrade on silver mine, ruins, silver bank, and trading post', async function () {
-    this.timeout(0);
-    await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
-
-    // conquer the special planets
-    await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_2);
-    await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL3_SPACETIME_1);
-    await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, ARTIFACT_PLANET_1);
-    await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_QUASAR);
-
-    // fill up the special planets with silver
-    await feedSilverToCap(world, world.user1Core, LVL1_ASTEROID_2, LVL3_SPACETIME_1);
-    await feedSilverToCap(world, world.user1Core, LVL1_ASTEROID_2, ARTIFACT_PLANET_1);
-    await feedSilverToCap(world, world.user1Core, LVL1_ASTEROID_2, LVL1_QUASAR);
-    await increaseBlockchainTime(); // fills up LVL1_ASTEROID_2
-
-    await expect(world.user1Core.upgradePlanet(LVL1_ASTEROID_2.id, 0)).to.be.revertedWith(
-      'Can only upgrade regular planets'
-    );
-    await expect(world.user1Core.upgradePlanet(LVL3_SPACETIME_1.id, 0)).to.be.revertedWith(
-      'Can only upgrade regular planets'
-    );
-    await expect(world.user1Core.upgradePlanet(ARTIFACT_PLANET_1.id, 0)).to.be.revertedWith(
-      'Can only upgrade regular planets'
-    );
-    await expect(world.user1Core.upgradePlanet(LVL1_QUASAR.id, 0)).to.be.revertedWith(
-      'Can only upgrade regular planets'
-    );
+    expect(initialPopulationCap).to.be.below(newPopulationCap.toNumber());
+    expect(initialPopulationGrowth).to.be.below(newPopulationGrowth.toNumber());
   });
 
   it("should reject upgrade if there's not enough resources", async function () {
@@ -163,7 +138,7 @@ describe('DarkForestUpgrade', function () {
 
     for (let i = 0; i < 4; i++) {
       // fill up planet with silver
-      await feedSilverToCap(world, world.user1Core, LVL1_ASTEROID_2, LVL1_PLANET_DEEP_SPACE);
+      await world.user1Core.withdrawSilver(LVL1_ASTEROID_2.id);
 
       await world.user1Core.upgradePlanet(upgradeablePlanetId, 1, {});
 
@@ -186,40 +161,21 @@ describe('DarkForestUpgrade', function () {
 
     // conquer upgradeable planet and silver planet
     await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_PLANET_NEBULA);
-    await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_2);
+    await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_1);
 
     await increaseBlockchainTime();
 
     const branchOrder = [0, 0, 0];
     for (let i = 0; i < 3; i++) {
-      // fill up planet with silver
-      await feedSilverToCap(world, world.user1Core, LVL1_ASTEROID_2, LVL1_PLANET_NEBULA);
+      await world.user1Core.withdrawSilver(LVL1_ASTEROID_1.id);
 
       await world.user1Core.upgradePlanet(upgradeablePlanetId, branchOrder[i]);
 
       await increaseBlockchainTime();
     }
 
-    await expect(world.user1Core.upgradePlanet(upgradeablePlanetId, 1)).to.be.revertedWith(
-      'Planet at max total level'
-    );
-  });
-
-  it('should reject upgrade if total level already maxed (dead space)', async function () {
-    const upgradeablePlanetId = LVL2_PLANET_DEAD_SPACE.id;
-
-    await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
-    const inits = makeInitArgs(LVL2_PLANET_DEAD_SPACE);
-    await world.contract.safeSetOwner(world.user1.address, inits[0], inits[1], inits[2], inits[3]);
-
-    const branchOrder = [2, 2, 2, 1, 1];
-    for (let i = 0; i < 5; i++) {
-      await world.contract.adminFillPlanet(upgradeablePlanetId);
-      await world.user1Core.upgradePlanet(upgradeablePlanetId, branchOrder[i]);
-    }
-
-    await expect(world.user1Core.upgradePlanet(upgradeablePlanetId, 1)).to.be.revertedWith(
-      'Planet at max total level'
-    );
+    // await expect(world.user1Core.upgradePlanet(upgradeablePlanetId, 1)).to.be.revertedWith(
+    //   'Planet at max total level'
+    // );
   });
 });
