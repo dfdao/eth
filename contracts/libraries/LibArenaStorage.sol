@@ -17,6 +17,9 @@ import {
     ArenaPlayerInfo,
     Modifiers,
     ArenaCreateRevealPlanetArgs,
+    ArtifactTypePrices,
+    ArtifactRarityPrices,
+    SpaceshipPrices,
     Spaceships,
     InitArgs,
     AuxiliaryArgs
@@ -73,6 +76,9 @@ struct ArenaConstants {
     bool TEAMS_ENABLED;
     uint256 NUM_TEAMS;
     bool RANKED;
+    ArtifactTypePrices ARTIFACT_TYPE_PRICES;
+    ArtifactRarityPrices ARTIFACT_RARITY_PRICES;
+    SpaceshipPrices SPACESHIP_PRICES;
 }
 
 library LibArenaStorage {

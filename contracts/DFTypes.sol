@@ -279,6 +279,33 @@ struct Modifiers {
     uint256 barbarianPercentage;
 }
 
+struct ArtifactTypePrices {
+    uint256 Monolith;
+    uint256 Colossus;
+    uint256 Pyramid;
+    uint256 Wormhole;
+    uint256 PlanetaryShield;
+    uint256 PhotoidCannon;
+    uint256 BloomFilter;
+    uint256 BlackDomain;
+}
+
+struct ArtifactRarityPrices {
+    uint256 Common;
+    uint256 Rare;
+    uint256 Epic;
+    uint256 Legendary;
+    uint256 Mythic;
+}
+
+struct SpaceshipPrices {
+    uint256 ShipMothership;
+    uint256 ShipCrescent;
+    uint256 ShipWhale;
+    uint256 ShipGear;
+    uint256 ShipTitan;
+}
+
 enum Mod {
     popCap,
     popGrowth,
@@ -390,6 +417,9 @@ struct InitArgs {
     bool TEAMS_ENABLED;
     uint256 NUM_TEAMS;
     bool RANKED;
+    ArtifactTypePrices ARTIFACT_TYPE_PRICES;
+    ArtifactRarityPrices ARTIFACT_RARITY_PRICES;
+    SpaceshipPrices SPACESHIP_PRICES;
 }
 
 // Values that are useful but not constant across arenas (whitelisted players, which planet goes to which team)
