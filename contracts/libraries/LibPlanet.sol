@@ -375,27 +375,25 @@ library LibPlanet {
         }
     }
 
-    function withdrawSilver(uint256 locationId, uint256 silverToWithdraw) public {
+    // Withdraw Max Silver
+    function withdrawSilver(uint256 locationId) public returns (uint256) {
         Planet storage planet = gs().planets[locationId];
-        PlanetExtendedInfo storage info = gs().planetsExtendedInfo[locationId];
+        PlanetExtendedInfo memory info = gs().planetsExtendedInfo[locationId];
+
         require(planet.owner == msg.sender, "you must own this planet");
-        require(
-            planet.planetType == PlanetType.TRADING_POST,
-            "can only withdraw silver from trading posts"
-        );
         require(!info.destroyed, "planet is destroyed");
-        require(
-            planet.silver >= silverToWithdraw,
-            "tried to withdraw more silver than exists on planet"
-        );
+        // No op in case client is off
+        if (planet.silver == 0) return 0;
 
-        planet.silver -= silverToWithdraw;
+        // Divide by 1000 for precision
+        uint256 silverAmount = planet.silver / 1000;
+        planet.silver = 0;
 
-        // Energy and Silver are not stored as floats in the smart contracts,
-        // so any of those values coming from the contracts need to be divided by
-        // `CONTRACT_PRECISION` to get their true integer value.
-        uint256 scoreGained = silverToWithdraw / 1000;
-        scoreGained = (scoreGained * gameConstants().SILVER_SCORE_VALUE) / 100;
-        gs().players[msg.sender].score += scoreGained;
+        // No score for now. Silver is score.
+        
+        // uint256 scoreGained = silverAmount;
+        // scoreGained = (scoreGained * gameConstants().SILVER_SCORE_VALUE) / 100;
+        gs().players[msg.sender].score += silverAmount;
+        return silverAmount;
     }
 }
