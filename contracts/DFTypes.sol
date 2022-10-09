@@ -244,6 +244,7 @@ struct ArenaPlanetInfo {
     bool spawnPlanet;
     bool targetPlanet;
     uint256[] blockedPlanetIds;
+    uint256 team;
 }
 
 struct ArenaPlayerInfo {
@@ -264,6 +265,7 @@ struct ArenaCreateRevealPlanetArgs {
     bool isTargetPlanet;
     bool isSpawnPlanet;
     uint256[] blockedPlanetIds;
+    uint256 team;
 }
 
 struct Modifiers {

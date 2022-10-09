@@ -70,8 +70,7 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         uint256[2] memory _a,
         uint256[2][2] memory _b,
         uint256[2] memory _c,
-        uint256[8] memory _input,
-        uint256 team
+        uint256[8] memory _input
     ) public onlyWhitelisted returns (uint256) {
         uint256 _location = _input[0];
         uint256 _perlin = _input[1];
@@ -99,6 +98,7 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         }
 
         if (arenaConstants().TEAMS_ENABLED) {
+            uint256 team = arenaStorage().arenaPlanetInfo[_location].team;
             require(team <= arenaConstants().NUM_TEAMS, "invalid team");
             require(team > 0, "team cannot be 0");
 
@@ -164,12 +164,18 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
         if (args.isSpawnPlanet) {
             require(arenaConstants().MANUAL_SPAWN, "admin cannot create spawn planets");
             arenaStorage().spawnPlanetIds.push(args.location);
+
+            if (arenaConstants().TEAMS_ENABLED) {
+                require(args.team <= arenaConstants().NUM_TEAMS, "invalid team");
+                require(args.team != 0, "cannot make spawn planet of team 0 when teams is active");
+            }
         }
-        
+
         arenaStorage().arenaPlanetInfo[args.location] = ArenaPlanetInfo(
             args.isSpawnPlanet,
             args.isTargetPlanet,
-            args.blockedPlanetIds
+            args.blockedPlanetIds,
+            args.team
         );
 
         for(uint i = 0; i < args.blockedPlanetIds.length; i++) {
