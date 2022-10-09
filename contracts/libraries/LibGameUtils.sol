@@ -367,8 +367,6 @@ library LibGameUtils {
             ret.popGroMultiplier += 5;
         } else if (artifact.artifactType == ArtifactType.Colossus) {
             ret.speedMultiplier += 5;
-        } else if (artifact.artifactType == ArtifactType.Spaceship) {
-            ret.rangeMultiplier += 5;
         } else if (artifact.artifactType == ArtifactType.Pyramid) {
             ret.defMultiplier += 5;
         }

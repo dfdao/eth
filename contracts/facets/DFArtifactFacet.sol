@@ -64,6 +64,12 @@ contract DFArtifactFacet is WithStorage, ERC721 {
         _;
     }
 
+    function mintArtifact(Artifact memory args) private {
+        require(args.id >= 1, "artifact id must be positive");
+
+        _mint(args.discoverer, args.id);
+    }
+
     function createArtifact(DFTCreateArtifactArgs memory args)
         public
         onlyAdminOrCore
