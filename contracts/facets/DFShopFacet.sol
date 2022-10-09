@@ -16,39 +16,41 @@ contract DFShopFacet is WithStorage, WithArenaStorage {
     event ArtifactPurchased(address buyer, uint256 tokenId, uint256 planetId);
     event SpaceshipPurchased(address buyer, uint256 tokenId, uint256 planetId);
 
-    function purchaseArtifact(DFTCreateArtifactArgs memory args) public returns (uint256) {
-        require(args.tokenId >= 1, "artifact id must be positive");
+    function purchaseArtifact(
+        ArtifactType artifactType,
+        ArtifactRarity rarity,
+        uint256 locationId
+    ) public {
         Player storage player = gs().players[msg.sender];
 
-        Artifact memory newArtifact = Artifact(
-            true,
-            args.tokenId,
-            args.planetId,
-            args.rarity,
-            args.biome,
-            block.timestamp,
-            args.discoverer,
-            args.artifactType,
-            0,
-            0,
-            0,
-            0,
-            args.controller
+        Artifact memory artifact = DFArtifactFacet(address(this)).createArtifact(
+            DFTCreateArtifactArgs({
+                tokenId: gs().miscNonce++,
+                discoverer: msg.sender,
+                planetId: locationId,
+                rarity: rarity,
+                biome: Biome.Ocean,
+                artifactType: artifactType,
+                owner: msg.sender,
+                // Only used for spaceships
+                controller: address(0)
+            })
         );
 
         require(
-            !LibArtifactUtils.isSpaceship(args.artifactType) &&
-                !LibArtifactUtils.isCube(newArtifact),
+            !LibArtifactUtils.isSpaceship(artifactType) &&
+                !LibArtifactUtils.isCube(artifact),
             "cannot create artifact of this type"
         );
-        uint256 price = getArtifactPrice(args.artifactType, args.rarity);
+
+        uint256 price = getArtifactPrice(artifactType,rarity);
         require(player.score >= price, "not enough silver to purchase");
 
-        gs().artifacts[args.tokenId] = newArtifact;
+        gs().artifacts[artifact.id] = artifact;
 
         player.score -= price;
 
-        emit ArtifactPurchased(msg.sender, args.tokenId, args.planetId);
+        emit ArtifactPurchased(msg.sender, artifact.id, locationId);
     }
 
     function purchaseSpaceship(ArtifactType artifactType, uint256 planetId) public {

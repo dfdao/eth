@@ -17,6 +17,9 @@ import {
     ArenaPlayerInfo,
     Modifiers,
     ArenaCreateRevealPlanetArgs,
+    ArtifactTypePrices,
+    ArtifactRarityPrices,
+    SpaceshipPrices,
     Spaceships,
     InitArgs,
     AuxiliaryArgs
