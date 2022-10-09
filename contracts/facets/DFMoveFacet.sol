@@ -448,10 +448,10 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
         uint256 rangeBoostPercent = 0;
         if (arenaConstants().RANGE_DOUBLING_SECS > 0) {
             uint256 timeElapsed = block.timestamp - arenaStorage().startTime;
-            uint256 boostModifier = (timeElapsed * 100 / arenaConstants().RANGE_DOUBLING_SECS);
-            rangeBoostPercent += boostModifier;
+            rangeBoostPercent = (timeElapsed * 100 / arenaConstants().RANGE_DOUBLING_SECS);
         }
-        uint256 newRange = (planet.range * rangeBoostPercent) / 100;
+        
+        uint256 newRange = planet.range + ((planet.range * rangeBoostPercent) / 100);
 
         uint256 popArriving = _getDecayedPop(
             args.popMoved,

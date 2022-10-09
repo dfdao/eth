@@ -1456,14 +1456,10 @@ describe('Arena Functions', function () {
       let events = await world.user1Core.queryFilter(ArrivalQueuedFilter, "latest");
       let voyageId = events[0].args?.arrivalId;
       const voyage0 = await world.contract.getPlanetArrival(voyageId);
-      console.log(`pop arriving`, voyage0.popArriving.toNumber());
 
       const gameStart = (await world.contract.getStartTime()).toNumber();
 
-      let currTime = (await events[0].getBlock()).timestamp;
-      console.log(`currTime`, currTime, `gameStart`, gameStart);
-      console.log(currTime - gameStart, 'sec have passed');
-
+      let currTime = (await events[0].getBlock()).timestamp;;
       await increaseBlockchainTime();
 
       await world.user1Core.move(
@@ -1473,11 +1469,9 @@ describe('Arena Functions', function () {
 
       currTime = (await events[0].getBlock()).timestamp;
       const timeElapsed = currTime - gameStart;
-      console.log(timeElapsed, 'sec have passed');
-      console.log(`boosts`, (timeElapsed / rangeIncreaseInitializers.RANGE_DOUBLING_SECS) + 100)
+
       voyageId = events[0].args?.arrivalId;
       const voyage1 = await world.contract.getPlanetArrival(voyageId);
-      console.log(`pop arriving 1`, voyage1.popArriving.toNumber());
       expect(voyage0.pop)
 
     });
