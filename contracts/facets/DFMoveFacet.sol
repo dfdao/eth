@@ -103,8 +103,6 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
             emit GameStarted(msg.sender, block.timestamp);
         }
 
-        _executeMove(args);
-
         arenaStorage().arenaPlayerInfo[msg.sender].moves++;
 
         LibGameUtils.updateWorldRadius();
@@ -143,7 +141,7 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
                 temporaryUpgrade = cubeUpgrade;
             }
         }
-
+        
         _removeSpaceshipEffectsFromOriginPlanet(args);
 
         uint256 popMoved = args.popMoved;
@@ -372,8 +370,7 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
     }
 
     function _checkCube(DFPMoveArgs memory args)
-        private
-        view
+        private view
         returns (bool cubePresent, Upgrade memory temporaryUpgrade)
     {
         Artifact memory movedArtifact = gs().artifacts[args.movedArtifactId];
@@ -462,22 +459,10 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
     function _createArrival(DFPCreateArrivalArgs memory args) private {
         // enter the arrival data for event id
         Planet memory planet = gs().planets[args.oldLoc];
-
-        require(arenaStorage().startTime > 0, "game hasn't started yet");
-        // time buff = (doubling_time - 0) * 100 / doubling_time + 100 = 200 -> every doubling_time seconds, range doubles
-
-        uint256 rangeBoostPercent = 0;
-        if (arenaConstants().RANGE_DOUBLING_SECS > 0) {
-            uint256 timeElapsed = block.timestamp - arenaStorage().startTime;
-            rangeBoostPercent = ((timeElapsed * 100) / arenaConstants().RANGE_DOUBLING_SECS);
-        }
-
-        uint256 newRange = planet.range + ((planet.range * rangeBoostPercent) / 100);
-
         uint256 popArriving = _getDecayedPop(
             args.popMoved,
             args.effectiveDistTimesHundred,
-            newRange,
+            planet.range,
             planet.populationCap
         );
         bool isSpaceship = LibArtifactUtils.isSpaceship(
@@ -513,13 +498,8 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
         uint256 _populationCap
     ) private pure returns (uint256 _decayedPop) {
         int128 _scaleInv = ABDKMath64x64.exp_2(ABDKMath64x64.divu(distTimesHundred, _range * 100));
-
-        // population cap / 20
         int128 _bigPlanetDebuff = ABDKMath64x64.divu(_populationCap, 20);
-
-        // energysent / ln(dist / range)
         int128 _beforeDebuff = ABDKMath64x64.div(ABDKMath64x64.fromUInt(_popMoved), _scaleInv);
-        // if population cap / 20 < energysent / ln(dist/range)
         if (_beforeDebuff > _bigPlanetDebuff) {
             _decayedPop = ABDKMath64x64.toUInt(ABDKMath64x64.sub(_beforeDebuff, _bigPlanetDebuff));
         } else {

@@ -73,7 +73,6 @@ struct ArenaConstants {
     bool TEAMS_ENABLED;
     uint256 NUM_TEAMS;
     bool RANKED;
-    uint256 RANGE_DOUBLING_SECS;
 }
 
 library LibArenaStorage {
