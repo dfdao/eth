@@ -483,7 +483,7 @@ describe('Arena Functions', function () {
     });
   });
 
-  describe.only('Claim Victory', function () {
+  describe('Claim Victory', function () {
     let world: World;
 
     async function worldFixture() {
