@@ -537,7 +537,7 @@ describe('Arena Functions', function () {
           world.contract,
           world.user1.address,
           LVL3_SPACETIME_1,
-          ArtifactType.AntiMatterCube
+          ArtifactType.AntimatterCube
         );
         await expect(world.user1Core.claimVictory()).to.be.revertedWith(
           'victory condition not met'

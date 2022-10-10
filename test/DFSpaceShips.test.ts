@@ -109,7 +109,7 @@ describe('Space Ships', function () {
     });
   });
 
-  describe('using the AntiMatter Cube', async function () {
+  describe('using the Antimatter Cube', async function () {
     it('pauses energy regeneration on planets', async function () {
       await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_ASTEROID_1);
       await increaseBlockchainTime();
@@ -119,10 +119,10 @@ describe('Space Ships', function () {
         world.contract,
         world.user1.address,
         LVL1_ASTEROID_1,
-        ArtifactType.AntiMatterCube
+        ArtifactType.AntimatterCube
       );
       const cube = (await world.user1Core.getArtifactsOnPlanet(LVL1_ASTEROID_1.id)).find(
-        (a) => a.artifact.artifactType === ArtifactType.AntiMatterCube
+        (a) => a.artifact.artifactType === ArtifactType.AntimatterCube
       )?.artifact;
 
       const previousPlanet = await world.contract.planets(LVL1_ASTEROID_1.id);
@@ -163,11 +163,11 @@ describe('Space Ships', function () {
         world.contract,
         world.user1.address,
         LVL1_ASTEROID_1,
-        ArtifactType.AntiMatterCube
+        ArtifactType.AntimatterCube
       );
 
       const cube = (await world.user1Core.getArtifactsOnPlanet(LVL1_ASTEROID_1.id)).find(
-        (a) => a.artifact.artifactType === ArtifactType.AntiMatterCube
+        (a) => a.artifact.artifactType === ArtifactType.AntimatterCube
       )?.artifact;
 
       // Move the cube.
