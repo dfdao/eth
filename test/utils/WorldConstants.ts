@@ -25,6 +25,11 @@ export const noPlanetTransferInitializers = settings.parse(decodeInitializers, {
   PLANET_TRANSFER_ENABLED: false,
 });
 
+export const rangeIncreaseInitializers = settings.parse(decodeInitializers, {
+  ...defaultInitializerValues,
+  RANGE_DOUBLING_SECS: 200,
+});
+
 // This builds a fake HRE-like object used to initialize the test contracts
 export const target4Initializers = settings.parse(decodeInitializers, {
   DISABLE_ZK_CHECKS: true,
@@ -64,7 +69,7 @@ export const confirmStartInitializers = settings.parse(decodeInitializers, {
   INIT_PERLIN_MAX: 31,
   TARGET_PLANETS: true,
   CLAIM_VICTORY_ENERGY_PERCENT: 50,
-  CONFIRM_START: true
+  CONFIRM_START: true,
 });
 
 export const allowListInitializers = settings.parse(decodeInitializers, {
@@ -74,9 +79,8 @@ export const allowListInitializers = settings.parse(decodeInitializers, {
   INIT_PERLIN_MAX: 31,
   TARGET_PLANETS: true,
   CLAIM_VICTORY_ENERGY_PERCENT: 50,
-  CONFIRM_START: true
+  CONFIRM_START: true,
 });
-
 
 export const noAdminInitializers = settings.parse(decodeInitializers, {
   ...defaultInitializerValues,
@@ -90,7 +94,7 @@ export const planetLevelThresholdInitializer = settings.parse(decodeInitializers
 
 export const deterministicArtifactInitializers = settings.parse(decodeInitializers, {
   ...defaultInitializerValues,
-  RANDOM_ARTIFACTS: false
+  RANDOM_ARTIFACTS: false,
 });
 
 export const teamsInitializers = settings.parse(decodeInitializers, {
@@ -551,7 +555,7 @@ export const initPlanetsInitializers = settings.parse(decodeInitializers, {
   NO_ADMIN: true,
   MANUAL_SPAWN: true,
   TARGET_PLANETS: true,
-  INIT_PLANETS: INIT_PLANETS.slice(0,10)
+  INIT_PLANETS: INIT_PLANETS.slice(0, 10),
 });
 
 export const multipleTargetPlanetVictoryInitializers = settings.parse(decodeInitializers, {
@@ -559,7 +563,7 @@ export const multipleTargetPlanetVictoryInitializers = settings.parse(decodeInit
   TARGETS_REQUIRED_FOR_VICTORY: 2,
   MANUAL_SPAWN: true,
   TARGET_PLANETS: true,
-  INIT_PLANETS: INIT_PLANETS.slice(0,5)
+  INIT_PLANETS: INIT_PLANETS.slice(0, 5),
 });
 
 export const blockListInitializers = settings.parse(decodeInitializers, {
@@ -567,8 +571,7 @@ export const blockListInitializers = settings.parse(decodeInitializers, {
   TARGETS_REQUIRED_FOR_VICTORY: 2,
   MANUAL_SPAWN: true,
   TARGET_PLANETS: true,
-  INIT_PLANETS: [INIT_PLANETS[0], INIT_PLANETS[2],INIT_PLANETS[3], INIT_PLANETS[4]],
+  INIT_PLANETS: [INIT_PLANETS[0], INIT_PLANETS[2], INIT_PLANETS[3], INIT_PLANETS[4]],
   BLOCK_MOVES: true,
   BLOCK_CAPTURE: true,
 });
-

@@ -17,6 +17,7 @@ import {
   noAdminInitializers,
   noPlanetTransferInitializers,
   planetLevelThresholdInitializer,
+  rangeIncreaseInitializers,
   target4Initializers,
   targetPlanetInitializers,
   teamsInitializers,
@@ -114,6 +115,15 @@ export function arenaWorldFixture(): Promise<World> {
     arena: true,
   });
 }
+
+export function rangeIncreaseFixture(): Promise<World> {
+  return initializeWorld({
+    initializers: rangeIncreaseInitializers,
+    allowListEnabled: false,
+    arena: true,
+  });
+}
+
 
 export function noAdminWorldFixture(): Promise<World> {
   return initializeWorld({

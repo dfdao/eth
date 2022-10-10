@@ -205,6 +205,7 @@ contract DFStartFacet is WithStorage, WithArenaStorage {
     arenaConstants().TEAMS_ENABLED = ai().initArgs.TEAMS_ENABLED;
     arenaConstants().NUM_TEAMS = ai().initArgs.NUM_TEAMS;
     arenaConstants().RANKED = ai().initArgs.RANKED;
+        arenaConstants().RANGE_DOUBLING_SECS = ai().initArgs.RANGE_DOUBLING_SECS;
 
     initializeDefaults();
     initializeUpgrades();

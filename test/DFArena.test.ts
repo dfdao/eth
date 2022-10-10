@@ -27,6 +27,7 @@ import {
   multipleTargetPlanetVictoryFixture,
   noAdminWorldFixture,
   planetLevelThresholdFixture,
+  rangeIncreaseFixture,
   spaceshipWorldFixture,
   targetPlanetFixture,
   teamsFixture,
@@ -57,6 +58,7 @@ import {
   LVL1_ASTEROID_2,
   initializers,
   LVL3_UNOWNED_DEEP_SPACE,
+  rangeIncreaseInitializers,
 } from './utils/WorldConstants';
 import hre, { ethers } from 'hardhat';
 import { TestLocation } from './utils/TestLocation';
@@ -120,9 +122,6 @@ describe('Arena Functions', function () {
         blockedPlanetIds: [],
         team: 0,
       });
-
-      await world.contract.revealLocation(...makeRevealArgs(ADMIN_PLANET_CLOAKED, x, y));
-
       const numTargetPlanets = await world.contract.getNTargetPlanets();
       expect(numTargetPlanets).to.equal(1);
 
@@ -1528,6 +1527,44 @@ describe('Arena Functions', function () {
         expect(winners[0]).to.equal(world.user1.address);
         expect(winners[1]).to.equal(world.user2.address);
       });
+    });
+  });
+
+  describe('Range Modifier', function () {
+    let world: World;
+
+    beforeEach('load fixture', async function () {
+      world = await fixtureLoader(rangeIncreaseFixture);
+      await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
+      await increaseBlockchainTime();
+    });
+
+    it.only('confirms range increase', async function () {
+      expect((await world.contract.getArenaConstants()).RANGE_DOUBLING_SECS).to.equal(
+        rangeIncreaseInitializers.RANGE_DOUBLING_SECS
+      );
+    });
+    it.only('move has more pop arriving after time has elapsed', async function () {
+      await world.user1Core.move(...makeMoveArgs(SPAWN_PLANET_1, LVL1_ASTEROID_1, 50, 60000, 0));
+      const ArrivalQueuedFilter = world.user1Core.filters.ArrivalQueued();
+      let events = await world.user1Core.queryFilter(ArrivalQueuedFilter, 'latest');
+      let voyageId = events[0].args?.arrivalId;
+      const voyage0 = await world.contract.getPlanetArrival(voyageId);
+
+      const gameStart = (await world.contract.getStartTime()).toNumber();
+
+      let currTime = (await events[0].getBlock()).timestamp;
+      await increaseBlockchainTime();
+
+      await world.user1Core.move(...makeMoveArgs(SPAWN_PLANET_1, LVL1_ASTEROID_1, 50, 60000, 0));
+      events = await world.user1Core.queryFilter(ArrivalQueuedFilter, 'latest');
+
+      currTime = (await events[0].getBlock()).timestamp;
+      const timeElapsed = currTime - gameStart;
+
+      voyageId = events[0].args?.arrivalId;
+      const voyage1 = await world.contract.getPlanetArrival(voyageId);
+      expect(voyage0.pop);
     });
   });
 });
