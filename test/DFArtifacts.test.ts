@@ -880,6 +880,6 @@ describe('DarkForestArtifacts', function () {
       ).to.be.revertedWith('artifact is not powerful enough to apply effect to this planet level');
     });
   });
-
+  
   // TODO: tests for photoid cannon and planetary shield?
 });

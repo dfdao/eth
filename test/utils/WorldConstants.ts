@@ -102,6 +102,7 @@ export const teamsInitializers = settings.parse(decodeInitializers, {
   INIT_PERLIN_MIN: 0,
   INIT_PERLIN_MAX: 31,
   TARGET_PLANETS: true,
+  MANUAL_SPAWN: true,
   CLAIM_VICTORY_ENERGY_PERCENT: 50,
   TEAMS_ENABLED: true,
   NUM_TEAMS: 2,
@@ -405,6 +406,7 @@ const INIT_PLANETS: ArenaPlanets = [
     isTargetPlanet: false,
     isSpawnPlanet: true,
     blockedPlanetIds: [],
+    team: 0,
   },
   {
     location: ARTIFACT_PLANET_1.id.toHexString(),
@@ -416,6 +418,8 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
+    team: 1,
+
     blockedPlanetIds: [],
   },
   {
@@ -428,6 +432,8 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: true,
     isSpawnPlanet: false,
+    team: 1,
+
     blockedPlanetIds: [ADMIN_PLANET_CLOAKED.id.toHexString()],
   },
   {
@@ -440,6 +446,8 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: true,
     isSpawnPlanet: false,
+    team: 2,
+
     blockedPlanetIds: [ADMIN_PLANET_CLOAKED.id.toHexString()],
   },
   {
@@ -452,6 +460,8 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: true,
     isSpawnPlanet: false,
+    team: 2,
+
     blockedPlanetIds: [ADMIN_PLANET_CLOAKED.id.toHexString()],
   },
   {
@@ -464,6 +474,8 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
+    team: 3,
+
     blockedPlanetIds: [],
   },
   {
@@ -476,6 +488,8 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
+    team: 3,
+
     blockedPlanetIds: [],
   },
   {
@@ -488,6 +502,8 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
+    team: 0,
+
     blockedPlanetIds: [],
   },
   {
@@ -500,6 +516,8 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
+    team: 0,
+
     blockedPlanetIds: [],
   },
   {
@@ -512,6 +530,8 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
+    team: 0,
+
     blockedPlanetIds: [],
   },
   {
@@ -524,6 +544,8 @@ const INIT_PLANETS: ArenaPlanets = [
     requireValidLocationId: false,
     isTargetPlanet: false,
     isSpawnPlanet: true,
+    team: 0,
+
     blockedPlanetIds: [],
   },
 ];

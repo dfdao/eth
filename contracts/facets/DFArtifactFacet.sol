@@ -17,7 +17,7 @@ import {LibPlanet} from "../libraries/LibPlanet.sol";
 import {WithStorage} from "../libraries/LibStorage.sol";
 
 // Type imports
-import {Artifact, ArtifactType, DFTCreateArtifactArgs, DFPFindArtifactArgs} from "../DFTypes.sol";
+import {Artifact, ArtifactType, DFTCreateArtifactArgs, DFPFindArtifactArgs, Planet, PlanetExtendedInfo, PlanetExtendedInfo2} from "../DFTypes.sol";
 
 contract DFArtifactFacet is WithStorage, ERC721 {
     using ERC721BaseStorage for ERC721BaseStorage.Layout;
@@ -73,22 +73,21 @@ contract DFArtifactFacet is WithStorage, ERC721 {
 
         _mint(args.owner, args.tokenId);
 
-        Artifact memory newArtifact =
-            Artifact(
-                true,
-                args.tokenId,
-                args.planetId,
-                args.rarity,
-                args.biome,
-                block.timestamp,
-                args.discoverer,
-                args.artifactType,
-                0,
-                0,
-                0,
-                0,
-                args.controller
-            );
+        Artifact memory newArtifact = Artifact(
+            true,
+            args.tokenId,
+            args.planetId,
+            args.rarity,
+            args.biome,
+            block.timestamp,
+            args.discoverer,
+            args.artifactType,
+            0,
+            0,
+            0,
+            0,
+            args.controller
+        );
 
         gs().artifacts[args.tokenId] = newArtifact;
 
@@ -158,8 +157,9 @@ contract DFArtifactFacet is WithStorage, ERC721 {
             );
         }
 
-        uint256 foundArtifactId =
-            LibArtifactUtils.findArtifact(DFPFindArtifactArgs(planetId, biomebase, address(this)));
+        uint256 foundArtifactId = LibArtifactUtils.findArtifact(
+            DFPFindArtifactArgs(planetId, biomebase, address(this))
+        );
 
         emit ArtifactFound(msg.sender, foundArtifactId, planetId);
     }
@@ -231,6 +231,26 @@ contract DFArtifactFacet is WithStorage, ERC721 {
 
     function adminGiveArtifact(DFTCreateArtifactArgs memory args) public onlyAdmin {
         Artifact memory artifact = createArtifact(args);
+
+        if (artifact.artifactType == ArtifactType.AntiMatterCube) {
+            // Get an underflow if planet is not initialized.
+            require(gs().planetsExtendedInfo2[args.planetId].isInitialized, "planet is not initialized");
+
+            Planet memory planet = gs().planets[args.planetId];
+            PlanetExtendedInfo memory planetExtendedInfo = gs().planetsExtendedInfo[args.planetId];
+            PlanetExtendedInfo2 memory planetExtendedInfo2 = gs().planetsExtendedInfo2[args.planetId];
+            (planet, planetExtendedInfo, planetExtendedInfo2) = LibPlanet.applySpaceshipArrive(
+                artifact,
+                planet,
+                planetExtendedInfo,
+                planetExtendedInfo2
+            );
+
+            gs().planets[args.planetId] = planet;
+            gs().planetsExtendedInfo[args.planetId] = planetExtendedInfo;
+            gs().planetsExtendedInfo2[args.planetId] = planetExtendedInfo2;
+        }
+        
         transferArtifact(artifact.id, address(this));
         LibGameUtils._putArtifactOnPlanet(artifact.id, args.planetId);
 

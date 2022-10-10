@@ -96,6 +96,8 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
             LibGameUtils.checkPlanetDOS(args.newLoc, args.sender);
         }
 
+        _executeMove(args);
+
         if (!(arenaConstants().CONFIRM_START) && arenaStorage().startTime == 0) {
             arenaStorage().startTime = block.timestamp;
             emit GameStarted(msg.sender, block.timestamp);
@@ -135,6 +137,10 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
             if (photoidPresent) {
                 temporaryUpgrade = newTempUpgrade;
                 arrivalType = ArrivalType.Photoid;
+            }
+            (bool cubePresent, Upgrade memory cubeUpgrade) = _checkCube(args);
+            if (cubePresent) {
+                temporaryUpgrade = cubeUpgrade;
             }
         }
 
@@ -271,7 +277,10 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
             planet.populationGrowth /= 2;
         } else if (artifact.artifactType == ArtifactType.ShipWhale) {
             planet.silverGrowth /= 2;
-        } else if (artifact.artifactType == ArtifactType.ShipTitan) {
+        } else if (
+            artifact.artifactType == ArtifactType.ShipTitan ||
+            artifact.artifactType == ArtifactType.AntiMatterCube
+        ) {
             // so that updating silver/energy starts from the current time,
             // as opposed to the last time that the planet was updated
             planetExtendedInfo.lastUpdated = block.timestamp;
@@ -362,6 +371,18 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
         }
     }
 
+    function _checkCube(DFPMoveArgs memory args)
+        private
+        view
+        returns (bool cubePresent, Upgrade memory temporaryUpgrade)
+    {
+        Artifact memory movedArtifact = gs().artifacts[args.movedArtifactId];
+        if (movedArtifact.isInitialized && LibArtifactUtils.isCube(movedArtifact)) {
+            cubePresent = true;
+            temporaryUpgrade = LibGameUtils.timeDelayUpgrade(movedArtifact);
+        }
+    }
+
     function _abandonPlanet(DFPMoveArgs memory args)
         private
         returns (
@@ -448,9 +469,9 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
         uint256 rangeBoostPercent = 0;
         if (arenaConstants().RANGE_DOUBLING_SECS > 0) {
             uint256 timeElapsed = block.timestamp - arenaStorage().startTime;
-            rangeBoostPercent = (timeElapsed * 100 / arenaConstants().RANGE_DOUBLING_SECS);
+            rangeBoostPercent = ((timeElapsed * 100) / arenaConstants().RANGE_DOUBLING_SECS);
         }
-        
+
         uint256 newRange = planet.range + ((planet.range * rangeBoostPercent) / 100);
 
         uint256 popArriving = _getDecayedPop(
@@ -492,7 +513,7 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
         uint256 _populationCap
     ) private pure returns (uint256 _decayedPop) {
         int128 _scaleInv = ABDKMath64x64.exp_2(ABDKMath64x64.divu(distTimesHundred, _range * 100));
-        
+
         // population cap / 20
         int128 _bigPlanetDebuff = ABDKMath64x64.divu(_populationCap, 20);
 
