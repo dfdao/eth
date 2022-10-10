@@ -207,8 +207,7 @@ library LibArtifactUtils {
         require(!info.destroyed, "planet is destroyed");
 
         require(artifact.isInitialized, "this artifact is not on this planet");
-        require(artifact.artifactType != ArtifactType.AntiMatterCube, "cannot activate cube");
-
+        require(artifact.artifactType != ArtifactType.AntimatterCube, "cannot activate cube");
 
         // Unknown is the 0th one, Monolith is the 1st, and so on.
         // TODO v0.6: consider photoid canon
@@ -383,6 +382,6 @@ library LibArtifactUtils {
     }
 
     function isCube(Artifact memory a) public pure returns (bool) {
-        return a.artifactType == ArtifactType.AntiMatterCube;
+        return a.artifactType == ArtifactType.AntimatterCube;
     }
 }
