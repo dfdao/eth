@@ -27,20 +27,18 @@ describe('DarkForestUpgrade', function () {
 
   beforeEach('load fixture', async function () {
     world = await fixtureLoader(defaultWorldFixture);
+    await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
+
   });
 
   it('should reject if planet not initialized', async function () {
-    const fromId = SPAWN_PLANET_1.id;
-
-    await expect(world.user1Core.upgradePlanet(fromId, 0)).to.be.revertedWith(
+    await expect(world.user1Core.upgradePlanet(LVL1_PLANET_DEEP_SPACE.id, 0)).to.be.revertedWith(
       'Planet has not been initialized'
     );
   });
 
   it('should reject if not planet owner', async function () {
     const player1Planet = SPAWN_PLANET_1.id;
-
-    await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
 
     await expect(world.user2Core.upgradePlanet(player1Planet, 0)).to.be.revertedWith(
       'Only owner account can perform that operation on planet.'
@@ -49,7 +47,6 @@ describe('DarkForestUpgrade', function () {
 
   it('should reject if planet level is not high enough', async function () {
     const lowLevelPlanet = SPAWN_PLANET_1.id;
-    await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
 
     await expect(world.user1Core.upgradePlanet(lowLevelPlanet, 0)).to.be.revertedWith(
       'Planet level is not high enough for this upgrade'
@@ -59,7 +56,6 @@ describe('DarkForestUpgrade', function () {
   it('should reject if upgrade branch not valid', async function () {
     const upgradeablePlanetId = LVL1_PLANET_NEBULA.id;
 
-    await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
     await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_PLANET_NEBULA);
 
     await expect(world.user1Core.upgradePlanet(upgradeablePlanetId, 99)).to.be.revertedWith(
@@ -70,8 +66,6 @@ describe('DarkForestUpgrade', function () {
   it('should upgrade planet stats and emit event', async function () {
     const upgradeablePlanetId = LVL1_PLANET_NEBULA.id;
     const silverMinePlanetId = LVL1_ASTEROID_2.id;
-
-    await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
 
     // conquer silver mine and upgradeable planet
     await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_PLANET_NEBULA);
@@ -113,7 +107,6 @@ describe('DarkForestUpgrade', function () {
   it("should reject upgrade if there's not enough resources", async function () {
     const upgradeablePlanetId = LVL1_PLANET_NEBULA.id;
 
-    await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
 
     // conquer the upgradeable planet
     await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_PLANET_NEBULA);
@@ -127,8 +120,6 @@ describe('DarkForestUpgrade', function () {
 
   it('should reject upgrade if branch is maxed', async function () {
     const upgradeablePlanetId = LVL1_PLANET_DEEP_SPACE.id;
-
-    await world.user1Core.initializePlayer(...makeInitArgs(SPAWN_PLANET_1));
 
     // conquer upgradeable planet and silver planet
     await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_PLANET_DEEP_SPACE);
@@ -154,10 +145,6 @@ describe('DarkForestUpgrade', function () {
     this.timeout(10000);
 
     const upgradeablePlanetId = LVL1_PLANET_NEBULA.id;
-
-    const initArgs = makeInitArgs(SPAWN_PLANET_1);
-
-    await world.user1Core.initializePlayer(...initArgs);
 
     // conquer upgradeable planet and silver planet
     await conquerUnownedPlanet(world, world.user1Core, SPAWN_PLANET_1, LVL1_PLANET_NEBULA);

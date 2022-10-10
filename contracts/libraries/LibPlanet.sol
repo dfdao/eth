@@ -10,7 +10,7 @@ import {Verifier} from "../Verifier.sol";
 import {LibStorage, GameStorage, GameConstants, SnarkConstants} from "./LibStorage.sol";
 
 // Type imports
-import {Artifact, ArtifactType, DFPInitPlanetArgs, Planet, PlanetEventMetadata, PlanetExtendedInfo, PlanetExtendedInfo2, PlanetType, RevealedCoords, SpaceType, Upgrade, UpgradeBranch} from "../DFTypes.sol";
+import {Artifact, ArtifactType, DFPInitPlanetArgs, Planet, Player,PlanetEventMetadata, PlanetExtendedInfo, PlanetExtendedInfo2, PlanetType, RevealedCoords, SpaceType, Upgrade, UpgradeBranch} from "../DFTypes.sol";
 
 library LibPlanet {
     function gs() internal pure returns (GameStorage storage) {
@@ -181,6 +181,8 @@ library LibPlanet {
     }
 
     function upgradePlanet(uint256 _location, uint256 _branch) public {
+        Player storage player = gs().players[msg.sender];
+
         Planet storage planet = gs().planets[_location];
         PlanetExtendedInfo storage info = gs().planetsExtendedInfo[_location];
         require(
@@ -386,7 +388,7 @@ library LibPlanet {
         if (planet.silver == 0) return 0;
 
         // Divide by 1000 for precision
-        uint256 silverAmount = planet.silver / 1000;
+        uint256 silverAmount = planet.silver;
         planet.silver = 0;
 
         // No score for now. Silver is score.
