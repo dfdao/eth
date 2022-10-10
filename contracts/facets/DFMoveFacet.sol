@@ -277,7 +277,7 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
             planet.silverGrowth /= 2;
         } else if (
             artifact.artifactType == ArtifactType.ShipTitan ||
-            artifact.artifactType == ArtifactType.AntiMatterCube
+            artifact.artifactType == ArtifactType.AntimatterCube
         ) {
             // so that updating silver/energy starts from the current time,
             // as opposed to the last time that the planet was updated

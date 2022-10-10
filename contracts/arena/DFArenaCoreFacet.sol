@@ -292,7 +292,7 @@ contract DFArenaCoreFacet is WithStorage, WithArenaStorage {
             Artifact memory artifact = DFArtifactFacet(address(this)).getArtifact(
                 playerArtifactIds[i]
             );
-            if (artifact.artifactType == ArtifactType.AntiMatterCube) {
+            if (artifact.artifactType == ArtifactType.AntimatterCube) {
                 return true;
             }
         }
