@@ -332,7 +332,7 @@ library LibPlanet {
             planet.silverGrowth *= 2;
         } else if (
             artifact.artifactType == ArtifactType.ShipTitan ||
-            artifact.artifactType == ArtifactType.AntiMatterCube
+            artifact.artifactType == ArtifactType.AntimatterCube
         ) {
             planetExtendedInfo2.pausers++;
         }

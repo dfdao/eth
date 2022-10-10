@@ -193,7 +193,7 @@ enum ArtifactType {
     ShipWhale,
     ShipGear,
     ShipTitan,
-    AntiMatterCube
+    AntimatterCube
 }
 
 enum ArtifactRarity {Unknown, Common, Rare, Epic, Legendary, Mythic}
