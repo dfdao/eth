@@ -96,8 +96,6 @@ contract DFMoveFacet is WithStorage, WithArenaStorage {
             LibGameUtils.checkPlanetDOS(args.newLoc, args.sender);
         }
 
-        _executeMove(args);
-
         if (!(arenaConstants().CONFIRM_START) && arenaStorage().startTime == 0) {
             arenaStorage().startTime = block.timestamp;
             emit GameStarted(msg.sender, block.timestamp);

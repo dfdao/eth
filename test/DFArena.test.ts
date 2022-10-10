@@ -1539,12 +1539,12 @@ describe('Arena Functions', function () {
       await increaseBlockchainTime();
     });
 
-    it.only('confirms range increase', async function () {
+    it('confirms range increase', async function () {
       expect((await world.contract.getArenaConstants()).RANGE_DOUBLING_SECS).to.equal(
         rangeIncreaseInitializers.RANGE_DOUBLING_SECS
       );
     });
-    it.only('move has more pop arriving after time has elapsed', async function () {
+    it('move has more pop arriving after time has elapsed', async function () {
       await world.user1Core.move(...makeMoveArgs(SPAWN_PLANET_1, LVL1_ASTEROID_1, 50, 60000, 0));
       const ArrivalQueuedFilter = world.user1Core.filters.ArrivalQueued();
       let events = await world.user1Core.queryFilter(ArrivalQueuedFilter, 'latest');
