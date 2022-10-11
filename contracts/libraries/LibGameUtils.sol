@@ -9,6 +9,7 @@ import {ABDKMath64x64} from "../vendor/libraries/ABDKMath64x64.sol";
 
 // Storage imports
 import {LibStorage, GameStorage, GameConstants, SnarkConstants} from "./LibStorage.sol";
+import {ArenaConstants, LibArenaStorage} from "./LibArenaStorage.sol";
 
 import {
     Biome,
@@ -37,6 +38,9 @@ library LibGameUtils {
         return LibStorage.snarkConstants();
     }
 
+    function arenaConstants() internal pure returns (ArenaConstants storage) {
+        return LibArenaStorage.arenaConstants();
+    }
     // inclusive on both ends
     function _calculateByteUInt(
         bytes memory _b,
@@ -274,7 +278,7 @@ library LibGameUtils {
             });
     }
 
-    function timeDelayUpgrade(Artifact memory artifact) public pure returns (Upgrade memory) {
+    function timeDelayUpgrade(Artifact memory artifact) public view returns (Upgrade memory) {
         if (artifact.artifactType == ArtifactType.PhotoidCannon) {
             uint256[6] memory range = [uint256(100), 200, 200, 200, 200, 200];
             uint256[6] memory speedBoosts = [uint256(100), 500, 1000, 1500, 2000, 2500];
@@ -293,7 +297,7 @@ library LibGameUtils {
                 Upgrade({
                     popCapMultiplier: 100,
                     popGroMultiplier: 100,
-                    rangeMultiplier: 50,
+                    rangeMultiplier: arenaConstants().CUBE_RANGE_MODIFIER,
                     speedMultiplier: 100,
                     defMultiplier: 100
                 });

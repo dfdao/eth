@@ -1256,7 +1256,6 @@ describe('Arena Functions', function () {
     it('Logs All Initializers', async function () {
       const inits = await world.contract.getInitializers();
       // console.log(inits);
-      console.log(inits.initArgs.INIT_PLANETS);
     });
   });
 

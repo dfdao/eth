@@ -382,7 +382,7 @@ struct InitArgs {
 
     bool RANDOM_ARTIFACTS;
     bool NO_ADMIN;
-    ArenaCreateRevealPlanetArgs[] INIT_PLANETS;
+    // ArenaCreateRevealPlanetArgs[] INIT_PLANETS;
     bool CONFIRM_START;
     uint256 TARGETS_REQUIRED_FOR_VICTORY;
     bool BLOCK_MOVES;
@@ -391,6 +391,7 @@ struct InitArgs {
     uint256 NUM_TEAMS;
     bool RANKED;
     uint256 RANGE_DOUBLING_SECS;
+    uint256 CUBE_RANGE_MODIFIER;
 }
 
 // Values that are useful but not constant across arenas (whitelisted players, which planet goes to which team)

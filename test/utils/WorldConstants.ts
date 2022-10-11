@@ -14,6 +14,7 @@ const defaultInitializerValues = {
   WORLD_RADIUS_LOCKED: true,
   WORLD_RADIUS_MIN: 304514,
   SPAWN_RIM_AREA: 7234560000,
+  CUBE_RANGE_MODIFIER: 50
 };
 
 // This builds a fake HRE-like object used to initialize the test contracts

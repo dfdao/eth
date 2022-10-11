@@ -74,6 +74,7 @@ struct ArenaConstants {
     uint256 NUM_TEAMS;
     bool RANKED;
     uint256 RANGE_DOUBLING_SECS;
+    uint256 CUBE_RANGE_MODIFIER;
 }
 
 library LibArenaStorage {
